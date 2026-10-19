@@ -1,39 +1,99 @@
 # SaaS Fabricante de Milhas
 
-Fundação visual e dashboard executivo da plataforma Fabricante de Milhas.
+Aplicação full-stack em evolução para organizar programas de fidelidade, saldos de pontos, histórico de transações, passagens e decisões de resgate.
 
-## Executar localmente
+## Stack definida
 
-Não há etapa de build ou dependências de runtime nesta fase. Abra o arquivo index.html em um navegador moderno. Para servir por HTTP local, execute na raiz do projeto:
+- **Frontend:** Next.js App Router + React + TypeScript
+- **UI:** shadcn/ui (componentes locais no padrão shadcn) + Lucide React
+- **Backend:** NestJS + TypeScript
+- **Banco:** PostgreSQL
+- **ORM:** Prisma
 
-```bash
-python3 -m http.server 4173
-```
+O repositório usa npm workspaces: apps/web contém o frontend e apps/api contém a API.
 
-Depois acesse http://localhost:4173.
+## Requisitos
 
-## O que está incluído
+- Node.js 20.11 ou superior
+- npm
+- PostgreSQL local ou instância gerenciada
+- Variáveis de ambiente configuradas a partir de .env.example
 
-- Layout executivo responsivo, com navegação lateral e cabeçalho.
-- Indicadores, gráfico de evolução, distribuição por programa e oportunidades de exemplo.
-- Estados de demonstração e navegação para módulos planejados.
-- Interações acessíveis por teclado, foco visível e suporte a prefers-reduced-motion.
-- Tokens CSS para cores, tipografia, espaçamento e superfícies.
+## Desenvolvimento local
 
-## Limites intencionais da Fase 1
+1. Instale as dependências na raiz:
 
-- Todos os saldos, percentuais, valores e oportunidades são fictícios.
-- Não há autenticação, backend, banco de dados, integrações com programas de fidelidade, consulta de ofertas vigentes ou persistência.
-- Não inserir dados pessoais, CPF, credenciais ou informações financeiras reais nesta versão.
-- Fontes tipográficas são carregadas do Google Fonts; se a rede estiver indisponível, haverá fallback para fontes locais.
+   ~~~bash
+   npm install
+   ~~~
 
-## Próximas etapas sugeridas
+2. Copie .env.example para .env e configure DATABASE_URL para seu PostgreSQL local. Nunca versione credenciais reais.
 
-1. Definir autenticação, modelo de usuários e isolamento dos dados.
-2. Modelar programas de fidelidade, contas, saldos e histórico de movimentações.
-3. Especificar regras e testes das calculadoras de custo por milheiro, transferência, cashback e resgate.
-4. Implementar integrações somente após validar fontes, termos de uso, segurança e atualização dos dados.
+3. Gere o Prisma Client:
 
-## Direção de interface
+   ~~~bash
+   npm run prisma:generate
+   ~~~
 
-Estética premium executiva: azul-marinho, dourado discreto, superfícies claras, tipografia legível e animações curtas e funcionais. Movimentos de interface respeitam a preferência de movimento reduzido.
+4. Quando o banco estiver criado e acessível, aplique as migrações de desenvolvimento:
+
+   ~~~bash
+   npm run prisma:migrate
+   ~~~
+
+5. Inicie frontend e API em terminais separados:
+
+   ~~~bash
+   npm run dev:web
+   npm run dev:api
+   ~~~
+
+   Frontend: http://localhost:3000  
+   Health check da API: http://localhost:4000/api/health
+
+   Também é possível iniciar os dois com npm run dev.
+
+## Estrutura
+
+~~~text
+apps/
+  web/
+    src/app/                 # Next.js App Router
+    src/components/          # Dashboard e componentes shadcn
+    src/lib/                 # utilitários
+  api/
+    src/                     # NestJS controllers e módulos
+    src/prisma/              # integração Prisma
+    prisma/schema.prisma     # modelo PostgreSQL
+tests/
+  stack-smoke-check.py
+~~~
+
+## Modelo de dados inicial
+
+O schema Prisma descreve User, LoyaltyProgram, LoyaltyAccount, PointTransaction e FlightRecord, com índices para consultas por usuário e data. É uma base inicial: as regras de domínio, autenticação, isolamento de acesso, auditoria e migrações precisam ser revisadas antes de uso real.
+
+## Estado atual e limites
+
+- O dashboard usa **dados fictícios** para apresentar a direção visual; ainda não consome a API nem o banco.
+- A API NestJS fornece apenas GET /api/health e registra o serviço Prisma.
+- O schema é uma primeira proposta e não substitui uma revisão do domínio.
+- Autenticação, autorização, isolamento multiusuário, validação de DTOs, testes de integração, migrações versionadas e deploy ainda não estão implementados.
+- Não cadastrar CPF, credenciais ou dados financeiros reais até concluir a arquitetura de segurança e privacidade.
+- As oportunidades de milhas não são ofertas vigentes e não devem embasar decisões financeiras.
+
+## Scripts principais
+
+| Comando | Finalidade |
+|---|---|
+| npm run dev:web | Next.js em desenvolvimento |
+| npm run dev:api | NestJS em modo watch |
+| npm run typecheck | Verificação TypeScript dos dois workspaces |
+| npm run build | Build do frontend e da API |
+| npm run prisma:generate | Geração do Prisma Client |
+| npm run prisma:migrate | Migrações de desenvolvimento |
+| npm run prisma:studio | Interface local para explorar o banco |
+
+## Direção visual
+
+Interface premium executiva, azul-marinho, dourado discreto, superfícies claras, responsividade, foco visível e suporte a prefers-reduced-motion.
