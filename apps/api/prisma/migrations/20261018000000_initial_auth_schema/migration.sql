@@ -74,3 +74,23 @@ ALTER TABLE "LoyaltyAccount" ADD CONSTRAINT "LoyaltyAccount_loyaltyProgramId_fke
 ALTER TABLE "PointTransaction" ADD CONSTRAINT "PointTransaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "PointTransaction" ADD CONSTRAINT "PointTransaction_loyaltyAccountId_fkey" FOREIGN KEY ("loyaltyAccountId") REFERENCES "LoyaltyAccount"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "FlightRecord" ADD CONSTRAINT "FlightRecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+
+-- Defense in depth for Supabase's exposed public schema.
+-- NestJS accesses this schema server-side via Prisma. Browser/Data API roles
+-- must not access these tables until Supabase Auth and scoped policies exist.
+ALTER TABLE public."User" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."LoyaltyProgram" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."LoyaltyAccount" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."PointTransaction" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."FlightRecord" ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE public."User" FROM anon, authenticated;
+REVOKE ALL ON TABLE public."LoyaltyProgram" FROM anon, authenticated;
+REVOKE ALL ON TABLE public."LoyaltyAccount" FROM anon, authenticated;
+REVOKE ALL ON TABLE public."PointTransaction" FROM anon, authenticated;
+REVOKE ALL ON TABLE public."FlightRecord" FROM anon, authenticated;
+
+-- Keep this automatic RLS helper callable by the database event trigger,
+-- but not through the exposed PostgREST RPC surface.
+REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
