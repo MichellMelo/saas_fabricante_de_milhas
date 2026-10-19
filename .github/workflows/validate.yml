@@ -1,4 +1,4 @@
-name: Validate dashboard
+name: Validate full-stack application
 
 on:
   push:
@@ -10,8 +10,10 @@ on:
       - main
 
 jobs:
-  smoke-check:
+  validate:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fabricante_milhas?schema=public
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -19,11 +21,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check JavaScript syntax
-        run: node --check app.js
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Run static smoke checks
-        run: python tests/smoke-check.py
+      - name: Install workspace dependencies
+        run: npm install
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+      - name: Type-check frontend and backend
+        run: npm run typecheck
+      - name: Build frontend and backend
+        run: npm run build
+      - name: Run architecture smoke checks
+        run: python3 tests/stack-smoke-check.py
