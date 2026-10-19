@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { Prisma, PrismaClientKnownRequestError } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { JwtService } from "@nestjs/jwt";
 import { hash, compare } from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
@@ -24,7 +24,7 @@ export class AuthService {
   } catch (error) {
    // A second concurrent registration can pass the initial lookup. The unique
    // database constraint remains authoritative and must not leak as HTTP 500.
-   if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
+   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
     throw new ConflictException("Não foi possível criar a conta com esse e-mail.");
    }
    throw error;
