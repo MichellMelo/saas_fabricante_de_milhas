@@ -26,6 +26,19 @@ Inicie frontend e API em terminais separados com `npm run dev:web` e `npm run de
 Frontend: http://localhost:3000  
 Health check: http://localhost:4000/api/health
 
+## Supabase (PostgreSQL remoto)
+
+O projeto Supabase `saas_fabricante_de_milhas` é o banco remoto de desenvolvimento. Nunca versione a senha do banco, `DATABASE_URL`, `JWT_SECRET` ou chaves secretas.
+
+1. No painel do Supabase, abra **Project Settings → Database** (ou **Connect**) e copie a URI PostgreSQL apropriada para o backend. Prefira a conexão direta se o ambiente suportar IPv6; caso contrário, use o Session pooler indicado pelo Supabase. Não use a chave publishable/anon como senha do PostgreSQL.
+2. Coloque a URI em `DATABASE_URL` no arquivo local `.env`, sem enviar o arquivo ao Git.
+3. Como o schema inicial deste projeto foi criado diretamente no Supabase, registre-o como já aplicado no histórico do Prisma antes de executar futuras migrações:
+   `npx prisma migrate resolve --applied 20261018000000_initial_auth_schema --schema apps/api/prisma/schema.prisma`
+4. Confira o estado com `npx prisma migrate status --schema apps/api/prisma/schema.prisma` e gere o client com `npm run prisma:generate`.
+5. A proteção específica do Supabase está documentada em `supabase/migrations/20261019021132_rls_and_rpc_security.sql`. As tabelas têm RLS ativado e não concedem acesso direto às roles `anon` e `authenticated`; o acesso da aplicação ocorre pela API NestJS via Prisma. Não conecte o frontend diretamente a essas tabelas sem desenhar autenticação Supabase e políticas RLS por usuário.
+
+A conexão e o comando `migrate resolve` devem apontar para o projeto remoto correto. Não execute `prisma migrate dev` nesse banco remoto.
+
 ## Autenticação implementada
 
 - `POST /api/auth/register`: cria conta com e-mail normalizado e senha armazenada com hash bcrypt.
