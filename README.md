@@ -2,97 +2,70 @@
 
 Aplicação full-stack em evolução para organizar programas de fidelidade, saldos de pontos, histórico de transações, passagens e decisões de resgate.
 
-## Stack definida
+## Stack
 
-- **Frontend:** Next.js App Router + React + TypeScript
-- **UI:** shadcn/ui (componentes locais no padrão shadcn) + Lucide React
-- **Backend:** NestJS + TypeScript
-- **Banco:** PostgreSQL
-- **ORM:** Prisma
+- Frontend: Next.js App Router + React + TypeScript
+- UI: shadcn/ui (componentes locais no padrão shadcn) + Lucide React
+- Backend: NestJS + TypeScript
+- Banco: PostgreSQL
+- ORM: Prisma
 
 O repositório usa npm workspaces: apps/web contém o frontend e apps/api contém a API.
 
-## Requisitos
+## Requisitos e configuração
 
-- Node.js 20.11 ou superior
-- npm
-- PostgreSQL local ou instância gerenciada
-- Variáveis de ambiente configuradas a partir de .env.example
+- Node.js 20.11 ou superior, npm e PostgreSQL
+- Copie .env.example para .env e configure DATABASE_URL e JWT_SECRET. Gere o JWT_SECRET com pelo menos 32 caracteres aleatórios; não use o valor de exemplo em produção e nunca versione segredos reais.
+- Instale dependências: `npm install`
+- Gere o Prisma Client: `npm run prisma:generate`
+- Aplique migrações em desenvolvimento: `npm run prisma:migrate`
+- Em ambiente de deploy, use `npm run prisma:deploy` para aplicar migrações versionadas.
 
-## Desenvolvimento local
+Inicie frontend e API em terminais separados com `npm run dev:web` e `npm run dev:api`, ou use `npm run dev`.
 
-1. Instale as dependências na raiz:
+Frontend: http://localhost:3000  
+Health check: http://localhost:4000/api/health
 
-   ~~~bash
-   npm install
-   ~~~
+## Autenticação implementada
 
-2. Copie .env.example para .env e configure DATABASE_URL para seu PostgreSQL local. Nunca versione credenciais reais.
+- `POST /api/auth/register`: cria conta com e-mail normalizado e senha armazenada com hash bcrypt.
+- `POST /api/auth/login`: valida credenciais e devolve token JWT com validade de uma hora.
+- `GET /api/auth/me`: endpoint protegido, requer `Authorization: Bearer <token>`.
+- DTOs são validados globalmente; propriedades não declaradas são rejeitadas.
+- O identificador do usuário autenticado vem do token validado, não de um campo enviado no corpo da requisição.
 
-3. Gere o Prisma Client:
+Exemplo de registro:
 
-   ~~~bash
-   npm run prisma:generate
-   ~~~
-
-4. Quando o banco estiver criado e acessível, aplique as migrações de desenvolvimento:
-
-   ~~~bash
-   npm run prisma:migrate
-   ~~~
-
-5. Inicie frontend e API em terminais separados:
-
-   ~~~bash
-   npm run dev:web
-   npm run dev:api
-   ~~~
-
-   Frontend: http://localhost:3000  
-   Health check da API: http://localhost:4000/api/health
-
-   Também é possível iniciar os dois com npm run dev.
-
-## Estrutura
-
-~~~text
-apps/
-  web/
-    src/app/                 # Next.js App Router
-    src/components/          # Dashboard e componentes shadcn
-    src/lib/                 # utilitários
-  api/
-    src/                     # NestJS controllers e módulos
-    src/prisma/              # integração Prisma
-    prisma/schema.prisma     # modelo PostgreSQL
-tests/
-  stack-smoke-check.py
+~~~json
+{ "email": "voce@example.com", "password": "uma-senha-longa-com-12", "name": "Seu nome" }
 ~~~
 
-## Modelo de dados inicial
+A API ainda não implementa endpoints CRUD para contas de fidelidade, transações ou voos. Quando forem criados, cada consulta e mutação deve filtrar por `userId` derivado da sessão; nunca confiar em `userId` fornecido pelo cliente.
 
-O schema Prisma descreve User, LoyaltyProgram, LoyaltyAccount, PointTransaction e FlightRecord, com índices para consultas por usuário e data. É uma base inicial: as regras de domínio, autenticação, isolamento de acesso, auditoria e migrações precisam ser revisadas antes de uso real.
+## Banco de dados
 
-## Estado atual e limites
+A migração inicial versionada fica em `apps/api/prisma/migrations`. O schema contém User, LoyaltyProgram, LoyaltyAccount, PointTransaction e FlightRecord. A migração cria a estrutura completa inicial e inclui `passwordHash` para autenticação. Não aplique essa migração sobre um banco já existente com tabelas criadas manualmente sem antes revisar o estado do banco e planejar o baseline.
 
-- O dashboard usa **dados fictícios** para apresentar a direção visual; ainda não consome a API nem o banco.
-- A API NestJS fornece apenas GET /api/health e registra o serviço Prisma.
-- O schema é uma primeira proposta e não substitui uma revisão do domínio.
-- Autenticação, autorização, isolamento multiusuário, validação de DTOs, testes de integração, migrações versionadas e deploy ainda não estão implementados.
-- Não cadastrar CPF, credenciais ou dados financeiros reais até concluir a arquitetura de segurança e privacidade.
-- As oportunidades de milhas não são ofertas vigentes e não devem embasar decisões financeiras.
+## Limites e segurança
+
+- O dashboard ainda usa dados fictícios e não consome a API.
+- Não há verificação de e-mail, recuperação de senha, rate limiting, MFA, revogação de sessão nem fluxo de exclusão de conta.
+- A autenticação é uma fundação inicial, não uma auditoria de segurança. Antes de uso público, adicionar rate limiting, política de senha e testes de integração/segurança.
+- Não cadastrar CPF, credenciais de programas de fidelidade ou dados financeiros reais antes de concluir a revisão de privacidade e segurança.
+- O sistema ainda não integra programas de fidelidade nem consulta promoções reais.
 
 ## Scripts principais
 
 | Comando | Finalidade |
 |---|---|
-| npm run dev:web | Next.js em desenvolvimento |
-| npm run dev:api | NestJS em modo watch |
-| npm run typecheck | Verificação TypeScript dos dois workspaces |
-| npm run build | Build do frontend e da API |
-| npm run prisma:generate | Geração do Prisma Client |
-| npm run prisma:migrate | Migrações de desenvolvimento |
-| npm run prisma:studio | Interface local para explorar o banco |
+| `npm run dev:web` | Next.js em desenvolvimento |
+| `npm run dev:api` | NestJS em modo watch |
+| `npm run typecheck` | Verificação TypeScript |
+| `npm run build` | Build frontend e API |
+| `npm run prisma:generate` | Geração Prisma Client |
+| `npm run prisma:migrate` | Migração de desenvolvimento |
+| `npm run prisma:deploy` | Aplicar migrações versionadas |
+| `npm run prisma:studio` | Explorar o banco localmente |
 
 ## Direção visual
 
