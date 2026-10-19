@@ -1,4 +1,5 @@
 import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { Prisma, PrismaClientKnownRequestError } from "@prisma/client";
 import { JwtService } from "@nestjs/jwt";
 import { hash, compare } from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
@@ -14,11 +15,20 @@ export class AuthService {
   const existing = await this.prisma.user.findUnique({ where: { email }, select: { id: true } });
   if (existing) throw new ConflictException("Não foi possível criar a conta com esse e-mail.");
   const passwordHash = await hash(dto.password, 12);
-  const user = await this.prisma.user.create({
-   data: { email, passwordHash, name: dto.name?.trim() || null },
-   select: { id: true, email: true, name: true, createdAt: true }
-  });
-  return { user, accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email }) };
+  try {
+   const user = await this.prisma.user.create({
+    data: { email, passwordHash, name: dto.name?.trim() || null },
+    select: { id: true, email: true, name: true, createdAt: true }
+   });
+   return { user, accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email }) };
+  } catch (error) {
+   // A second concurrent registration can pass the initial lookup. The unique
+   // database constraint remains authoritative and must not leak as HTTP 500.
+   if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
+    throw new ConflictException("Não foi possível criar a conta com esse e-mail.");
+   }
+   throw error;
+  }
  }
 
  async login(dto: LoginDto) {
