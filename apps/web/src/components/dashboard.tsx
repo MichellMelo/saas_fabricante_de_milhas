@@ -345,10 +345,6 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   </p>
                 </div>
                 <div className="welcome-actions">
-                  <span className="updated-label">
-                    <span className="live-dot" />
-                    {updated ? "Conferido agora" : "Dados ilustrativos"}
-                  </span>
                   <Button
                     variant="outline"
                     size="sm"
