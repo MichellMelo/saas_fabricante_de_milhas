@@ -1164,6 +1164,50 @@ select:focus-visible {
   }
 }
 
-body {
-  outline: 5px solid red !important;
+
+
+/* Design engineering: predictable, responsive interaction feedback */
+:root {
+  --fm-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --fm-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid #c6a45c;
+  outline-offset: 3px;
+}
+
+:where(button, .button, .nav-item, .panel-footer-link, .subtle-link) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(button, .button, .nav-item, .panel-footer-link, .subtle-link):active {
+  transform: scale(0.98);
+  transition-duration: 100ms;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kpi-card,
+  .panel {
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .kpi-card:hover,
+  .panel:hover {
+    border-color: #d9dfe7;
+    box-shadow: 0 8px 26px rgba(16, 27, 45, 0.045);
+  }
+
+  .text-link:hover,
+  .subtle-link:hover,
+  .panel-footer-link:hover {
+    color: #72551f;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(button, a, input, select, textarea, .kpi-card, .panel) {
+    scroll-behavior: auto;
+    transition: none !important;
+  }
 }
