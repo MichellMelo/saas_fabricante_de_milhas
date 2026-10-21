@@ -1336,3 +1336,51 @@ body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+
+/* Typography and cleaner surfaces */
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-inter), Inter, Arial, sans-serif !important;
+}
+.page-title,
+.kpi-value,
+.panel-heading h2,
+.opportunity-value strong,
+.donut-center strong,
+.quick-insight h2 {
+  font-family: var(--font-inter), Inter, Arial, sans-serif !important;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+}
+.eyebrow-line {
+  display: none !important;
+}
+.welcome-row::before {
+  box-shadow: none !important;
+  opacity: .45;
+}
+.panel-heading {
+  border-bottom: 0 !important;
+}
+.opportunity-item {
+  border-top: 0 !important;
+}
+.panel-note,
+.page-footer {
+  border-top: 0 !important;
+}
+.kpi-card {
+  border-right: 0 !important;
+}
+.kpi-grid {
+  column-gap: 12px !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+.panel {
+  border: 1px solid rgba(17, 27, 43, .08) !important;
+}
