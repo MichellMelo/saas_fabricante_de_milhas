@@ -1344,7 +1344,7 @@ button,
 input,
 select,
 textarea {
-  font-family: var(--font-inter), Inter, Arial, sans-serif !important;
+  font-family: var(--font-inter), sans-serif !important;
 }
 .page-title,
 .kpi-value,
