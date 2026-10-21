@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -126,7 +127,7 @@ function StatCard({
   trend?: boolean;
 }) {
   return (
-    <Card className="kpi-card">
+    <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }} transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}><Card className="kpi-card">
       <div className="kpi-top">
         <span className="kpi-label">{label}</span>
         <span className={"kpi-icon " + tone}>
@@ -149,7 +150,7 @@ function StatCard({
           ))}
         </div>
       )}
-    </Card>
+    </Card></motion.div>
   );
 }
 
@@ -161,6 +162,7 @@ type DashboardUser = {
 };
 
 export function Dashboard({ user }: { user: DashboardUser }) {
+  const reduceMotion = useReducedMotion();
   const [route, setRoute] = useState<RouteKey>("dashboard");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [period, setPeriod] = useState("30");
@@ -326,10 +328,10 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             </button>
           </div>
         </header>
-        <div className="page-content">
+        <motion.div className="page-content" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}>
           {route === "dashboard" ? (
             <>
-              <section className="welcome-row">
+              <motion.section className="welcome-row" initial={reduceMotion ? false : { opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}>
                 <div>
                   <div className="eyebrow">
                     <span className="eyebrow-line" /> PAINEL EXECUTIVO
@@ -360,16 +362,16 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                     <RefreshCw size={14} /> Atualizar painel
                   </Button>
                 </div>
-              </section>
-              <div className="demo-notice">
+              </motion.section>
+              <motion.div className="demo-notice" initial={reduceMotion ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.4 }}>
                 <ShieldCheck size={16} className="shrink-0" />
                 <span>
                   <strong>Ambiente de demonstração.</strong> Os saldos, valores
                   e oportunidades abaixo são fictícios e servem apenas para
                   apresentar a interface.
                 </span>
-              </div>
-              <section className="kpi-grid" aria-label="Indicadores principais">
+              </motion.div>
+              <motion.section className="kpi-grid" aria-label="Indicadores principais" initial="hidden" animate="visible" variants={{ hidden: {}, visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.075, delayChildren: 0.12 } } }}>
                 <StatCard
                   label="Total de pontos e milhas"
                   value="248.650"
@@ -429,8 +431,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                     </>
                   }
                 />
-              </section>
-              <section className="content-grid">
+              </motion.section>
+              <motion.section className="content-grid" initial={reduceMotion ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
                 <Card className="panel">
                   <div className="panel-heading">
                     <div>
@@ -600,8 +602,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                     Explorar oportunidades <ArrowRight size={15} />
                   </button>
                 </Card>
-              </section>
-              <section className="bottom-grid">
+              </motion.section>
+              <motion.section className="bottom-grid" initial={reduceMotion ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
                 <Card className="panel">
                   <div className="panel-heading">
                     <div>
@@ -664,8 +666,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                     <ArrowRight size={14} />
                   </Button>
                 </Card>
-              </section>
-              <footer className="page-footer">
+              </motion.section>
+              <motion.footer className="page-footer" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.4 }}>
                 <span>© 2026 Fabricante de Milhas</span>
                 <span>Construído para decisões mais inteligentes.</span>
                 <button
@@ -677,7 +679,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                 >
                   Privacidade e segurança
                 </button>
-              </footer>
+              </motion.footer>
             </>
           ) : (
             <ModulePlaceholder
@@ -685,13 +687,15 @@ export function Dashboard({ user }: { user: DashboardUser }) {
               onBack={() => navigate("dashboard")}
             />
           )}
-        </div>
+        </motion.div>
       </main>
+      <AnimatePresence>
       {toast && (
-        <div className="toast" role="status" aria-live="polite">
+        <motion.div className="toast" role="status" aria-live="polite" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.18 }}>
           {toast}
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }
