@@ -1400,3 +1400,41 @@ textarea {
   color: #111b2b !important;
   background: #f4f1e9 !important;
 }
+
+
+/* Readability pass: raise the dashboard's minimum type sizes */
+body { font-size: 15px; }
+.breadcrumbs { font-size: 12px; }
+.workspace-label { font-size: 10px; }
+.nav-item { font-size: 14px; }
+.page-subtitle { font-size: 15px; }
+.demo-notice { font-size: 13px; line-height: 1.6; }
+.kpi-label { font-size: 13px; line-height: 1.5; }
+.kpi-value { font-size: clamp(28px, 2.4vw, 36px); }
+.kpi-foot { font-size: 12px; line-height: 1.5; }
+.panel-heading h2 { font-size: 22px; }
+.panel-heading p { font-size: 13px; line-height: 1.55; }
+.chart-legend { font-size: 12px; }
+.chart-wrap { font-size: 12px; }
+.panel-note { font-size: 12px; line-height: 1.55; }
+.opportunity-copy strong { font-size: 14px; line-height: 1.4; }
+.opportunity-copy > span { font-size: 12px; line-height: 1.5; }
+.opportunity-copy small { font-size: 11px; }
+.opportunity-value strong { font-size: 20px; }
+.opportunity-value span { font-size: 11px; }
+.panel-footer-link { font-size: 13px; }
+.quick-insight p { font-size: 14px; }
+.page-footer { font-size: 12px; }
+.help-card { font-size: 13px; }
+.help-card p, .help-card a { font-size: 12px; }
+.topbar-actions { font-size: 13px; }
+
+@media (max-width: 760px) {
+  .nav-item { font-size: 13px; }
+  .kpi-label { font-size: 12px; }
+  .kpi-foot { font-size: 11px; }
+  .panel-heading h2 { font-size: 20px; }
+  .panel-heading p { font-size: 12px; }
+  .opportunity-copy strong { font-size: 13px; }
+  .opportunity-copy > span { font-size: 11px; }
+}
