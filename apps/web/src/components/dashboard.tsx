@@ -344,20 +344,6 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                     oportunidades.
                   </p>
                 </div>
-                <div className="welcome-actions">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setUpdated(true);
-                      notify(
-                        "Painel demonstrativo atualizado. Nenhum dado externo foi consultado.",
-                      );
-                    }}
-                  >
-                    <RefreshCw size={14} /> Atualizar painel
-                  </Button>
-                </div>
               </motion.section>
               <motion.div className="demo-notice" initial={reduceMotion ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.4 }}>
                 <ShieldCheck size={16} className="shrink-0" />
