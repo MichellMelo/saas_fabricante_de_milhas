@@ -220,22 +220,13 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           onClick={() => navigate("dashboard")}
           aria-label="Fabricante de Milhas, início"
         >
-          <span className="brand-mark">
-            <svg viewBox="0 0 40 40" width="35" height="35" fill="none">
-              <path
-                d="M8 25.5 15.5 10l5 10 4.2-6.5L32 25.5M8 30h24"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <circle cx="28.8" cy="9.5" r="2.3" fill="currentColor" />
-            </svg>
-          </span>
-          <span className="brand-copy">
-            <strong>fabricante</strong>
-            <span>DE MILHAS</span>
-          </span>
+          <img
+            src="/fabricante-de-milhas-logo.svg"
+            alt="Fabricante de Milhas"
+            width="190"
+            height="47"
+            className="brand-logo"
+          />
         </button>
         <div className="workspace-label">ESPAÇO DE TRABALHO</div>
         <nav className="nav-list">
