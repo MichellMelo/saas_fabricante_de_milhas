@@ -1,6 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { createHash, randomBytes } from "node:crypto";
-import { ProductType } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateInvitationDto } from "./dto/create-invitation.dto";
 import { SetProductAccessDto } from "./dto/set-product-access.dto";
