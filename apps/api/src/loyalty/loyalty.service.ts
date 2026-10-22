@@ -32,7 +32,7 @@ export class LoyaltyService {
 
   async createPersonalProgram(userId: string, name: string, type: import("@prisma/client").LoyaltyProgramType) {
     const normalizedName = name.trim();
-    const slug = normalizedName.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 32) || "PROGRAM";
+    const slug = normalizedName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 32) || "PROGRAM";
     return this.prisma.loyaltyProgram.create({
       data: {
         name: normalizedName,
@@ -95,7 +95,7 @@ export class LoyaltyService {
 
   async createAccount(userId: string, dto: CreateAccountDto) {
     const program = await this.prisma.loyaltyProgram.findFirst({
-      where: { id: dto.loyaltyProgramId, active: true },
+      where: { id: dto.loyaltyProgramId, active: true, OR: [{ ownerUserId: null }, { ownerUserId: userId }] },
       select: { id: true },
     });
     if (!program) throw new NotFoundException("Programa de fidelidade não encontrado ou inativo.");
