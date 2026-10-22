@@ -21,6 +21,24 @@ const programs = [
     code: "MARRIOTT_BONVOY",
     type: LoyaltyProgramType.HOTEL,
   },
+  {
+    name: "Qatar Airways Privilege Club",
+    code: "QATAR_PRIVILEGE_CLUB",
+    type: LoyaltyProgramType.AIRLINE,
+  },
+  {
+    name: "British Airways Executive Club",
+    code: "BRITISH_AIRWAYS_EXECUTIVE_CLUB",
+    type: LoyaltyProgramType.AIRLINE,
+  },
+  { name: "Finnair Plus", code: "FINNAIR_PLUS", type: LoyaltyProgramType.AIRLINE },
+  { name: "Iberia Club", code: "IBERIA_CLUB", type: LoyaltyProgramType.AIRLINE },
+  { name: "Aeroplan", code: "AEROPLAN", type: LoyaltyProgramType.AIRLINE },
+  {
+    name: "TAP Miles&Go",
+    code: "TAP_MILES_AND_GO",
+    type: LoyaltyProgramType.AIRLINE,
+  },
 ];
 
 async function main() {
