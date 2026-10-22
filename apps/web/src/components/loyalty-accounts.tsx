@@ -159,9 +159,9 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
           <p className="mt-1 text-xs text-slate-500">Programas vinculados ao seu perfil</p>
         </Card>
         <Card className="border-slate-200 bg-white p-5 shadow-none">
-          <div className="flex items-center gap-3 text-slate-500"><ArrowDownLeft size={18} /><span className="text-sm">Saldo consolidado</span></div>
-          <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{programs.length}</div>
-          <p className="mt-1 text-xs text-slate-500">Programas disponíveis para cadastrar</p>
+          <div className="flex items-center gap-3 text-slate-500"><ArrowDownLeft size={18} /><span className="text-sm">Programas disponíveis</span></div>
+          <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{availablePrograms.length}</div>
+          <p className="mt-1 text-xs text-slate-500">Ainda não vinculados à sua carteira</p>
         </Card>
         <Card className="border-slate-200 bg-white p-5 shadow-none">
           <div className="flex items-center gap-3 text-slate-500"><ArrowUpRight size={18} /><span className="text-sm">Movimentações</span></div>
