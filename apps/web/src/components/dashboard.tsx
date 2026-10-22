@@ -18,6 +18,7 @@ import {
   Star,
   Settings2,
   Users,
+  MessageCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoyaltyAccounts } from "@/components/loyalty-accounts";
 import { ProgramManagement } from "@/components/program-management";
 import { ClientManagement } from "@/components/client-management";
+import { GroupVipContent } from "@/components/group-vip-content";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -38,6 +40,7 @@ const navItems: SidebarNavItem[] = [
   },
   { key: "programas-admin", label: "Cadastro de programas", icon: Settings2 },
   { key: "clientes-admin", label: "Clientes e produtos", icon: Users },
+  { key: "grupo-vip", label: "Grupo VIP", icon: MessageCircle },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator, soon: true },
   { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
   { key: "historico", label: "Histórico", icon: Clock3, soon: true },
@@ -64,6 +67,12 @@ const routeCopy: Record<
     eyebrow: "GESTÃO DE ACESSOS",
     description: "Convide clientes e gerencie o acesso ao Grupo VIP, aulões e mentorias.",
     icon: Users,
+  },
+  "grupo-vip": {
+    title: "Grupo VIP",
+    eyebrow: "CONTEÚDO EXCLUSIVO",
+    description: "Publicações e materiais exclusivos para membros com acesso ativo.",
+    icon: MessageCircle,
   },
   calculadoras: {
     title: "Calculadoras",
@@ -619,6 +628,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <ProgramManagement onBack={() => navigate("dashboard")} />
           ) : route === "clientes-admin" ? (
             <ClientManagement onBack={() => navigate("dashboard")} />
+          ) : route === "grupo-vip" ? (
+            <GroupVipContent isAdmin={Boolean(user.isAdmin)} />
           ) : (
             <ModulePlaceholder
               route={route}
