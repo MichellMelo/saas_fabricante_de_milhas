@@ -14,7 +14,7 @@ type AuthResponse = {
 
 export async function proxyAuth(
   request: Request,
-  endpoint: "login" | "register",
+  endpoint: "login" | "register" | "accept-invitation",
 ) {
   let body: unknown;
 
