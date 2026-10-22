@@ -76,9 +76,9 @@ export function GroupVipContent({ isAdmin }: { isAdmin: boolean }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: form.title.trim(),
-          summary: form.summary.trim() || undefined,
+          summary: form.summary.trim() || null,
           body: form.body.trim(),
-          externalUrl: form.externalUrl.trim() || undefined,
+          externalUrl: form.externalUrl.trim() || null,
         }),
       });
       await responseError(response, "Não foi possível salvar a publicação.");
