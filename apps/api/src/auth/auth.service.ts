@@ -77,10 +77,13 @@ export class AuthService {
    }
   });
   if (!user) throw new UnauthorizedException("Sessão inválida.");
+  const admins = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
+  const now = new Date();
   return {
    ...user,
+   isAdmin: admins.includes(user.email.trim().toLowerCase()),
    productAccesses: user.productAccesses.filter((access) =>
-    access.active && access.startsAt <= new Date() && (!access.expiresAt || access.expiresAt > new Date())
+    access.active && access.startsAt <= now && (!access.expiresAt || access.expiresAt > now)
    ),
   };
  }
