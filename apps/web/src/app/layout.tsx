@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-// @ts-expect-error Next.js handles global CSS imports at runtime.
 import "./globals.css";
 
 export const metadata: Metadata = {
