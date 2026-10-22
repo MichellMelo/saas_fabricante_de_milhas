@@ -21,6 +21,10 @@ clients_controller = read("apps/api/src/clients/clients.controller.ts")
 clients_service = read("apps/api/src/clients/clients.service.ts")
 accept_invitation_form = read("apps/web/src/components/accept-invitation-form.tsx")
 client_management = read("apps/web/src/components/client-management.tsx")
+group_vip_controller = read("apps/api/src/group-vip/group-vip.controller.ts")
+group_vip_service = read("apps/api/src/group-vip/group-vip.service.ts")
+group_vip_ui = read("apps/web/src/components/group-vip-content.tsx")
+group_vip_migration = read("apps/api/prisma/migrations/20261022160000_group_vip_content/migration.sql")
 migration = read("apps/api/prisma/migrations/20261018000000_initial_auth_schema/migration.sql")
 
 checks = {
@@ -39,6 +43,10 @@ checks = {
  "Client management API checks administrator allowlist": "ADMIN_EMAILS" in clients_controller and 'Get("clients")' in clients_controller and 'Post("invitations")' in clients_controller,
  "Invitation acceptance grants selected products": "tx.userProductAccess.createMany" in auth_service and 'createHash("sha256")' in auth_service,
  "Frontend supports invite activation and product controls": "accept-invitation" in accept_invitation_form and all(token in client_management for token in ("GROUP_VIP", "AULAO", "MENTORSHIP", "product-access")),
+ "Group VIP content has persistent model and migration": "model GroupVipPost {" in schema and 'CREATE TABLE "GroupVipPost"' in group_vip_migration,
+ "Group VIP read endpoint enforces product entitlement and filters drafts": "assertProductAccess(request.user.id)" in group_vip_controller and "isPublished: true" in group_vip_service,
+ "Only admins can manage Group VIP posts": "assertAdmin(request)" in group_vip_controller and all(token in group_vip_controller for token in ('Post("posts")', 'Post("posts/:id/update")', 'Post("posts/:id/publish")')),
+ "Group VIP UI supports internal content, external links, editing and publication": all(token in group_vip_ui for token in ("externalUrl", "Salvar rascunho", "Editar", "Publicar")) and "GroupVipContent" in dashboard,
  "JWT secret is required and documented": "JWT_SECRET" in read("apps/api/src/main.ts") and "JWT_SECRET" in read(".env.example"),
  "NestJS health endpoint and API prefix exist": '@Controller("health")' in read("apps/api/src/health.controller.ts") and 'setGlobalPrefix("api")' in read("apps/api/src/main.ts"),
  "Dashboard uses Lucide and shadcn primitives": 'from "lucide-react"' in dashboard and 'from "@/components/ui/button"' in dashboard and 'from "@/components/ui/card"' in dashboard,
