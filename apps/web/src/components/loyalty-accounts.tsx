@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ArrowLeft, ArrowDownLeft, ArrowUpRight, Plus, RefreshCw, WalletCards } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -88,7 +88,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
   useEffect(() => { void loadData(); }, [loadData]);
 
 
-  async function createAccount(event: React.FormEvent<HTMLFormElement>) {
+  async function createAccount(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!programId) { setError("Selecione um programa de fidelidade."); return; }
     setSaving(true); setError(""); setSuccess("");
