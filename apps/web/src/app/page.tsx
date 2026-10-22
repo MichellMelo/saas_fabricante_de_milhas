@@ -1,8 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Dashboard } from "@/components/dashboard";
-// @ts-expect-error Global CSS is handled by Next.js, not TypeScript.
-import "./globals.css";
 
 const API_BASE_URL = process.env.API_BASE_URL ?? "http://127.0.0.1:4000";
 
