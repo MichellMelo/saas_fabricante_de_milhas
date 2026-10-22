@@ -3,6 +3,7 @@ import { APP_PIPE } from "@nestjs/core";
 import { ConfigModule } from "@nestjs/config";
 import { resolve } from "node:path";
 import { AuthModule } from "./auth/auth.module";
+import { ClientsModule } from "./clients/clients.module";
 import { HealthController } from "./health.controller";
 import { LoyaltyModule } from "./loyalty/loyalty.module";
 import { PrismaModule } from "./prisma/prisma.module";
@@ -15,6 +16,7 @@ import { PrismaModule } from "./prisma/prisma.module";
     }),
     PrismaModule,
     AuthModule,
+    ClientsModule,
     LoyaltyModule,
   ],
   controllers: [HealthController],
