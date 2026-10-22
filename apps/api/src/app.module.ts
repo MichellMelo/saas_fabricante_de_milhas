@@ -4,6 +4,7 @@ import { ConfigModule } from "@nestjs/config";
 import { resolve } from "node:path";
 import { AuthModule } from "./auth/auth.module";
 import { HealthController } from "./health.controller";
+import { LoyaltyModule } from "./loyalty/loyalty.module";
 import { PrismaModule } from "./prisma/prisma.module";
 
 @Module({
@@ -14,6 +15,7 @@ import { PrismaModule } from "./prisma/prisma.module";
     }),
     PrismaModule,
     AuthModule,
+    LoyaltyModule,
   ],
   controllers: [HealthController],
   providers: [
