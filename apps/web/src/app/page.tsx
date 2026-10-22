@@ -9,6 +9,8 @@ type AuthenticatedUser = {
   email: string;
   name: string | null;
   createdAt: string;
+  isAdmin?: boolean;
+  productAccesses?: { product: "GROUP_VIP" | "AULAO" | "MENTORSHIP"; active: boolean; startsAt: string; expiresAt: string | null }[];
 };
 
 export default async function HomePage() {
