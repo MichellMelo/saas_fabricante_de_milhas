@@ -1,14 +1,26 @@
-const { PrismaClient, LoyaltyProgramType } = require("@prisma/client");
+require("dotenv").config({
+  path: require("node:path").resolve(__dirname, "../../../.env"),
+});
 
+const { PrismaClient, LoyaltyProgramType } = require("@prisma/client");
 const prisma = new PrismaClient();
+
 const programs = [
   { name: "Livelo", code: "LIVELO", type: LoyaltyProgramType.BANK },
   { name: "Esfera", code: "ESFERA", type: LoyaltyProgramType.BANK },
   { name: "Smiles", code: "SMILES", type: LoyaltyProgramType.AIRLINE },
   { name: "LATAM Pass", code: "LATAM_PASS", type: LoyaltyProgramType.AIRLINE },
-  { name: "Azul Fidelidade", code: "AZUL_FIDELIDADE", type: LoyaltyProgramType.AIRLINE },
+  {
+    name: "Azul Fidelidade",
+    code: "AZUL_FIDELIDADE",
+    type: LoyaltyProgramType.AIRLINE,
+  },
   { name: "ALL Accor", code: "ALL_ACCOR", type: LoyaltyProgramType.HOTEL },
-  { name: "Marriott Bonvoy", code: "MARRIOTT_BONVOY", type: LoyaltyProgramType.HOTEL },
+  {
+    name: "Marriott Bonvoy",
+    code: "MARRIOTT_BONVOY",
+    type: LoyaltyProgramType.HOTEL,
+  },
 ];
 
 async function main() {
