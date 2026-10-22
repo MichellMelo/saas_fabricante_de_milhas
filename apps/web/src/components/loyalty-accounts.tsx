@@ -87,10 +87,6 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
 
   useEffect(() => { void loadData(); }, [loadData]);
 
-  const totalPoints = useMemo(
-    () => accounts.reduce((total, account) => total + Number(account.balance), 0),
-    [accounts],
-  );
 
   async function createAccount(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -116,8 +112,8 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
 
   async function createTransaction(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!transactionAccount || !points || Number(points) <= 0) {
-      setError("Informe uma conta e uma quantidade positiva de pontos."); return;
+    if (!transactionAccount || !points || Number(points) === 0 || (transactionType !== "ADJUSTMENT" && Number(points) < 0)) {
+      setError(transactionType === "ADJUSTMENT" ? "Informe um ajuste diferente de zero." : "Informe uma quantidade positiva de pontos."); return;
     }
     setSaving(true); setError(""); setSuccess("");
     try {
@@ -164,8 +160,8 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
         </Card>
         <Card className="border-slate-200 bg-white p-5 shadow-none">
           <div className="flex items-center gap-3 text-slate-500"><ArrowDownLeft size={18} /><span className="text-sm">Saldo consolidado</span></div>
-          <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{formatPoints(totalPoints)}</div>
-          <p className="mt-1 text-xs text-slate-500">Soma nominal; não equivale a valor em reais</p>
+          <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{programs.length}</div>
+          <p className="mt-1 text-xs text-slate-500">Programas disponíveis para cadastrar</p>
         </Card>
         <Card className="border-slate-200 bg-white p-5 shadow-none">
           <div className="flex items-center gap-3 text-slate-500"><ArrowUpRight size={18} /><span className="text-sm">Movimentações</span></div>
@@ -213,14 +209,14 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
               </select>
             </label>
             <label className="grid gap-1.5 text-sm font-medium text-slate-700">Quantidade de pontos
-              <input type="number" min="0.01" step="0.01" required value={points} onChange={(event) => setPoints(event.target.value)} placeholder="Ex.: 2500" className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-normal outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100" />
+              <input type="number" min={transactionType === "ADJUSTMENT" ? undefined : "0.01"} step="0.01" required value={points} onChange={(event) => setPoints(event.target.value)} placeholder="Ex.: 2500" className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-normal outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100" />
             </label>
             <label className="grid gap-1.5 text-sm font-medium text-slate-700">Observação (opcional)
               <input value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={500} placeholder="Detalhes da movimentação" className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-normal outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100" />
             </label>
             <div className="flex items-end"><Button type="submit" disabled={saving || !transactionAccount}>{saving ? "Salvando..." : "Registrar"}</Button></div>
           </form>
-          {transactionType === "ADJUSTMENT" && <p className="mt-3 text-xs text-amber-800">Para ajuste de saldo, informe um valor positivo para aumentar ou um valor negativo para reduzir.</p>}
+          {transactionType === "ADJUSTMENT" && <p className="mt-3 text-xs text-amber-800">Para ajuste de saldo, use valor positivo para aumentar ou negativo para reduzir.</p>}
         </Card>
       )}
 
