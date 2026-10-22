@@ -605,6 +605,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             </>
           ) : route === "programas" ? (
             <LoyaltyAccounts onBack={() => navigate("dashboard")} />
+          ) : route === "programas-admin" ? (
+            <ProgramManagement onBack={() => navigate("dashboard")} />
           ) : (
             <ModulePlaceholder
               route={route}
