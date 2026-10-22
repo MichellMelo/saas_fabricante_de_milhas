@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { LoyaltyAccounts } from "@/components/loyalty-accounts";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -594,6 +595,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
               </motion.section>
               <DashboardFooter reduceMotion={reduceMotion} notify={notify} />
             </>
+          ) : route === "programas" ? (
+            <LoyaltyAccounts onBack={() => navigate("dashboard")} />
           ) : (
             <ModulePlaceholder
               route={route}
