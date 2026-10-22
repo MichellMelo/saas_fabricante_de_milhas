@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { Prisma, ProductType } from "@prisma/client";
+import { ProductType } from "@prisma/client";
 import { JwtService } from "@nestjs/jwt";
 import { createHash } from "node:crypto";
 import { hash, compare } from "bcryptjs";
