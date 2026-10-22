@@ -8,32 +8,21 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   ArrowRight,
   ArrowUpRight,
-  Bell,
   Calculator,
-  ChevronDown,
-  CircleHelp,
   Clock3,
   CreditCard,
   LayoutDashboard,
-  Menu,
   Plane,
-  RefreshCw,
   ShieldCheck,
   Sparkles,
   Star,
-  X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-type RouteKey =
-  | "dashboard"
-  | "programas"
-  | "calculadoras"
-  | "passagens"
-  | "historico";
+type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
   { key: "dashboard", label: "Visão geral", icon: LayoutDashboard },
   {
