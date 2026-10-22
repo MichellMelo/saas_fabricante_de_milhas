@@ -229,9 +229,9 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           aria-label="Fabricante de Milhas, início"
         >
           <img
-            src="/logo-fabricante-de-milhas.svg"
+            src="/logo-sem-background.png"
             alt="Fabricante de Milhas"
-            width="190"
+            width="160"
             height="47"
             className="brand-logo"
           />
