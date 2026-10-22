@@ -65,7 +65,7 @@ export class GroupVipService {
       where: { id },
       data: {
         ...(dto.title !== undefined ? { title: dto.title.trim() } : {}),
-        ...(dto.summary !== undefined ? { summary: dto.summary.trim() || null } : {}),
+        ...(dto.summary !== undefined ? { summary: dto.summary?.trim() || null } : {}),
         ...(dto.body !== undefined ? { body: dto.body.trim() } : {}),
         ...(dto.externalUrl !== undefined ? { externalUrl: dto.externalUrl?.trim() || null } : {}),
       },
