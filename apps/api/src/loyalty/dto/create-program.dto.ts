@@ -1,4 +1,4 @@
-import { IsEnum, IsString, Matches, MaxLength, MinLength } from "class-validator";
+import { IsEnum, IsString, MaxLength, MinLength } from "class-validator";
 import { LoyaltyProgramType } from "@prisma/client";
 
 export class CreateProgramDto {
