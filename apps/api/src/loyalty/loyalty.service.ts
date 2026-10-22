@@ -14,9 +14,9 @@ const DEBIT_TYPES = new Set<TransactionType>([
 export class LoyaltyService {
   constructor(private readonly prisma: PrismaService) {}
 
-  listPrograms() {
+  listPrograms(userId: string) {
     return this.prisma.loyaltyProgram.findMany({
-      where: { active: true },
+      where: { active: true, OR: [{ ownerUserId: null }, { ownerUserId: userId }] },
       orderBy: [{ type: "asc" }, { name: "asc" }],
       select: { id: true, name: true, code: true, type: true },
     });
@@ -24,7 +24,7 @@ export class LoyaltyService {
 
   listProgramsForManagement(userId: string, canManageCatalog: boolean) {
     return this.prisma.loyaltyProgram.findMany({
-      where: canManageCatalog ? {} : { ownerUserId: userId },
+      where: canManageCatalog ? {} : { OR: [{ ownerUserId: null }, { ownerUserId: userId }] },
       orderBy: [{ ownerUserId: "asc" }, { type: "asc" }, { name: "asc" }],
       select: { id: true, name: true, code: true, type: true, active: true, ownerUserId: true },
     });
