@@ -1,9 +1,9 @@
 "use client";
 
-import { CircleHelp, LayoutDashboard, CreditCard, Calculator, Plane, Clock3 } from "lucide-react";
+import { CircleHelp, LayoutDashboard, CreditCard, Calculator, Plane, Clock3, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-export type DashboardRoute = "dashboard" | "programas" | "calculadoras" | "passagens" | "historico" | "programas-admin";
+export type DashboardRoute = "dashboard" | "programas" | "calculadoras" | "passagens" | "historico" | "programas-admin" | "clientes-admin";
 export type SidebarNavItem = { key: DashboardRoute; label: string; icon: LucideIcon; soon?: boolean };
 
 export function DashboardSidebar({ mobileOpen, route, navItems, navigate, notify }: {
