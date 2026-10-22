@@ -34,6 +34,9 @@ export class LoyaltyService {
 
   async createPersonalProgram(userId: string, name: string, type: import("@prisma/client").LoyaltyProgramType) {
     const normalizedName = name.trim();
+    if (normalizedName.length < 2 || normalizedName.length > 80) {
+      throw new BadRequestException("O nome do programa deve ter entre 2 e 80 caracteres.");
+    }
     const slug = normalizedName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 32) || "PROGRAM";
     return this.prisma.loyaltyProgram.create({
       data: {
@@ -49,7 +52,10 @@ export class LoyaltyService {
 
   async createCatalogProgram(name: string, type: import("@prisma/client").LoyaltyProgramType) {
     const normalizedName = name.trim();
-    const code = normalizedName.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 48);
+    if (normalizedName.length < 2 || normalizedName.length > 80) {
+      throw new BadRequestException("O nome do programa deve ter entre 2 e 80 caracteres.");
+    }
+    const code = normalizedName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 48);
     if (!code) throw new BadRequestException("Informe um nome válido para o programa.");
     try {
       return await this.prisma.loyaltyProgram.create({
@@ -67,9 +73,13 @@ export class LoyaltyService {
   async updateCatalogProgram(id: string, name: string, type: import("@prisma/client").LoyaltyProgramType) {
     const program = await this.prisma.loyaltyProgram.findFirst({ where: { id, ownerUserId: null }, select: { id: true } });
     if (!program) throw new NotFoundException("Programa do catálogo não encontrado.");
+    const normalizedName = name.trim();
+    if (normalizedName.length < 2 || normalizedName.length > 80) {
+      throw new BadRequestException("O nome do programa deve ter entre 2 e 80 caracteres.");
+    }
     return this.prisma.loyaltyProgram.update({
       where: { id },
-      data: { name: name.trim(), type },
+      data: { name: normalizedName, type },
       select: { id: true, name: true, code: true, type: true, active: true, ownerUserId: true },
     });
   }
