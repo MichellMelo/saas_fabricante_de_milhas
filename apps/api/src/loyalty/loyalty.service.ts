@@ -24,7 +24,9 @@ export class LoyaltyService {
 
   listProgramsForManagement(userId: string, canManageCatalog: boolean) {
     return this.prisma.loyaltyProgram.findMany({
-      where: canManageCatalog ? {} : { OR: [{ ownerUserId: null }, { ownerUserId: userId }] },
+      where: canManageCatalog
+        ? { OR: [{ ownerUserId: null }, { ownerUserId: userId }] }
+        : { OR: [{ ownerUserId: null, active: true }, { ownerUserId: userId }] },
       orderBy: [{ ownerUserId: "asc" }, { type: "asc" }, { name: "asc" }],
       select: { id: true, name: true, code: true, type: true, active: true, ownerUserId: true },
     });
