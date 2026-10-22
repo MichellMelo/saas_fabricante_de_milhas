@@ -20,7 +20,8 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -250,17 +251,18 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                 </div>
               </motion.section>
               <motion.div
-                className="demo-notice"
                 initial={reduceMotion ? false : { opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.08, duration: 0.4 }}
               >
-                <ShieldCheck size={16} className="shrink-0" />
-                <span>
-                  <strong>Ambiente de demonstração.</strong> Os saldos, valores
-                  e oportunidades abaixo são fictícios e servem apenas para
-                  apresentar a interface.
-                </span>
+                <Alert className="demo-notice">
+                  <ShieldCheck size={16} className="shrink-0" />
+                  <AlertDescription>
+                    <strong>Ambiente de demonstração.</strong> Os saldos, valores
+                    e oportunidades abaixo são fictícios e servem apenas para
+                    apresentar a interface.
+                  </AlertDescription>
+                </Alert>
               </motion.div>
               <motion.section
                 className="kpi-grid"
