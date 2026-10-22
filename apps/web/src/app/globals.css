@@ -1438,3 +1438,43 @@ body { font-size: 15px; }
   .opportunity-copy strong { font-size: 13px; }
   .opportunity-copy > span { font-size: 11px; }
 }
+
+
+/* Dashboard refinements: readable card subtitles and persistent header */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #fffdf8;
+  backdrop-filter: none;
+}
+
+.panel-heading p {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.opportunity-copy > span {
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.opportunity-copy small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.opportunity-value span {
+  font-size: 12px;
+}
+
+.chart-legend,
+.panel-note {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+  .panel-heading p { font-size: 13px; }
+  .opportunity-copy > span { font-size: 12px; }
+}
