@@ -127,30 +127,38 @@ function StatCard({
   trend?: boolean;
 }) {
   return (
-    <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }} transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}><Card className="kpi-card">
-      <div className="kpi-top">
-        <span className="kpi-label">{label}</span>
-        <span className={"kpi-icon " + tone}>
-          <Icon size={17} />
-        </span>
-      </div>
-      <div className="kpi-value">
-        {value} {suffix && <span className="unit">{suffix}</span>}
-      </div>
-      <div className="kpi-foot">{foot}</div>
-      {spark && (
-        <div className="kpi-spark">
-          <Sparkline color={tone === "icon-green" ? "#68b49c" : "#c6a45c"} />
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, y: 12 },
+        visible: { opacity: 1, y: 0 },
+      }}
+      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <Card className="kpi-card">
+        <div className="kpi-top">
+          <span className="kpi-label">{label}</span>
+          <span className={"kpi-icon " + tone}>
+            <Icon size={17} />
+          </span>
         </div>
-      )}
-      {trend && (
-        <div className="opportunity-dots" aria-hidden="true">
-          {Array.from({ length: 12 }, (_, i) => (
-            <i key={i} className={i < 7 ? "active" : ""} />
-          ))}
+        <div className="kpi-value">
+          {value} {suffix && <span className="unit">{suffix}</span>}
         </div>
-      )}
-    </Card></motion.div>
+        <div className="kpi-foot">{foot}</div>
+        {spark && (
+          <div className="kpi-spark">
+            <Sparkline color={tone === "icon-green" ? "#68b49c" : "#c6a45c"} />
+          </div>
+        )}
+        {trend && (
+          <div className="opportunity-dots" aria-hidden="true">
+            {Array.from({ length: 12 }, (_, i) => (
+              <i key={i} className={i < 7 ? "active" : ""} />
+            ))}
+          </div>
+        )}
+      </Card>
+    </motion.div>
   );
 }
 
@@ -221,7 +229,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           aria-label="Fabricante de Milhas, início"
         >
           <img
-            src="/fabricante-de-milhas-logo.svg"
+            src="/logo-fabricante-de-milhas.svg"
             alt="Fabricante de Milhas"
             width="190"
             height="47"
@@ -319,10 +327,20 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             </button>
           </div>
         </header>
-        <motion.div className="page-content" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}>
+        <motion.div
+          className="page-content"
+          initial={reduceMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+        >
           {route === "dashboard" ? (
             <>
-              <motion.section className="welcome-row" initial={reduceMotion ? false : { opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}>
+              <motion.section
+                className="welcome-row"
+                initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              >
                 <div>
                   <div className="eyebrow">
                     <span className="eyebrow-line" /> PAINEL EXECUTIVO
@@ -336,7 +354,12 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   </p>
                 </div>
               </motion.section>
-              <motion.div className="demo-notice" initial={reduceMotion ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.4 }}>
+              <motion.div
+                className="demo-notice"
+                initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.08, duration: 0.4 }}
+              >
                 <ShieldCheck size={16} className="shrink-0" />
                 <span>
                   <strong>Ambiente de demonstração.</strong> Os saldos, valores
@@ -344,7 +367,21 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   apresentar a interface.
                 </span>
               </motion.div>
-              <motion.section className="kpi-grid" aria-label="Indicadores principais" initial="hidden" animate="visible" variants={{ hidden: {}, visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.075, delayChildren: 0.12 } } }}>
+              <motion.section
+                className="kpi-grid"
+                aria-label="Indicadores principais"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: {},
+                  visible: {
+                    transition: {
+                      staggerChildren: reduceMotion ? 0 : 0.075,
+                      delayChildren: 0.12,
+                    },
+                  },
+                }}
+              >
                 <StatCard
                   label="Total de pontos e milhas"
                   value="248.650"
@@ -405,7 +442,16 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   }
                 />
               </motion.section>
-              <motion.section className="content-grid" initial={reduceMotion ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+              <motion.section
+                className="content-grid"
+                initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: 0.24,
+                  duration: 0.5,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
                 <Card className="panel">
                   <div className="panel-heading">
                     <div>
@@ -576,7 +622,16 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   </button>
                 </Card>
               </motion.section>
-              <motion.section className="bottom-grid" initial={reduceMotion ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+              <motion.section
+                className="bottom-grid"
+                initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: 0.32,
+                  duration: 0.5,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
                 <Card className="panel">
                   <div className="panel-heading">
                     <div>
@@ -640,7 +695,12 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   </Button>
                 </Card>
               </motion.section>
-              <motion.footer className="page-footer" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.4 }}>
+              <motion.footer
+                className="page-footer"
+                initial={reduceMotion ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.4 }}
+              >
                 <span>© 2026 Fabricante de Milhas</span>
                 <span>Construído para decisões mais inteligentes.</span>
                 <button
@@ -663,11 +723,19 @@ export function Dashboard({ user }: { user: DashboardUser }) {
         </motion.div>
       </main>
       <AnimatePresence>
-      {toast && (
-        <motion.div className="toast" role="status" aria-live="polite" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.18 }}>
-          {toast}
-        </motion.div>
-      )}
+        {toast && (
+          <motion.div
+            className="toast"
+            role="status"
+            aria-live="polite"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.18 }}
+          >
+            {toast}
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
