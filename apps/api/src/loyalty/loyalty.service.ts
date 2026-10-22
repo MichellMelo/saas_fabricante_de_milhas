@@ -80,6 +80,9 @@ export class LoyaltyService {
     if (dto.type !== TransactionType.ADJUSTMENT && inputPoints.lte(0)) {
       throw new BadRequestException("Informe uma quantidade positiva de pontos.");
     }
+    if (inputPoints.isZero()) {
+      throw new BadRequestException("A movimentação precisa ter uma quantidade diferente de zero.");
+    }
 
     const delta = DEBIT_TYPES.has(dto.type)
       ? inputPoints.abs().negated()
@@ -89,13 +92,24 @@ export class LoyaltyService {
     return this.prisma.$transaction(async (tx) => {
       const account = await tx.loyaltyAccount.findFirst({
         where: { id: accountId, userId },
-        select: { id: true, balance: true },
+        select: { id: true },
       });
       if (!account) throw new NotFoundException("Conta de fidelidade não encontrada.");
 
-      const nextBalance = account.balance.add(delta);
-      if (nextBalance.lt(0)) {
-        throw new BadRequestException("A movimentação deixaria o saldo negativo.");
+      // Conditional atomic update prevents concurrent debits from overspending
+      // and avoids lost balance updates when two transactions arrive together.
+      const updated = delta.lt(0)
+        ? await tx.loyaltyAccount.updateMany({
+            where: { id: account.id, userId, balance: { gte: delta.abs() } },
+            data: { balance: { decrement: delta.abs() }, lastBalanceAt: occurredAt },
+          })
+        : await tx.loyaltyAccount.updateMany({
+            where: { id: account.id, userId },
+            data: { balance: { increment: delta }, lastBalanceAt: occurredAt },
+          });
+
+      if (updated.count !== 1) {
+        throw new BadRequestException("Saldo insuficiente para essa movimentação.");
       }
 
       const transaction = await tx.pointTransaction.create({
@@ -110,11 +124,11 @@ export class LoyaltyService {
           notes: dto.notes?.trim() || null,
         },
       });
-      await tx.loyaltyAccount.update({
+      const updatedAccount = await tx.loyaltyAccount.findUniqueOrThrow({
         where: { id: account.id },
-        data: { balance: nextBalance, lastBalanceAt: occurredAt },
+        select: { balance: true },
       });
-      return { transaction, balance: nextBalance };
+      return { transaction, balance: updatedAccount.balance };
     });
   }
 }
