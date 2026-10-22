@@ -1,16 +1,21 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard, AuthenticatedRequest } from "./jwt-auth.guard";
+import { AcceptInvitationDto } from "./dto/accept-invitation.dto";
 import { LoginDto } from "./dto/login.dto";
-import { RegisterDto } from "./dto/register.dto";
 
 @Controller("auth")
 export class AuthController {
  constructor(private readonly auth: AuthService) {}
 
  @Post("register")
- register(@Body() dto: RegisterDto) {
-  return this.auth.register(dto);
+ register() {
+  return this.auth.register();
+ }
+
+ @Post("accept-invitation")
+ acceptInvitation(@Body() dto: AcceptInvitationDto) {
+  return this.auth.acceptInvitation(dto);
  }
 
  @Post("login")
