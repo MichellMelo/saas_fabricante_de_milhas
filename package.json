@@ -1,15 +1,26 @@
 {
-  "name":"fabricante-de-milhas","version":"0.3.0","private":true,
-  "workspaces":["apps/web","apps/api"],
-  "scripts":{
-    "dev":"concurrently -k -n web,api -c blue,green \"npm run dev --workspace @fabricante/web\" \"npm run start:dev --workspace @fabricante/api\"",
-    "dev:web":"npm run dev --workspace @fabricante/web","dev:api":"npm run start:dev --workspace @fabricante/api",
-    "build":"npm run build --workspace @fabricante/web && npm run build --workspace @fabricante/api",
-    "typecheck":"npm run typecheck --workspace @fabricante/web && npm run typecheck --workspace @fabricante/api",
-    "prisma:generate":"npm run prisma:generate --workspace @fabricante/api",
-    "prisma:migrate":"npm run prisma:migrate --workspace @fabricante/api",
-    "prisma:deploy":"npm run prisma:deploy --workspace @fabricante/api"
+  "name": "fabricante-de-milhas",
+  "version": "0.3.0",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "apps/api"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n web,api -c blue,green \"npm run dev --workspace @fabricante/web\" \"npm run start:dev --workspace @fabricante/api\"",
+    "dev:web": "npm run dev --workspace @fabricante/web",
+    "dev:api": "npm run start:dev --workspace @fabricante/api",
+    "build": "npm run build --workspace @fabricante/web && npm run build --workspace @fabricante/api",
+    "typecheck": "npm run typecheck --workspace @fabricante/web && npm run typecheck --workspace @fabricante/api",
+    "prisma:generate": "npm run prisma:generate --workspace @fabricante/api",
+    "prisma:migrate": "npm run prisma:migrate --workspace @fabricante/api",
+    "prisma:deploy": "npm run prisma:deploy --workspace @fabricante/api",
+    "prisma:seed": "npm run prisma:seed --workspace @fabricante/api"
   },
-  "devDependencies":{"concurrently":"^9.1.2"},
-  "engines":{"node":">=20.11"}
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20.11"
+  }
 }
