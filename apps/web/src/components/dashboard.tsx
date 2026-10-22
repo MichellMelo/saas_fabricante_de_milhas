@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { DashboardHeader } from "@/components/dashboard-header";
+import { DashboardSidebar, type DashboardRoute, type SidebarNavItem } from "@/components/dashboard-sidebar";
+import { DashboardFooter } from "@/components/dashboard-footer";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   ArrowRight,
@@ -31,12 +34,7 @@ type RouteKey =
   | "calculadoras"
   | "passagens"
   | "historico";
-const navItems: {
-  key: RouteKey;
-  label: string;
-  icon: LucideIcon;
-  soon?: boolean;
-}[] = [
+const navItems: SidebarNavItem[] = [
   { key: "dashboard", label: "Visão geral", icon: LayoutDashboard },
   {
     key: "programas",
@@ -219,114 +217,22 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           onClick={() => setMobileOpen(false)}
         />
       )}
-      <aside
-        className={"sidebar " + (mobileOpen ? "is-open" : "")}
-        aria-label="Navegação principal"
-      >
-        <button
-          className="brand text-left"
-          onClick={() => navigate("dashboard")}
-          aria-label="Fabricante de Milhas, início"
-        >
-          <img
-            src="/logo-sem-background.png"
-            alt="Fabricante de Milhas"
-            width="160"
-            height="47"
-            className="brand-logo"
-          />
-        </button>
-        <div className="workspace-label">ESPAÇO DE TRABALHO</div>
-        <nav className="nav-list">
-          {navItems.map(({ key, label, icon: Icon, soon }) => (
-            <button
-              key={key}
-              className={"nav-item " + (route === key ? "is-active" : "")}
-              onClick={() => navigate(key)}
-              aria-current={route === key ? "page" : undefined}
-            >
-              <Icon size={18} />
-              <span>{label}</span>
-              {soon && <span className="nav-soon">EM BREVE</span>}
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar-bottom">
-          <div className="help-card">
-            <CircleHelp size={18} className="help-icon" />
-            <div>
-              <strong>Precisa de ajuda?</strong>
-              <p>Entenda como usar seu painel.</p>
-              <button
-                className="text-link"
-                onClick={() =>
-                  notify(
-                    "Dica: compare custo por milheiro, taxas e valor real do resgate antes de decidir.",
-                  )
-                }
-              >
-                Ver guia rápido ↗
-              </button>
-            </div>
-          </div>
-          <div className="sidebar-footer">
-            <span className="status-dot" /> Ambiente de demonstração{" "}
-            <span className="version">v0.2</span>
-          </div>
-        </div>
-      </aside>
+      <DashboardSidebar
+        mobileOpen={mobileOpen}
+        route={route}
+        navItems={navItems}
+        navigate={navigate}
+        notify={notify}
+      />
       <main className="main-area">
-        <header className="topbar">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="menu-toggle"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? "Fechar navegação" : "Abrir navegação"}
-          >
-            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-          </Button>
-          <div className="breadcrumbs">
-            <span>Workspace</span>
-            <span className="text-slate-300">/</span>
-            <strong>
-              {route === "dashboard" ? "Visão geral" : routeCopy[route].title}
-            </strong>
-          </div>
-          <div className="topbar-actions">
-            <Badge variant="gold" className="demo-pill">
-              <span /> DEMONSTRAÇÃO
-            </Badge>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Ver notificações"
-              className="relative"
-              onClick={() =>
-                notify(
-                  "Você está em um ambiente de demonstração. Não há notificações reais.",
-                )
-              }
-            >
-              <Bell size={18} />
-              <i className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full border border-white bg-gold" />
-            </Button>
-            <div className="profile-chip">
-              <span className="avatar">FM</span>
-              <span className="profile-name">
-                {user.name?.trim() || user.email}
-              </span>
-              <ChevronDown size={13} className="chevron" />
-            </div>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50"
-            >
-              Sair
-            </button>
-          </div>
-        </header>
+        <DashboardHeader
+          title={route === "dashboard" ? "Visão geral" : routeCopy[route].title}
+          mobileOpen={mobileOpen}
+          onToggleMobile={() => setMobileOpen(!mobileOpen)}
+          notify={notify}
+          user={user}
+          onLogout={handleLogout}
+        />
         <motion.div
           className="page-content"
           initial={reduceMotion ? false : { opacity: 0 }}
@@ -695,24 +601,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   </Button>
                 </Card>
               </motion.section>
-              <motion.footer
-                className="page-footer"
-                initial={reduceMotion ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.4 }}
-              >
-                <span>© 2026 Fabricante de Milhas</span>
-                <span>Construído para decisões mais inteligentes.</span>
-                <button
-                  onClick={() =>
-                    notify(
-                      "Esta versão não coleta nem armazena dados pessoais.",
-                    )
-                  }
-                >
-                  Privacidade e segurança
-                </button>
-              </motion.footer>
+              <DashboardFooter reduceMotion={reduceMotion} notify={notify} />
             </>
           ) : (
             <ModulePlaceholder
