@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, ForbiddenException, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, ForbiddenException, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CreateGroupVipPostDto } from "./dto/create-group-vip-post.dto";
 import { SetGroupVipPublicationDto } from "./dto/set-group-vip-publication.dto";
@@ -43,7 +43,7 @@ export class GroupVipController {
     return this.groupVip.setPublished(id, dto.published);
   }
 
-  @Delete("posts/:id")
+  @Post("posts/:id/delete")
   deletePost(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
     this.assertAdmin(request);
     return this.groupVip.deletePost(id);
