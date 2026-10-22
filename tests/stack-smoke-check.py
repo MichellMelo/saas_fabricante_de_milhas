@@ -17,6 +17,10 @@ workflow = read(".github/workflows/validate.yml")
 auth_controller = read("apps/api/src/auth/auth.controller.ts")
 auth_service = read("apps/api/src/auth/auth.service.ts")
 auth_guard = read("apps/api/src/auth/jwt-auth.guard.ts")
+clients_controller = read("apps/api/src/clients/clients.controller.ts")
+clients_service = read("apps/api/src/clients/clients.service.ts")
+accept_invitation_form = read("apps/web/src/components/accept-invitation-form.tsx")
+client_management = read("apps/web/src/components/client-management.tsx")
 migration = read("apps/api/prisma/migrations/20261018000000_initial_auth_schema/migration.sql")
 
 checks = {
@@ -30,6 +34,11 @@ checks = {
  "Initial versioned migration includes core tables and foreign keys": all(token in migration for token in ('CREATE TABLE "User"', 'CREATE TABLE "LoyaltyAccount"', 'CREATE TABLE "PointTransaction"', 'CREATE TABLE "FlightRecord"', 'FOREIGN KEY')),
  "Auth endpoints and JWT guard are wired": all(token in auth_controller for token in ('Post("register")', 'Post("login")', 'Get("me")', "JwtAuthGuard")) and "verifyAsync" in auth_guard,
  "Passwords are hashed and checked with bcrypt": "hash(dto.password, 12)" in auth_service and "compare(dto.password, user.passwordHash)" in auth_service,
+ "Public registration is disabled and invitation acceptance is available": "O cadastro é feito somente por convite" in auth_service and 'Post("accept-invitation")' in auth_controller,
+ "Product entitlements and hashed invitations are modeled": all(token in schema for token in ("enum ProductType", "model UserProductAccess", "model ClientInvitation", "tokenHash String @unique")),
+ "Client management API checks administrator allowlist": "ADMIN_EMAILS" in clients_controller and 'Get("clients")' in clients_controller and 'Post("invitations")' in clients_controller,
+ "Invitation acceptance grants selected products": "tx.userProductAccess.createMany" in auth_service and 'createHash("sha256")' in auth_service,
+ "Frontend supports invite activation and product controls": "accept-invitation" in accept_invitation_form and all(token in client_management for token in ("GROUP_VIP", "AULAO", "MENTORSHIP", "product-access")),
  "JWT secret is required and documented": "JWT_SECRET" in read("apps/api/src/main.ts") and "JWT_SECRET" in read(".env.example"),
  "NestJS health endpoint and API prefix exist": '@Controller("health")' in read("apps/api/src/health.controller.ts") and 'setGlobalPrefix("api")' in read("apps/api/src/main.ts"),
  "Dashboard uses Lucide and shadcn primitives": 'from "lucide-react"' in dashboard and 'from "@/components/ui/button"' in dashboard and 'from "@/components/ui/card"' in dashboard,
