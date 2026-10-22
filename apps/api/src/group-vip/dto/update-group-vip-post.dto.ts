@@ -10,7 +10,7 @@ export class UpdateGroupVipPostDto {
   @IsOptional()
   @IsString()
   @MaxLength(300)
-  summary?: string;
+  summary?: string | null;
 
   @IsOptional()
   @IsString()
