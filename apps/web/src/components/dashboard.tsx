@@ -31,7 +31,6 @@ const navItems: SidebarNavItem[] = [
     key: "programas",
     label: "Programas e saldos",
     icon: CreditCard,
-    soon: true,
   },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator, soon: true },
   { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
