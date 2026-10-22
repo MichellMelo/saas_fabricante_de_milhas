@@ -17,6 +17,7 @@ import {
   Sparkles,
   Star,
   Settings2,
+  Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoyaltyAccounts } from "@/components/loyalty-accounts";
 import { ProgramManagement } from "@/components/program-management";
+import { ClientManagement } from "@/components/client-management";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -35,6 +37,7 @@ const navItems: SidebarNavItem[] = [
     icon: CreditCard,
   },
   { key: "programas-admin", label: "Cadastro de programas", icon: Settings2 },
+  { key: "clientes-admin", label: "Clientes e produtos", icon: Users },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator, soon: true },
   { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
   { key: "historico", label: "Histórico", icon: Clock3, soon: true },
@@ -55,6 +58,12 @@ const routeCopy: Record<
     eyebrow: "CATÁLOGO E PERSONALIZAÇÃO",
     description: "Gerencie programas do catálogo geral (com permissão administrativa) e crie programas personalizados para sua carteira.",
     icon: Settings2,
+  },
+  "clientes-admin": {
+    title: "Clientes e produtos",
+    eyebrow: "GESTÃO DE ACESSOS",
+    description: "Convide clientes e gerencie o acesso ao Grupo VIP, aulões e mentorias.",
+    icon: Users,
   },
   calculadoras: {
     title: "Calculadoras",
@@ -164,6 +173,7 @@ type DashboardUser = {
   email: string;
   name: string | null;
   createdAt: string;
+  isAdmin?: boolean;
 };
 
 export function Dashboard({ user }: { user: DashboardUser }) {
@@ -219,7 +229,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
       <DashboardSidebar
         mobileOpen={mobileOpen}
         route={route}
-        navItems={navItems}
+        navItems={user.isAdmin ? navItems : navItems.filter((item) => item.key !== "clientes-admin" && item.key !== "programas-admin")}
         navigate={navigate}
         notify={notify}
       />
@@ -607,6 +617,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <LoyaltyAccounts onBack={() => navigate("dashboard")} />
           ) : route === "programas-admin" ? (
             <ProgramManagement onBack={() => navigate("dashboard")} />
+          ) : route === "clientes-admin" ? (
+            <ClientManagement onBack={() => navigate("dashboard")} />
           ) : (
             <ModulePlaceholder
               route={route}
