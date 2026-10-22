@@ -39,30 +39,33 @@ O projeto Supabase `saas_fabricante_de_milhas` é o banco remoto de desenvolvime
 
 A conexão e o comando `migrate resolve` devem apontar para o projeto remoto correto. Não execute `prisma migrate dev` nesse banco remoto.
 
-## Autenticação implementada
+## Autenticação, convites e produtos
 
-- `POST /api/auth/register`: cria conta com e-mail normalizado e senha armazenada com hash bcrypt.
 - `POST /api/auth/login`: valida credenciais e devolve token JWT com validade de uma hora.
-- `GET /api/auth/me`: endpoint protegido, requer `Authorization: Bearer <token>`.
-- DTOs são validados globalmente; propriedades não declaradas são rejeitadas.
-- O identificador do usuário autenticado vem do token validado, não de um campo enviado no corpo da requisição.
+- `POST /api/auth/register`: cadastro público desabilitado; retorna acesso negado.
+- `POST /api/auth/accept-invitation`: aceita um convite válido, define senha e ativa a conta.
+- `GET /api/auth/me`: endpoint protegido; retorna o usuário atual, sinalizador administrativo e os acessos a produtos vigentes.
+- `GET /api/admin/clients`: lista clientes e permissões; somente e-mails em `ADMIN_EMAILS`.
+- `GET /api/admin/invitations` e `POST /api/admin/invitations`: consulta convites pendentes e cria convites de uso único, válidos por sete dias.
+- `POST /api/admin/clients/:id/product-access`: concede ou revoga acesso ao Grupo VIP, aulões ou mentorias; somente administradores.
+- DTOs são validados globalmente; propriedades não declaradas são rejeitadas. O identificador do usuário autenticado vem do token validado, não de um campo enviado pelo cliente.
 
-Exemplo de registro:
+Configure no arquivo local `.env`:
+- `ADMIN_EMAILS`: lista separada por vírgulas dos e-mails administrativos. O e-mail deve corresponder ao usuário que fará login.
+- `WEB_BASE_URL`: origem pública do frontend usada para gerar links de convite (por exemplo, `http://localhost:3000` no desenvolvimento).
 
-~~~json
-{ "email": "voce@example.com", "password": "uma-senha-longa-com-12", "name": "Seu nome" }
-~~~
+Na tela **Clientes e produtos**, o administrador escolhe os produtos liberados e copia o link gerado para enviá-lo ao cliente por um canal seguro. O token em texto puro é exibido apenas na criação; no banco fica armazenado somente seu hash. Ainda não há provedor de e-mail integrado, portanto o envio é manual.
 
-A API ainda não implementa endpoints CRUD para contas de fidelidade, transações ou voos. Quando forem criados, cada consulta e mutação deve filtrar por `userId` derivado da sessão; nunca confiar em `userId` fornecido pelo cliente.
+Os produtos são registrados como permissões individuais por usuário, com status ativo e datas opcionais. `GET /api/auth/me` retorna apenas os acessos vigentes. As rotas de conteúdo do Grupo VIP, aulões e mentorias ainda precisam ser implementadas e protegidas com essas permissões antes de disponibilizar conteúdo exclusivo.
 
 ## Banco de dados
 
-A migração inicial versionada fica em `apps/api/prisma/migrations`. O schema contém User, LoyaltyProgram, LoyaltyAccount, PointTransaction e FlightRecord. A migração cria a estrutura completa inicial e inclui `passwordHash` para autenticação. Não aplique essa migração sobre um banco já existente com tabelas criadas manualmente sem antes revisar o estado do banco e planejar o baseline.
+A migração inicial versionada fica em `apps/api/prisma/migrations`. O schema contém User, LoyaltyProgram, LoyaltyAccount, PointTransaction, FlightRecord, UserProductAccess e ClientInvitation. A migração cria a estrutura completa inicial e inclui `passwordHash` para autenticação. Não aplique essa migração sobre um banco já existente com tabelas criadas manualmente sem antes revisar o estado do banco e planejar o baseline.
 
 ## Limites e segurança
 
 - O dashboard ainda usa dados fictícios e não consome a API.
-- Não há verificação de e-mail, recuperação de senha, rate limiting, MFA, revogação de sessão nem fluxo de exclusão de conta.
+- Não há verificação automática de e-mail, envio automático de convites, recuperação de senha, rate limiting, MFA, revogação de sessão nem fluxo de exclusão de conta.
 - A autenticação é uma fundação inicial, não uma auditoria de segurança. Antes de uso público, adicionar rate limiting, política de senha e testes de integração/segurança.
 - Não cadastrar CPF, credenciais de programas de fidelidade ou dados financeiros reais antes de concluir a revisão de privacidade e segurança.
 - O sistema ainda não integra programas de fidelidade nem consulta promoções reais.
