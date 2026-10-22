@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Copy, RefreshCw, ShieldCheck, UserPlus, Users } from "lucide-react";
 
 const PRODUCTS = [
@@ -60,7 +60,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
     setProducts((current) => current.includes(product) ? current.filter((item) => item !== product) : [...current, product]);
   }
 
-  async function createInvitation(event: React.FormEvent<HTMLFormElement>) {
+  async function createInvitation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
     setError("");
