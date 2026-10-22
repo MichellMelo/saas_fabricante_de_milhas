@@ -20,6 +20,11 @@ enum TransactionType {
  EXPIRATION
  ADJUSTMENT
 }
+enum ProductType {
+ GROUP_VIP
+ AULAO
+ MENTORSHIP
+}
 model User {
  id String @id @default(cuid())
  email String @unique
@@ -31,6 +36,8 @@ model User {
  customLoyaltyPrograms LoyaltyProgram[]
  transactions PointTransaction[]
  flights FlightRecord[]
+ productAccesses UserProductAccess[]
+ sentInvitations ClientInvitation[] @relation("InvitationSender")
 }
 model LoyaltyProgram {
  id String @id @default(cuid())
@@ -92,4 +99,32 @@ model FlightRecord {
  createdAt DateTime @default(now())
  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
  @@index([userId, departureAt])
+}
+model UserProductAccess {
+ id String @id @default(cuid())
+ userId String
+ product ProductType
+ active Boolean @default(true)
+ startsAt DateTime @default(now())
+ expiresAt DateTime?
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ @@unique([userId, product])
+ @@index([product, active])
+ @@index([userId, active])
+}
+model ClientInvitation {
+ id String @id @default(cuid())
+ email String
+ name String?
+ tokenHash String @unique
+ productTypes ProductType[]
+ invitedByUserId String
+ expiresAt DateTime
+ acceptedAt DateTime?
+ createdAt DateTime @default(now())
+ invitedBy User @relation("InvitationSender", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+ @@index([email, acceptedAt])
+ @@index([expiresAt])
 }
