@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Settings2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoyaltyAccounts } from "@/components/loyalty-accounts";
+import { ProgramManagement } from "@/components/program-management";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -46,6 +48,12 @@ const routeCopy: Record<
     description:
       "Centralize seus programas de fidelidade e acompanhe seus saldos. O cadastro e a persistência serão implementados em uma próxima fase.",
     icon: CreditCard,
+  },
+  "programas-admin": {
+    title: "Cadastro de programas",
+    eyebrow: "CATÁLOGO E PERSONALIZAÇÃO",
+    description: "Gerencie programas do catálogo geral (com permissão administrativa) e crie programas personalizados para sua carteira.",
+    icon: Settings2,
   },
   calculadoras: {
     title: "Calculadoras",
