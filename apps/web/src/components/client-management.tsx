@@ -46,17 +46,17 @@ function isAccessActive(access?: Access) {
   return Boolean(access?.active && new Date(access.startsAt) <= new Date() && (!access.expiresAt || new Date(access.expiresAt) > new Date()));
 }
 
-function ProductAccessEditor({ product, label, access, onSave }: {
-  product: Product;
+function ProductAccessEditor({ label, access, onSave }: {
   label: string;
   access?: Access;
   onSave: (active: boolean, period: Period, startsAt: string, expiresAt: string) => Promise<void>;
 }) {
   const [active, setActive] = useState(isAccessActive(access));
-  const [period, setPeriod] = useState<Period>(access?.period ?? "MONTHLY");
+  const defaultPeriod: Period = access?.period ?? (access?.expiresAt ? "MONTHLY" : "CUSTOM");
+  const [period, setPeriod] = useState<Period>(defaultPeriod);
   const initialStart = toDateInput(access?.startsAt) || toDateInput(new Date().toISOString());
   const [startsAt, setStartsAt] = useState(initialStart);
-  const initialMonths = PERIODS.find((item) => item.value === (access?.period ?? "MONTHLY"))?.months ?? 1;
+  const initialMonths = PERIODS.find((item) => item.value === defaultPeriod)?.months ?? null;
   const [expiresAt, setExpiresAt] = useState(toDateInput(access?.expiresAt) || addMonthsToDate(initialStart, initialMonths));
   const [saving, setSaving] = useState(false);
 
@@ -289,7 +289,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
               <div className="mt-4 space-y-3">
                 {PRODUCTS.map((product) => {
                   const access = client.productAccesses.find((item) => item.product === product.value);
-                  return <ProductAccessEditor key={product.value} product={product.value} label={product.label} access={access} onSave={(active, period, startsAt, expiresAt) => updateAccess(client, product.value, active, period, startsAt, expiresAt)} />;
+                  return <ProductAccessEditor key={product.value} label={product.label} access={access} onSave={(active, period, startsAt, expiresAt) => updateAccess(client, product.value, active, period, startsAt, expiresAt)} />;
                 })}
               </div>
             </article>)}
