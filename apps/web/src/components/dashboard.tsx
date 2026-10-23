@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { DashboardSidebar, type DashboardRoute, type SidebarNavItem } from "@/components/dashboard-sidebar";
 import { DashboardFooter } from "@/components/dashboard-footer";
@@ -19,6 +19,9 @@ import {
   Settings2,
   Users,
   MessageCircle,
+  Video,
+  GraduationCap,
+  Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +32,8 @@ import { LoyaltyAccounts } from "@/components/loyalty-accounts";
 import { ProgramManagement } from "@/components/program-management";
 import { ClientManagement } from "@/components/client-management";
 import { GroupVipContent } from "@/components/group-vip-content";
+import { ProductContent } from "@/components/product-content";
+import { FinanceDashboard } from "@/components/finance-dashboard";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -40,7 +45,10 @@ const navItems: SidebarNavItem[] = [
   },
   { key: "programas-admin", label: "Cadastro de programas", icon: Settings2 },
   { key: "clientes-admin", label: "Clientes e produtos", icon: Users },
+  { key: "financeiro", label: "Financeiro", icon: Wallet },
   { key: "grupo-vip", label: "Grupo VIP", icon: MessageCircle },
+  { key: "auloes", label: "Aulões", icon: Video },
+  { key: "mentorias", label: "Mentorias", icon: GraduationCap },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator, soon: true },
   { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
   { key: "historico", label: "Histórico", icon: Clock3, soon: true },
@@ -68,11 +76,29 @@ const routeCopy: Record<
     description: "Convide clientes e gerencie o acesso ao Grupo VIP, aulões e mentorias.",
     icon: Users,
   },
+  financeiro: {
+    title: "Financeiro",
+    eyebrow: "CONTROLE DE RECEBIMENTOS",
+    description: "Acompanhe recebimentos, cobranças pendentes e valores vencidos.",
+    icon: Wallet,
+  },
   "grupo-vip": {
     title: "Grupo VIP",
     eyebrow: "CONTEÚDO EXCLUSIVO",
     description: "Publicações e materiais exclusivos para membros com acesso ativo.",
     icon: MessageCircle,
+  },
+  auloes: {
+    title: "Aulões",
+    eyebrow: "AULAS E MATERIAIS",
+    description: "Acesse gravações, materiais e orientações dos aulões disponíveis para sua conta.",
+    icon: Video,
+  },
+  mentorias: {
+    title: "Mentorias",
+    eyebrow: "ACOMPANHAMENTO EXCLUSIVO",
+    description: "Consulte materiais, orientações e links disponibilizados para sua mentoria.",
+    icon: GraduationCap,
   },
   calculadoras: {
     title: "Calculadoras",
@@ -183,6 +209,7 @@ type DashboardUser = {
   name: string | null;
   createdAt: string;
   isAdmin?: boolean;
+  productAccesses?: { product: "GROUP_VIP" | "AULAO" | "MENTORSHIP"; active: boolean; startsAt: string; expiresAt: string | null }[];
 };
 
 export function Dashboard({ user }: { user: DashboardUser }) {
@@ -192,6 +219,18 @@ export function Dashboard({ user }: { user: DashboardUser }) {
   const [period, setPeriod] = useState("30");
   const [toast, setToast] = useState("");
   const [updated, setUpdated] = useState(false);
+
+  useEffect(() => {
+    const syncRouteFromHash = () => {
+      const hash = window.location.hash.slice(1);
+      if (navItems.some((item) => item.key === hash)) {
+        setRoute(hash as RouteKey);
+      }
+    };
+    syncRouteFromHash();
+    window.addEventListener("hashchange", syncRouteFromHash);
+    return () => window.removeEventListener("hashchange", syncRouteFromHash);
+  }, []);
   function notify(message: string) {
     setToast(message);
     window.setTimeout(() => setToast(""), 3200);
@@ -238,7 +277,13 @@ export function Dashboard({ user }: { user: DashboardUser }) {
       <DashboardSidebar
         mobileOpen={mobileOpen}
         route={route}
-        navItems={user.isAdmin ? navItems : navItems.filter((item) => item.key !== "clientes-admin")}
+        navItems={user.isAdmin ? navItems : navItems.filter((item) => {
+          if (item.key === "clientes-admin" || item.key === "financeiro" || item.key === "programas-admin") return false;
+          if (item.key === "grupo-vip") return user.productAccesses?.some((access) => access.product === "GROUP_VIP") ?? false;
+          if (item.key === "auloes") return user.productAccesses?.some((access) => access.product === "AULAO") ?? false;
+          if (item.key === "mentorias") return user.productAccesses?.some((access) => access.product === "MENTORSHIP") ?? false;
+          return true;
+        })}
         navigate={navigate}
         notify={notify}
       />
@@ -286,7 +331,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                 <Alert className="demo-notice">
                   <ShieldCheck size={16} className="shrink-0" />
                   <AlertDescription>
-                    <strong>Ambiente de demonstração.</strong> Os saldos, valores
+                    <strong>AMBIENTE DE DEMONSTRAÇÃO.</strong> Os saldos, valores
                     e oportunidades abaixo são fictícios e servem apenas para
                     apresentar a interface.
                   </AlertDescription>
@@ -628,8 +673,14 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <ProgramManagement onBack={() => navigate("dashboard")} />
           ) : route === "clientes-admin" ? (
             <ClientManagement onBack={() => navigate("dashboard")} />
+          ) : route === "financeiro" ? (
+            user.isAdmin ? <FinanceDashboard /> : <ModulePlaceholder route="historico" onBack={() => navigate("dashboard")} />
           ) : route === "grupo-vip" ? (
             <GroupVipContent isAdmin={Boolean(user.isAdmin)} />
+          ) : route === "auloes" ? (
+            <ProductContent isAdmin={Boolean(user.isAdmin)} product="AULAO" />
+          ) : route === "mentorias" ? (
+            <ProductContent isAdmin={Boolean(user.isAdmin)} product="MENTORSHIP" />
           ) : (
             <ModulePlaceholder
               route={route}

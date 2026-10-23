@@ -61,6 +61,7 @@ model User {
  payments ClientPayment[]
  sentInvitations ClientInvitation[] @relation("InvitationSender")
  authoredGroupVipPosts GroupVipPost[]
+ authoredProductContent ProductContent[]
 }
 model LoyaltyProgram {
  id String @id @default(cuid())
@@ -184,4 +185,21 @@ model ClientPayment {
  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
  @@index([userId, dueAt])
  @@index([status, dueAt])
+}
+
+model ProductContent {
+ id String @id @default(cuid())
+ product ProductType
+ title String @db.VarChar(180)
+ summary String? @db.VarChar(300)
+ body String @db.Text
+ externalUrl String? @db.VarChar(2048)
+ isPublished Boolean @default(false)
+ publishedAt DateTime?
+ authorId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ author User @relation(fields: [authorId], references: [id], onDelete: Restrict)
+ @@index([product, isPublished, publishedAt])
+ @@index([authorId, createdAt])
 }

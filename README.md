@@ -35,7 +35,7 @@ O projeto Supabase `saas_fabricante_de_milhas` é o banco remoto de desenvolvime
 3. Como o schema inicial deste projeto foi criado diretamente no Supabase, registre-o como já aplicado no histórico do Prisma antes de executar futuras migrações:
    `npx prisma migrate resolve --applied 20261018000000_initial_auth_schema --schema apps/api/prisma/schema.prisma`
 4. Confira o estado com `npx prisma migrate status --schema apps/api/prisma/schema.prisma` e gere o client com `npm run prisma:generate`.
-5. A proteção específica do Supabase está documentada em `supabase/migrations/20261019021132_rls_and_rpc_security.sql`. As tabelas têm RLS ativado e não concedem acesso direto às roles `anon` e `authenticated`; o acesso da aplicação ocorre pela API NestJS via Prisma. Não conecte o frontend diretamente a essas tabelas sem desenhar autenticação Supabase e políticas RLS por usuário.
+5. A proteção inicial do Supabase está documentada em `supabase/migrations/20261019021132_rls_and_rpc_security.sql`. Após criar novas tabelas, aplique também as migrações de segurança correspondentes, incluindo `supabase/migrations/20261023210000_product_content_rls.sql` para `ProductContent`. O acesso da aplicação ocorre pela API NestJS via Prisma. Não conecte o frontend diretamente às tabelas sem desenhar autenticação Supabase e políticas RLS por usuário.
 
 A conexão e o comando `migrate resolve` devem apontar para o projeto remoto correto. Não execute `prisma migrate dev` nesse banco remoto.
 
@@ -48,6 +48,8 @@ A conexão e o comando `migrate resolve` devem apontar para o projeto remoto cor
 - `GET /api/admin/clients`: lista clientes e permissões; somente e-mails em `ADMIN_EMAILS`.
 - `GET /api/admin/invitations` e `POST /api/admin/invitations`: consulta convites pendentes e cria convites de uso único, válidos por sete dias.
 - `POST /api/admin/clients/:id/product-access`: concede ou revoga acesso ao Grupo VIP, aulões ou mentorias; somente administradores.
+- `GET /api/group-vip/posts` e operações administrativas de publicação: conteúdo do Grupo VIP, protegido por acesso vigente.
+- `GET /api/product-content/AULAO` e `GET /api/product-content/MENTORSHIP`: conteúdo de aulões e mentorias; operações de criação, edição, publicação e exclusão são exclusivas de administradores e exigem a migração `20261023200000_product_content`.
 - DTOs são validados globalmente; propriedades não declaradas são rejeitadas. O identificador do usuário autenticado vem do token validado, não de um campo enviado pelo cliente.
 
 Configure no arquivo local `.env`:
@@ -56,11 +58,11 @@ Configure no arquivo local `.env`:
 
 Na tela **Clientes e produtos**, o administrador escolhe os produtos liberados e copia o link gerado para enviá-lo ao cliente por um canal seguro. O token em texto puro é exibido apenas na criação; no banco fica armazenado somente seu hash. Ainda não há provedor de e-mail integrado, portanto o envio é manual.
 
-Os produtos são registrados como permissões individuais por usuário, com status ativo e datas opcionais. `GET /api/auth/me` retorna apenas os acessos vigentes. As rotas de conteúdo do Grupo VIP, aulões e mentorias ainda precisam ser implementadas e protegidas com essas permissões antes de disponibilizar conteúdo exclusivo.
+Os produtos são registrados como permissões individuais por usuário, com status ativo e datas opcionais. `GET /api/auth/me` retorna apenas os acessos vigentes. O Grupo VIP, Aulões e Mentorias possuem áreas de conteúdo com controle de acesso na API. Antes de disponibilizar conteúdo real, aplique as migrações pendentes e teste os fluxos com contas administrativas, contas autorizadas e contas sem acesso.
 
 ## Banco de dados
 
-A migração inicial versionada fica em `apps/api/prisma/migrations`. O schema contém User, LoyaltyProgram, LoyaltyAccount, PointTransaction, FlightRecord, UserProductAccess e ClientInvitation. A migração cria a estrutura completa inicial e inclui `passwordHash` para autenticação. Não aplique essa migração sobre um banco já existente com tabelas criadas manualmente sem antes revisar o estado do banco e planejar o baseline.
+A migração inicial versionada fica em `apps/api/prisma/migrations`. O schema contém User, LoyaltyProgram, LoyaltyAccount, PointTransaction, FlightRecord, UserProductAccess, ClientInvitation, GroupVipPost, ProductContent e ClientPayment. A migração cria a estrutura completa inicial e inclui `passwordHash` para autenticação. Não aplique essa migração sobre um banco já existente com tabelas criadas manualmente sem antes revisar o estado do banco e planejar o baseline.
 
 ## Limites e segurança
 

@@ -1478,3 +1478,37 @@ body { font-size: 15px; }
   .panel-heading p { font-size: 13px; }
   .opportunity-copy > span { font-size: 12px; }
 }
+
+
+/* Shadcn-style sidebar layout */
+[data-sidebar="sidebar"] {
+  width: 16rem;
+  padding: 0;
+  border-right: 1px solid rgba(255,255,255,.09);
+  background: #101b2d;
+}
+[data-sidebar="sidebar"] [data-sidebar="menu-button"] svg {
+  color: #aab5c5;
+  transition: color 160ms ease;
+}
+[data-sidebar="sidebar"] [data-sidebar="menu-button"]:hover svg,
+[data-sidebar="sidebar"] [data-sidebar="menu-button"][data-active="true"] svg {
+  color: #d8b66a;
+}
+[data-sidebar="sidebar"] [data-sidebar="menu-button"][data-active="true"] {
+  border-color: rgba(199,164,93,.22);
+  box-shadow: inset 2px 0 #c6a45c;
+}
+.main-area { margin-left: 16rem; }
+@media (max-width: 1320px) {
+  [data-sidebar="sidebar"] { width: 14.125rem; }
+  .main-area { margin-left: 14.125rem; }
+}
+@media (max-width: 1080px) {
+  [data-sidebar="sidebar"] { width: 13.625rem; }
+  .main-area { margin-left: 13.625rem; }
+}
+@media (max-width: 760px) {
+  [data-sidebar="sidebar"] { width: min(17rem, calc(100vw - 2rem)); }
+  .main-area { margin-left: 0; }
+}
