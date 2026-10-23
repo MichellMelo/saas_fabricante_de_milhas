@@ -54,7 +54,12 @@ export class ClientsService {
   }
 
   async listClients() {
+    const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean);
     const clients = await this.prisma.user.findMany({
+      where: adminEmails.length ? { email: { notIn: adminEmails } } : undefined,
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
