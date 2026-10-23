@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { createHash, randomBytes } from "node:crypto";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateInvitationDto } from "./dto/create-invitation.dto";
+import { SubscriptionPeriod } from "@prisma/client";
 import { SetProductAccessDto } from "./dto/set-product-access.dto";
 
 @Injectable()
@@ -92,13 +93,18 @@ export class ClientsService {
     const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
     if (!user) throw new NotFoundException("Cliente não encontrado.");
 
+    const startsAt = dto.startsAt === undefined ? undefined : new Date(dto.startsAt);
     const expiresAt = dto.expiresAt === undefined
       ? undefined
       : dto.expiresAt
         ? new Date(dto.expiresAt)
         : null;
+    const effectiveStart = startsAt ?? new Date();
     if (dto.active && expiresAt && expiresAt <= new Date()) {
-      throw new BadRequestException("A data de expiração deve estar no futuro.");
+      throw new BadRequestException("A data final deve estar no futuro.");
+    }
+    if (expiresAt && expiresAt <= effectiveStart) {
+      throw new BadRequestException("A data final deve ser posterior à data de adesão.");
     }
 
     return this.prisma.userProductAccess.upsert({
@@ -106,15 +112,18 @@ export class ClientsService {
       create: {
         userId,
         product: dto.product,
+        period: dto.period ?? SubscriptionPeriod.MONTHLY,
         active: dto.active,
-        startsAt: new Date(),
+        startsAt: startsAt ?? new Date(),
         expiresAt: expiresAt ?? null,
       },
       update: {
         active: dto.active,
+        ...(dto.period !== undefined ? { period: dto.period } : {}),
+        ...(startsAt !== undefined ? { startsAt } : {}),
         ...(expiresAt !== undefined ? { expiresAt } : {}),
       },
-      select: { id: true, userId: true, product: true, active: true, startsAt: true, expiresAt: true },
+      select: { id: true, userId: true, product: true, period: true, active: true, startsAt: true, expiresAt: true },
     });
   }
 }
