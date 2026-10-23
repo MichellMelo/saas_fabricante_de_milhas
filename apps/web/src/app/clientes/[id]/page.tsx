@@ -41,7 +41,7 @@ export default async function ClientDetailPage({
             ← Voltar à lista
           </a>
         </header>
-        <ClientManagement selectedClientId={id} onBack={() => { window.location.assign("/#clientes-admin"); }} />
+        <ClientManagement selectedClientId={id} />
       </div>
     </main>
   );
