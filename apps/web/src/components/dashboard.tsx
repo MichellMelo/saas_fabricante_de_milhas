@@ -19,6 +19,7 @@ import {
   Settings2,
   Users,
   MessageCircle,
+  Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ import { LoyaltyAccounts } from "@/components/loyalty-accounts";
 import { ProgramManagement } from "@/components/program-management";
 import { ClientManagement } from "@/components/client-management";
 import { GroupVipContent } from "@/components/group-vip-content";
+import { FinanceDashboard } from "@/components/finance-dashboard";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -40,6 +42,7 @@ const navItems: SidebarNavItem[] = [
   },
   { key: "programas-admin", label: "Cadastro de programas", icon: Settings2 },
   { key: "clientes-admin", label: "Clientes e produtos", icon: Users },
+  { key: "financeiro", label: "Financeiro", icon: Wallet },
   { key: "grupo-vip", label: "Grupo VIP", icon: MessageCircle },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator, soon: true },
   { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
@@ -67,6 +70,12 @@ const routeCopy: Record<
     eyebrow: "GESTÃO DE ACESSOS",
     description: "Convide clientes e gerencie o acesso ao Grupo VIP, aulões e mentorias.",
     icon: Users,
+  },
+  financeiro: {
+    title: "Financeiro",
+    eyebrow: "CONTROLE DE RECEBIMENTOS",
+    description: "Acompanhe recebimentos, cobranças pendentes e valores vencidos.",
+    icon: Wallet,
   },
   "grupo-vip": {
     title: "Grupo VIP",
@@ -640,6 +649,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <ProgramManagement onBack={() => navigate("dashboard")} />
           ) : route === "clientes-admin" ? (
             <ClientManagement onBack={() => navigate("dashboard")} />
+          ) : route === "financeiro" ? (
+            user.isAdmin ? <FinanceDashboard /> : <ModulePlaceholder route="historico" onBack={() => navigate("dashboard")} />
           ) : route === "grupo-vip" ? (
             <GroupVipContent isAdmin={Boolean(user.isAdmin)} />
           ) : (
