@@ -407,7 +407,7 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
 
   return (
     <section className="space-y-7">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="module-welcome-row flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a6792d]">Administração · Clientes</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">{selectedClientId ? "Ficha do cliente" : "Clientes e produtos"}</h1>
