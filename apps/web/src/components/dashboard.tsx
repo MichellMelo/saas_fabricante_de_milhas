@@ -259,7 +259,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
       <DashboardSidebar
         mobileOpen={mobileOpen}
         route={route}
-        navItems={user.isAdmin ? navItems : navItems.filter((item) => item.key !== "clientes-admin")}
+        navItems={user.isAdmin ? navItems : navItems.filter((item) => item.key !== "clientes-admin" && item.key !== "financeiro")}
         navigate={navigate}
         notify={notify}
       />
