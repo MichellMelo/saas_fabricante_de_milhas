@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleHelp, ChevronRight, LayoutDashboard, CreditCard, Calculator, Plane, Clock3, Settings2, Users, MessageCircle, Video, GraduationCap, Wallet } from "lucide-react";
+import { CircleHelp, ChevronRight, LayoutDashboard, CreditCard, Calculator, Plane, Clock3, Settings2, Users, MessageCircle, Video, GraduationCap, Wallet, Sparkles } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator } from "@/components/ui/sidebar";
 
@@ -8,7 +8,7 @@ export type DashboardRoute = "dashboard" | "oportunidades" | "aprender" | "progr
 export type SidebarNavItem = { key: DashboardRoute; label: string; icon: LucideIcon; soon?: boolean };
 
 const iconByRoute: Partial<Record<DashboardRoute, LucideIcon>> = {
-  dashboard: LayoutDashboard, oportunidades: MessageCircle, aprender: GraduationCap, programas: CreditCard, "programas-admin": Settings2,
+  dashboard: LayoutDashboard, oportunidades: Sparkles, aprender: GraduationCap, programas: CreditCard, "programas-admin": Settings2,
   "clientes-admin": Users, financeiro: Wallet, "grupo-vip": MessageCircle,
   auloes: Video, mentorias: GraduationCap, calculadoras: Calculator, passagens: Plane, historico: Clock3,
 };
