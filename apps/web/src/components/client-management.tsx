@@ -122,6 +122,14 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
     }
   }
 
+  const normalizedQuery = clientQuery.trim().toLocaleLowerCase("pt-BR");
+  const filteredClients = clients.filter((client) => {
+    const matchesQuery = !normalizedQuery || [client.name ?? "", client.email].some((value) => value.toLocaleLowerCase("pt-BR").includes(normalizedQuery));
+    const hasActiveAccess = client.productAccesses.some((access) => isAccessActive(access));
+    const matchesAccess = accessFilter === "all" || (accessFilter === "active" ? hasActiveAccess : !hasActiveAccess);
+    return matchesQuery && matchesAccess;
+  });
+
   return (
     <section className="space-y-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -184,17 +192,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
               <option value="none">Sem acesso ativo</option>
             </select>
           </div>}
-          {loading ? <p className="py-10 text-sm text-slate-500">Carregando clientes...</p> : clients.length === 0 ? <p className="py-10 text-sm text-slate-500">Nenhum usuário cadastrado ainda.</p> : (() => {
-            const normalizedQuery = clientQuery.trim().toLocaleLowerCase("pt-BR");
-            const filteredClients = clients.filter((client) => {
-              const matchesQuery = !normalizedQuery || [client.name ?? "", client.email].some((value) => value.toLocaleLowerCase("pt-BR").includes(normalizedQuery));
-              const hasActiveAccess = client.productAccesses.some((access) => isAccessActive(access));
-              const matchesAccess = accessFilter === "all" || (accessFilter === "active" ? hasActiveAccess : !hasActiveAccess);
-              return matchesQuery && matchesAccess;
-            });
-            return filteredClients.length === 0
-              ? <p className="py-10 text-sm text-slate-500">Nenhum cliente corresponde aos filtros selecionados.</p>
-              : <div className="mt-5 space-y-4">
+          {loading ? <p className="py-10 text-sm text-slate-500">Carregando clientes...</p> : clients.length === 0 ? <p className="py-10 text-sm text-slate-500">Nenhum usuário cadastrado ainda.</p> : filteredClients.length === 0 ? <p className="py-10 text-sm text-slate-500">Nenhum cliente corresponde aos filtros selecionados.</p> : <div className="mt-5 space-y-4">
             {filteredClients.map((client) => <article key={client.id} className="rounded-xl border border-slate-200 p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div><h3 className="font-semibold text-slate-900">{client.name || "Sem nome"}</h3><p className="mt-1 text-xs text-slate-500">{client.email}</p></div>
@@ -211,8 +209,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
                 })}
               </div>
             </article>)}
-          </div>;
-          })()}
+          </div>}
         </div>
       </div>
 
