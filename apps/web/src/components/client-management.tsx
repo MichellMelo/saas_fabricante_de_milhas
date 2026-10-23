@@ -315,6 +315,25 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível cancelar o convite."); }
   }
 
+  async function createPayment(values: { userId: string; product: Product; amount: number; dueAt: string; method: Payment["method"]; notes: string }) {
+    setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/admin/payments", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(values) });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) { const message = result.message; throw new Error(Array.isArray(message) ? message.join(" ") : message || "Não foi possível registrar o lançamento."); }
+      setNotice("Lançamento financeiro registrado."); await load();
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível registrar o lançamento."); throw cause; }
+  }
+
+  async function setPaymentPaid(payment: Payment, paid: boolean) {
+    setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/admin/payments/" + encodeURIComponent(payment.id) + "/status", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paid }) });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) { const message = result.message; throw new Error(Array.isArray(message) ? message.join(" ") : message || "Não foi possível atualizar o pagamento."); }
+      setNotice(paid ? "Pagamento marcado como pago." : "Pagamento voltou para pendente."); await load();
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível atualizar o pagamento."); }
+  }
   async function updateClient(client: Client, values: { email: string; name: string; phone: string; notes: string }) {
     setError("");
     setNotice("");
@@ -456,6 +475,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
                     const access = client.productAccesses.find((item) => item.product === product.value);
                     return <ProductAccessEditor key={product.value} label={product.label} access={access} onSave={(active, period, startsAt, expiresAt) => updateAccess(client, product.value, active, period, startsAt, expiresAt)} />;
                   })}
+                  <ClientPayments client={client} payments={payments.filter((payment) => payment.userId === client.id)} onCreate={createPayment} onSetPaid={setPaymentPaid} />
                 </div>}
               </article>;
             })}
