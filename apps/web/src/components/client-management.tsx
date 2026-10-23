@@ -106,6 +106,32 @@ function ProductAccessEditor({ label, access, onSave }: {
   );
 }
 
+function ClientProfileEditor({ client, onSave }: {
+  client: Client;
+  onSave: (values: { email: string; name: string; phone: string; notes: string }) => Promise<void>;
+}) {
+  const [email, setEmail] = useState(client.email);
+  const [name, setName] = useState(client.name ?? "");
+  const [phone, setPhone] = useState(client.phone ?? "");
+  const [notes, setNotes] = useState(client.notes ?? "");
+  const [saving, setSaving] = useState(false);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    try { await onSave({ email, name, phone, notes }); } finally { setSaving(false); }
+  }
+  return <form onSubmit={(event) => void submit(event)} className="rounded-xl border border-slate-200 bg-white p-3">
+    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Dados cadastrais</p>
+    <div className="grid gap-3 sm:grid-cols-2">
+      <label className="text-xs font-medium text-slate-600">Nome<input maxLength={100} value={name} onChange={(event) => setName(event.target.value)} className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label>
+      <label className="text-xs font-medium text-slate-600">E-mail<input type="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label>
+      <label className="text-xs font-medium text-slate-600">Telefone<input type="tel" maxLength={40} value={phone} onChange={(event) => setPhone(event.target.value)} className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label>
+      <label className="text-xs font-medium text-slate-600 sm:col-span-2">Observações<textarea maxLength={5000} rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label>
+    </div>
+    <button type="submit" disabled={saving} className="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-50">{saving ? "Salvando..." : "Salvar dados cadastrais"}</button>
+  </form>;
+}
+
 export function ClientManagement({ onBack }: { onBack: () => void }) {
   const [clients, setClients] = useState<Client[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
@@ -211,6 +237,26 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
     }
   }
 
+  async function updateClient(client: Client, values: { email: string; name: string; phone: string; notes: string }) {
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch("/api/admin/clients/" + encodeURIComponent(client.id), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = result.message;
+        throw new Error(Array.isArray(message) ? message.join(" ") : message || "Não foi possível atualizar o cadastro.");
+      }
+      setNotice("Dados cadastrais atualizados.");
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível atualizar o cadastro.");
+    }
+  }
   async function updateAccess(client: Client, product: Product, active: boolean, period: Period, startsAt: string, expiresAt: string) {
     setError("");
     setNotice("");
@@ -321,7 +367,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
                 </button>
                 {expanded && <div className="space-y-3 border-t border-slate-200 bg-slate-50/60 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Produtos e validade de acesso</p>
-                  {client.notes && <p className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600"><span className="font-semibold text-slate-800">Observações:</span> {client.notes}</p>}
+                  <ClientProfileEditor client={client} onSave={(values) => updateClient(client, values)} />
                   <div className="flex flex-wrap items-center gap-2">
                     <button type="button" onClick={() => void sendInvitation(client)} disabled={saving || client.hasAccount} className="rounded-lg bg-[#101a2b] px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{client.hasAccount ? "Conta já ativada" : invitations.some((invitation) => invitation.email.toLowerCase() === client.email.toLowerCase()) ? "Reenviar convite" : "Enviar convite"}</button>
                     {inviteUrl && inviteClientId === client.id && <button type="button" onClick={() => void copyInvite()} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"><Copy size={13} /> Copiar link</button>}
