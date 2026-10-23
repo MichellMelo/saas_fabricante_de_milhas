@@ -180,7 +180,7 @@ function ClientPayments({ client, payments, onCreate, onSetPaid }: {
   </section>;
 }
 
-export function ClientManagement({ onBack, selectedClientId }: { onBack: () => void; selectedClientId?: string }) {
+export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => void; selectedClientId?: string }) {
   const [clients, setClients] = useState<Client[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -497,7 +497,7 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack: () => v
           </div>)}
         </div>}
       </div>}
-      {!selectedClientId && <button onClick={onBack} className="text-sm font-semibold text-slate-600 hover:text-slate-900">← Voltar ao painel</button>}
+      {!selectedClientId && <button onClick={() => onBack?.()} className="text-sm font-semibold text-slate-600 hover:text-slate-900">← Voltar ao painel</button>}
       {selectedClientId && <button onClick={() => window.location.assign("/#clientes-admin")} className="text-sm font-semibold text-slate-600 hover:text-slate-900">← Voltar à lista de clientes</button>}
     </section>
   );
