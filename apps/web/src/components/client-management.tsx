@@ -446,7 +446,7 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           {!selectedClientId && <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-slate-700"><Users size={19} /></span>
-            <div><h2 className="font-semibold text-slate-900">Base de clientes</h2><p className="mt-1 text-xs text-slate-500">{clients.length} contas cadastradas · {clients.filter((client) => client.productAccesses.some((access) => isAccessActive(access))).length} com acesso ativo</p></div>
+            <div><h2 className="font-semibold text-slate-900">Base de clientes</h2><p className="mt-1 text-xs text-slate-500">{clients.length} contas cadastradas · {clients.filter((client) => client.hasAccount && client.active).length} contas ativas</p></div>
           </div>}
           {!selectedClientId && !loading && clients.length > 0 && <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
             <label className="relative block">
