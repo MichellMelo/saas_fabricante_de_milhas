@@ -142,6 +142,44 @@ function ClientProfileEditor({ client, onSave }: {
   </form>;
 }
 
+function ClientPayments({ client, payments, onCreate, onSetPaid }: {
+  client: Client;
+  payments: Payment[];
+  onCreate: (values: { userId: string; product: Product; amount: number; dueAt: string; method: Payment["method"]; notes: string }) => Promise<void>;
+  onSetPaid: (payment: Payment, paid: boolean) => Promise<void>;
+}) {
+  const [product, setProduct] = useState<Product>("GROUP_VIP");
+  const [amount, setAmount] = useState("");
+  const [dueAt, setDueAt] = useState(new Date().toISOString().slice(0, 10));
+  const [method, setMethod] = useState<Payment["method"]>("PIX");
+  const [notes, setNotes] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setSaving(true);
+    try { await onCreate({ userId: client.id, product, amount: Number(amount), dueAt: new Date(dueAt + "T12:00:00").toISOString(), method, notes }); setAmount(""); setNotes(""); setShowForm(false); }
+    finally { setSaving(false); }
+  }
+  return <section className="rounded-xl border border-slate-200 bg-white p-3">
+    <div className="flex flex-wrap items-center justify-between gap-2"><div><h3 className="text-sm font-semibold text-slate-900">Pagamentos e vencimentos</h3><p className="mt-1 text-xs text-slate-500">{payments.length} lançamento(s)</p></div><button type="button" onClick={() => setShowForm((value) => !value)} className="rounded-lg bg-[#101a2b] px-3 py-2 text-xs font-semibold text-white">{showForm ? "Fechar formulário" : "Novo lançamento"}</button></div>
+    {showForm && <form onSubmit={(event) => void submit(event)} className="mt-3 grid gap-3 rounded-lg bg-slate-50 p-3 sm:grid-cols-2">
+      <label className="text-xs font-medium text-slate-600">Produto<select value={product} onChange={(event) => setProduct(event.target.value as Product)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">{PRODUCTS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+      <label className="text-xs font-medium text-slate-600">Valor (R$)<input type="number" required min="0.01" step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="0,00" className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label>
+      <label className="text-xs font-medium text-slate-600">Vencimento<input type="date" required value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label>
+      <label className="text-xs font-medium text-slate-600">Forma de pagamento<select value={method ?? "OTHER"} onChange={(event) => setMethod(event.target.value as Payment["method"])} className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">{PAYMENT_METHODS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+      <label className="text-xs font-medium text-slate-600 sm:col-span-2">Observações<input maxLength={5000} value={notes} onChange={(event) => setNotes(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label>
+      <button type="submit" disabled={saving || !amount || Number(amount) <= 0 || !dueAt} className="rounded-lg bg-[#101a2b] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50 sm:col-span-2">{saving ? "Salvando..." : "Registrar cobrança"}</button>
+    </form>}
+    {payments.length === 0 ? <p className="mt-3 text-xs text-slate-500">Nenhum lançamento financeiro cadastrado.</p> : <div className="mt-3 space-y-2">{payments.map((payment) => {
+      const status = paymentStatus(payment);
+      return <div key={payment.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 p-3">
+        <div><p className="text-sm font-semibold text-slate-900">{money(payment.amount)} · {PRODUCTS.find((item) => item.value === payment.product)?.label ?? payment.product}</p><p className="mt-1 text-xs text-slate-500">Vencimento: {new Date(payment.dueAt).toLocaleDateString("pt-BR")}{payment.method ? " · " + (PAYMENT_METHODS.find((item) => item.value === payment.method)?.label ?? payment.method) : ""}</p>{payment.notes && <p className="mt-1 text-xs text-slate-500">{payment.notes}</p>}<span className={"mt-2 inline-block rounded-full px-2 py-1 text-[11px] font-semibold " + (status === "Pago" ? "bg-emerald-50 text-emerald-700" : status === "Vencido" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700")}>{status}</span></div>
+        {payment.status !== "CANCELLED" && <button type="button" onClick={() => void onSetPaid(payment, payment.status !== "PAID")} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700">{payment.status === "PAID" ? "Marcar pendente" : "Marcar como pago"}</button>}
+      </div>;
+    })}</div>}
+  </section>;
+}
+
 export function ClientManagement({ onBack }: { onBack: () => void }) {
   const [clients, setClients] = useState<Client[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
