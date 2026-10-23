@@ -19,6 +19,8 @@ import {
   Settings2,
   Users,
   MessageCircle,
+  Video,
+  GraduationCap,
   Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -30,6 +32,7 @@ import { LoyaltyAccounts } from "@/components/loyalty-accounts";
 import { ProgramManagement } from "@/components/program-management";
 import { ClientManagement } from "@/components/client-management";
 import { GroupVipContent } from "@/components/group-vip-content";
+import { ProductContent } from "@/components/product-content";
 import { FinanceDashboard } from "@/components/finance-dashboard";
 
 type RouteKey = DashboardRoute;
@@ -44,6 +47,8 @@ const navItems: SidebarNavItem[] = [
   { key: "clientes-admin", label: "Clientes e produtos", icon: Users },
   { key: "financeiro", label: "Financeiro", icon: Wallet },
   { key: "grupo-vip", label: "Grupo VIP", icon: MessageCircle },
+  { key: "auloes", label: "Aulões", icon: Video },
+  { key: "mentorias", label: "Mentorias", icon: GraduationCap },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator, soon: true },
   { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
   { key: "historico", label: "Histórico", icon: Clock3, soon: true },
@@ -82,6 +87,18 @@ const routeCopy: Record<
     eyebrow: "CONTEÚDO EXCLUSIVO",
     description: "Publicações e materiais exclusivos para membros com acesso ativo.",
     icon: MessageCircle,
+  },
+  auloes: {
+    title: "Aulões",
+    eyebrow: "AULAS E MATERIAIS",
+    description: "Acesse gravações, materiais e orientações dos aulões disponíveis para sua conta.",
+    icon: Video,
+  },
+  mentorias: {
+    title: "Mentorias",
+    eyebrow: "ACOMPANHAMENTO EXCLUSIVO",
+    description: "Consulte materiais, orientações e links disponibilizados para sua mentoria.",
+    icon: GraduationCap,
   },
   calculadoras: {
     title: "Calculadoras",
@@ -653,6 +670,10 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             user.isAdmin ? <FinanceDashboard /> : <ModulePlaceholder route="historico" onBack={() => navigate("dashboard")} />
           ) : route === "grupo-vip" ? (
             <GroupVipContent isAdmin={Boolean(user.isAdmin)} />
+          ) : route === "auloes" ? (
+            <ProductContent isAdmin={Boolean(user.isAdmin)} product="AULAO" />
+          ) : route === "mentorias" ? (
+            <ProductContent isAdmin={Boolean(user.isAdmin)} product="MENTORSHIP" />
           ) : (
             <ModulePlaceholder
               route={route}
