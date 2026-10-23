@@ -28,8 +28,8 @@ export class AuthService {
    }
 
    const email = invitation.email.trim().toLowerCase();
-   const existing = await tx.user.findUnique({ where: { email }, select: { id: true } });
-   if (existing) throw new ConflictException("Já existe uma conta com esse e-mail. Faça login ou solicite suporte.");
+   const existing = await tx.user.findUnique({ where: { email }, select: { id: true, passwordHash: true } });
+   if (existing?.passwordHash) throw new ConflictException("Já existe uma conta com esse e-mail. Faça login ou solicite suporte.");
 
    const claimed = await tx.clientInvitation.updateMany({
     where: { id: invitation.id, acceptedAt: null, expiresAt: { gt: now } },
@@ -37,10 +37,16 @@ export class AuthService {
    });
    if (claimed.count !== 1) throw new BadRequestException("Este convite já foi utilizado ou expirou.");
 
-   const created = await tx.user.create({
-    data: { email, passwordHash, name: emailName || invitation.name },
-    select: { id: true, email: true, name: true, createdAt: true },
-   });
+   const created = existing
+    ? await tx.user.update({
+       where: { id: existing.id },
+       data: { passwordHash, name: emailName || invitation.name || undefined },
+       select: { id: true, email: true, name: true, createdAt: true },
+      })
+    : await tx.user.create({
+       data: { email, passwordHash, name: emailName || invitation.name },
+       select: { id: true, email: true, name: true, createdAt: true },
+      });
 
    await tx.userProductAccess.createMany({
     data: invitation.productTypes.map((product: ProductType) => ({
@@ -49,6 +55,7 @@ export class AuthService {
      active: true,
      startsAt: now,
     })),
+    skipDuplicates: true,
    });
    return created;
   });
@@ -59,7 +66,7 @@ export class AuthService {
  async login(dto: LoginDto) {
   const email = dto.email.trim().toLowerCase();
   const user = await this.prisma.user.findUnique({ where: { email } });
-  if (!user || !(await compare(dto.password, user.passwordHash))) {
+  if (!user?.passwordHash || !(await compare(dto.password, user.passwordHash))) {
    throw new UnauthorizedException("E-mail ou senha inválidos.");
   }
   return {
