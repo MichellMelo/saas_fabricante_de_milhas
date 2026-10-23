@@ -52,7 +52,7 @@ function ProductAccessEditor({ label, access, onSave }: {
   onSave: (active: boolean, period: Period, startsAt: string, expiresAt: string) => Promise<void>;
 }) {
   const [active, setActive] = useState(isAccessActive(access));
-  const defaultPeriod: Period = access?.period ?? (access?.expiresAt ? "MONTHLY" : "CUSTOM");
+  const defaultPeriod: Period = access?.expiresAt ? (access?.period ?? "MONTHLY") : "CUSTOM";
   const [period, setPeriod] = useState<Period>(defaultPeriod);
   const initialStart = toDateInput(access?.startsAt) || toDateInput(new Date().toISOString());
   const [startsAt, setStartsAt] = useState(initialStart);
