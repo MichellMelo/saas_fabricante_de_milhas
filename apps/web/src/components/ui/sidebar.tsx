@@ -43,7 +43,7 @@ export function SidebarHeader({ className, ...props }: React.HTMLAttributes<HTML
 }
 
 export function SidebarContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div data-sidebar="content" className={cn("flex min-h-0 flex-1 flex-col gap-5 overflow-y-visible px-3 py-2", className)} {...props} />;
+  return <div data-sidebar="content" className={cn("flex min-h-0 flex-col gap-5 overflow-y-visible px-3 py-1", className)} {...props} />;
 }
 
 export function SidebarFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
@@ -73,7 +73,7 @@ export function SidebarMenuButton({ children, isActive = false, className, ...pr
       data-active={isActive}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "peer/menu-button flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[#c6a45c]/70 disabled:pointer-events-none disabled:opacity-50",
+        "peer/menu-button flex min-h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[#c6a45c]/70 disabled:pointer-events-none disabled:opacity-50",
         isActive
           ? "border border-white/10 bg-white/[.09] text-white shadow-sm before:absolute before:bottom-2 before:left-0 before:top-2 before:w-[3px] before:rounded-r before:bg-[#c6a45c]"
           : "text-slate-300 hover:bg-white/[.055] hover:text-white",
