@@ -66,7 +66,7 @@ export class AuthService {
  async login(dto: LoginDto) {
   const email = dto.email.trim().toLowerCase();
   const user = await this.prisma.user.findUnique({ where: { email } });
-  if (!user?.passwordHash || !(await compare(dto.password, user.passwordHash))) {
+  if (!user?.active || !user.passwordHash || !(await compare(dto.password, user.passwordHash))) {
    throw new UnauthorizedException("E-mail ou senha inválidos.");
   }
   return {
@@ -79,11 +79,11 @@ export class AuthService {
   const user = await this.prisma.user.findUnique({
    where: { id: userId },
    select: {
-    id: true, email: true, name: true, createdAt: true,
+    id: true, email: true, name: true, active: true, createdAt: true,
     productAccesses: { select: { product: true, active: true, startsAt: true, expiresAt: true } },
    }
   });
-  if (!user) throw new UnauthorizedException("Sessão inválida.");
+  if (!user || !user.active) throw new UnauthorizedException("Conta inativa ou sessão inválida. Entre em contato com o administrador.");
   const admins = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
   const now = new Date();
   return {
