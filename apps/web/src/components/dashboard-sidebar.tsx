@@ -4,11 +4,11 @@ import { CircleHelp, ChevronRight, LayoutDashboard, CreditCard, Calculator, Plan
 import type { LucideIcon } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator } from "@/components/ui/sidebar";
 
-export type DashboardRoute = "dashboard" | "programas" | "calculadoras" | "passagens" | "historico" | "programas-admin" | "clientes-admin" | "grupo-vip" | "auloes" | "mentorias" | "financeiro";
+export type DashboardRoute = "dashboard" | "oportunidades" | "aprender" | "programas" | "calculadoras" | "passagens" | "historico" | "programas-admin" | "clientes-admin" | "grupo-vip" | "auloes" | "mentorias" | "financeiro";
 export type SidebarNavItem = { key: DashboardRoute; label: string; icon: LucideIcon; soon?: boolean };
 
 const iconByRoute: Partial<Record<DashboardRoute, LucideIcon>> = {
-  dashboard: LayoutDashboard, programas: CreditCard, "programas-admin": Settings2,
+  dashboard: LayoutDashboard, oportunidades: MessageCircle, aprender: GraduationCap, programas: CreditCard, "programas-admin": Settings2,
   "clientes-admin": Users, financeiro: Wallet, "grupo-vip": MessageCircle,
   auloes: Video, mentorias: GraduationCap, calculadoras: Calculator, passagens: Plane, historico: Clock3,
 };
