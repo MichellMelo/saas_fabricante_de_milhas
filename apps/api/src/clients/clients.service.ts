@@ -56,7 +56,6 @@ export class ClientsService {
         name: true,
         phone: true,
         notes: true,
-        passwordHash: true,
         createdAt: true,
         productAccesses: {
           select: { id: true, product: true, period: true, active: true, startsAt: true, expiresAt: true },
