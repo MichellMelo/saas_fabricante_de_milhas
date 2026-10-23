@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { Copy, RefreshCw, ShieldCheck, UserPlus, Users } from "lucide-react";
+import { Copy, RefreshCw, Search, ShieldCheck, UserPlus, Users } from "lucide-react";
 
 const PRODUCTS = [
   { value: "GROUP_VIP", label: "Grupo VIP" },
@@ -29,6 +29,8 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [clientQuery, setClientQuery] = useState("");
+  const [accessFilter, setAccessFilter] = useState<"all" | "active" | "none">("all");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -169,10 +171,31 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-slate-700"><Users size={19} /></span>
-            <div><h2 className="font-semibold text-slate-900">Base de clientes</h2><p className="mt-1 text-xs text-slate-500">{clients.length} contas cadastradas</p></div>
+            <div><h2 className="font-semibold text-slate-900">Base de clientes</h2><p className="mt-1 text-xs text-slate-500">{clients.length} contas cadastradas · {clients.filter((client) => client.productAccesses.some((access) => isAccessActive(access))).length} com acesso ativo</p></div>
           </div>
-          {loading ? <p className="py-10 text-sm text-slate-500">Carregando clientes...</p> : clients.length === 0 ? <p className="py-10 text-sm text-slate-500">Nenhum usuário cadastrado ainda.</p> : <div className="mt-5 space-y-4">
-            {clients.map((client) => <article key={client.id} className="rounded-xl border border-slate-200 p-4">
+          {!loading && clients.length > 0 && <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
+            <label className="relative block">
+              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input value={clientQuery} onChange={(event) => setClientQuery(event.target.value)} placeholder="Buscar por nome ou e-mail" aria-label="Buscar clientes por nome ou e-mail" className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none focus:border-[#b58a37] focus:ring-2 focus:ring-[#d6b66f]/20" />
+            </label>
+            <select value={accessFilter} onChange={(event) => setAccessFilter(event.target.value as "all" | "active" | "none")} aria-label="Filtrar clientes por acesso" className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#b58a37]">
+              <option value="all">Todos os clientes</option>
+              <option value="active">Com acesso ativo</option>
+              <option value="none">Sem acesso ativo</option>
+            </select>
+          </div>}
+          {loading ? <p className="py-10 text-sm text-slate-500">Carregando clientes...</p> : clients.length === 0 ? <p className="py-10 text-sm text-slate-500">Nenhum usuário cadastrado ainda.</p> : (() => {
+            const normalizedQuery = clientQuery.trim().toLocaleLowerCase("pt-BR");
+            const filteredClients = clients.filter((client) => {
+              const matchesQuery = !normalizedQuery || [client.name ?? "", client.email].some((value) => value.toLocaleLowerCase("pt-BR").includes(normalizedQuery));
+              const hasActiveAccess = client.productAccesses.some((access) => isAccessActive(access));
+              const matchesAccess = accessFilter === "all" || (accessFilter === "active" ? hasActiveAccess : !hasActiveAccess);
+              return matchesQuery && matchesAccess;
+            });
+            return filteredClients.length === 0
+              ? <p className="py-10 text-sm text-slate-500">Nenhum cliente corresponde aos filtros selecionados.</p>
+              : <div className="mt-5 space-y-4">
+            {filteredClients.map((client) => <article key={client.id} className="rounded-xl border border-slate-200 p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div><h3 className="font-semibold text-slate-900">{client.name || "Sem nome"}</h3><p className="mt-1 text-xs text-slate-500">{client.email}</p></div>
                 <span className="text-[11px] text-slate-400">Desde {new Date(client.createdAt).toLocaleDateString("pt-BR")}</span>
@@ -188,7 +211,8 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
                 })}
               </div>
             </article>)}
-          </div>}
+          </div>;
+          })()}
         </div>
       </div>
 
