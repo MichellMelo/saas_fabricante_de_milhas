@@ -4,10 +4,48 @@ import { PrismaService } from "../prisma/prisma.service";
 import { CreateInvitationDto } from "./dto/create-invitation.dto";
 import { SubscriptionPeriod } from "@prisma/client";
 import { SetProductAccessDto } from "./dto/set-product-access.dto";
+import { CreateClientDto } from "./dto/create-client.dto";
+import { UpdateClientDto } from "./dto/update-client.dto";
 
 @Injectable()
 export class ClientsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async createClient(dto: CreateClientDto) {
+    const email = dto.email.trim().toLowerCase();
+    const existing = await this.prisma.user.findUnique({ where: { email }, select: { id: true } });
+    if (existing) throw new ConflictException("Já existe um cliente cadastrado com esse e-mail.");
+    return this.prisma.user.create({
+      data: {
+        email,
+        passwordHash: null,
+        name: dto.name?.trim() || null,
+        phone: dto.phone?.trim() || null,
+        notes: dto.notes?.trim() || null,
+      },
+      select: { id: true, email: true, name: true, phone: true, notes: true, createdAt: true, productAccesses: true },
+    });
+  }
+
+  async updateClient(id: string, dto: UpdateClientDto) {
+    const existing = await this.prisma.user.findUnique({ where: { id }, select: { id: true } });
+    if (!existing) throw new NotFoundException("Cliente não encontrado.");
+    const email = dto.email?.trim().toLowerCase();
+    if (email) {
+      const duplicate = await this.prisma.user.findFirst({ where: { email, NOT: { id } }, select: { id: true } });
+      if (duplicate) throw new ConflictException("Já existe um cliente cadastrado com esse e-mail.");
+    }
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        ...(email ? { email } : {}),
+        ...(dto.name !== undefined ? { name: dto.name.trim() || null } : {}),
+        ...(dto.phone !== undefined ? { phone: dto.phone.trim() || null } : {}),
+        ...(dto.notes !== undefined ? { notes: dto.notes.trim() || null } : {}),
+      },
+      select: { id: true, email: true, name: true, phone: true, notes: true, createdAt: true },
+    });
+  }
 
   async listClients() {
     return this.prisma.user.findMany({
@@ -16,6 +54,9 @@ export class ClientsService {
         id: true,
         email: true,
         name: true,
+        phone: true,
+        notes: true,
+        passwordHash: true,
         createdAt: true,
         productAccesses: {
           select: { id: true, product: true, period: true, active: true, startsAt: true, expiresAt: true },
@@ -57,8 +98,8 @@ export class ClientsService {
     const products = [...new Set(dto.products)];
     if (!products.length) throw new BadRequestException("Selecione pelo menos um produto para o cliente.");
 
-    const existingUser = await this.prisma.user.findUnique({ where: { email }, select: { id: true } });
-    if (existingUser) throw new ConflictException("Já existe um usuário com esse e-mail. Conceda ou atualize os acessos na lista de clientes.");
+    const existingUser = await this.prisma.user.findUnique({ where: { email }, select: { id: true, passwordHash: true } });
+    if (existingUser?.passwordHash) throw new ConflictException("Esse e-mail já possui uma conta ativa. Gerencie os acessos diretamente na ficha do cliente.");
 
     const now = new Date();
     await this.prisma.clientInvitation.updateMany({
