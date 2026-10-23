@@ -3,7 +3,7 @@
 import { CircleHelp, LayoutDashboard, CreditCard, Calculator, Plane, Clock3 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-export type DashboardRoute = "dashboard" | "programas" | "calculadoras" | "passagens" | "historico" | "programas-admin" | "clientes-admin" | "grupo-vip";
+export type DashboardRoute = "dashboard" | "programas" | "calculadoras" | "passagens" | "historico" | "programas-admin" | "clientes-admin" | "grupo-vip" | "financeiro";
 export type SidebarNavItem = { key: DashboardRoute; label: string; icon: LucideIcon; soon?: boolean };
 
 export function DashboardSidebar({ mobileOpen, route, navItems, navigate, notify }: {
