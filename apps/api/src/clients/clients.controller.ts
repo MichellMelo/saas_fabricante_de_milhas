@@ -39,6 +39,14 @@ export class ClientsController {
     return this.clients.listClients();
   }
 
+  @Post("clients/:id/status")
+  setClientStatus(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() body: { active?: boolean }) {
+    this.assertAdmin(request);
+    if (typeof body.active !== "boolean") {
+      throw new ForbiddenException("Informe se a conta deve ficar ativa ou inativa.");
+    }
+    return this.clients.setClientStatus(id, body.active);
+  }
   @Get("clients/expiring-access")
   listExpiringAccesses(@Req() request: AuthenticatedRequest) {
     this.assertAdmin(request);
@@ -51,6 +59,11 @@ export class ClientsController {
     return this.clients.listInvitations();
   }
 
+  @Post("invitations/:id/cancel")
+  cancelInvitation(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
+    this.assertAdmin(request);
+    return this.clients.cancelInvitation(id);
+  }
   @Post("invitations")
   createInvitation(@Req() request: AuthenticatedRequest, @Body() dto: CreateInvitationDto) {
     this.assertAdmin(request);
