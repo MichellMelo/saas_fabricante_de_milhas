@@ -24,6 +24,25 @@ export class ClientsService {
     });
   }
 
+  async listExpiringAccesses() {
+    const now = new Date();
+    const deadline = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    return this.prisma.userProductAccess.findMany({
+      where: {
+        active: true,
+        startsAt: { lte: now },
+        expiresAt: { gt: now, lte: deadline },
+      },
+      orderBy: { expiresAt: "asc" },
+      select: {
+        id: true,
+        product: true,
+        expiresAt: true,
+        user: { select: { id: true, name: true, email: true } },
+      },
+    });
+  }
+
   async listInvitations() {
     return this.prisma.clientInvitation.findMany({
       where: { acceptedAt: null, expiresAt: { gt: new Date() } },
