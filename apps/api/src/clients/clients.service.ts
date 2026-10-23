@@ -78,6 +78,26 @@ export class ClientsService {
     return clients.map(({ passwordHash, ...client }) => ({ ...client, hasAccount: Boolean(passwordHash) }));
   }
 
+  async setClientStatus(id: string, active: boolean) {
+    const client = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, email: true, passwordHash: true },
+    });
+    if (!client) throw new NotFoundException("Cliente não encontrado.");
+    const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
+    if (adminEmails.includes(client.email.trim().toLowerCase())) {
+      throw new BadRequestException("Não é permitido alterar o status de uma conta administrativa por esta tela.");
+    }
+    if (active && !client.passwordHash) {
+      throw new BadRequestException("Esta conta ainda não foi ativada pelo cliente. Envie um convite primeiro.");
+    }
+    return this.prisma.user.update({
+      where: { id },
+      data: { active },
+      select: { id: true, email: true, active: true },
+    });
+  }
+
   async listExpiringAccesses() {
     const now = new Date();
     const deadline = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
@@ -103,6 +123,18 @@ export class ClientsService {
       orderBy: { createdAt: "desc" },
       select: { id: true, email: true, name: true, productTypes: true, expiresAt: true, createdAt: true },
     });
+  }
+
+  async cancelInvitation(id: string) {
+    const invitation = await this.prisma.clientInvitation.findUnique({ where: { id }, select: { id: true, acceptedAt: true, expiresAt: true } });
+    if (!invitation) throw new NotFoundException("Convite não encontrado.");
+    if (invitation.acceptedAt) throw new BadRequestException("Este convite já foi aceito e não pode ser cancelado.");
+    if (invitation.expiresAt <= new Date()) throw new BadRequestException("Este convite já expirou.");
+    await this.prisma.clientInvitation.update({
+      where: { id },
+      data: { expiresAt: new Date() },
+    });
+    return { id, cancelled: true };
   }
 
   async createInvitation(invitedByUserId: string, dto: CreateInvitationDto) {
