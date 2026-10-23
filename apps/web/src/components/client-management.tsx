@@ -18,7 +18,7 @@ const PERIODS: { value: Period; label: string; months: number | null }[] = [
   { value: "CUSTOM", label: "Personalizado / sem prazo automático", months: null },
 ];
 type Access = { id: string; product: Product; period: Period; active: boolean; startsAt: string; expiresAt: string | null };
-type Client = { id: string; email: string; name: string | null; phone: string | null; notes: string | null; hasAccount: boolean; createdAt: string; productAccesses: Access[] };
+type Client = { id: string; email: string; name: string | null; phone: string | null; notes: string | null; active: boolean; hasAccount: boolean; createdAt: string; productAccesses: Access[] };
 type Invitation = { id: string; email: string; name: string | null; productTypes: Product[]; expiresAt: string; createdAt: string };
 
 function toDateInput(value?: string | null) {
@@ -237,6 +237,31 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
     }
   }
 
+  async function setClientStatus(client: Client, active: boolean) {
+    setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/admin/clients/" + encodeURIComponent(client.id) + "/status", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ active }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) { const message = result.message; throw new Error(Array.isArray(message) ? message.join(" ") : message || "Não foi possível alterar o status da conta."); }
+      setNotice(active ? "Conta ativada." : "Conta inativada. O cliente não poderá entrar na plataforma.");
+      await load();
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível alterar o status da conta."); }
+  }
+
+  async function cancelInvitation(invitation: Invitation) {
+    if (!window.confirm("Cancelar o convite de " + invitation.email + "? O link deixará de funcionar.")) return;
+    setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/admin/invitations/" + encodeURIComponent(invitation.id) + "/cancel", { method: "POST" });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) { const message = result.message; throw new Error(Array.isArray(message) ? message.join(" ") : message || "Não foi possível cancelar o convite."); }
+      setNotice("Convite cancelado. O link não poderá mais ser utilizado.");
+      await load();
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível cancelar o convite."); }
+  }
+
   async function updateClient(client: Client, values: { email: string; name: string; phone: string; notes: string }) {
     setError("");
     setNotice("");
@@ -361,7 +386,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
                       <span className={"rounded-full px-2 py-0.5 text-[10px] font-semibold " + (activeAccessCount > 0 ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500")}>{activeAccessCount > 0 ? `${activeAccessCount} acesso(s) ativo(s)` : "Sem acesso ativo"}</span>
                     </div>
                     <p className="mt-1 truncate text-xs text-slate-500">{client.email}</p>
-                    <p className="mt-1 text-[11px] text-slate-400">Cadastro em {new Date(client.createdAt).toLocaleDateString("pt-BR")}</p><p className="mt-1 text-[11px] font-medium text-slate-500">{client.hasAccount ? "Conta ativada" : invitations.some((invitation) => invitation.email.toLowerCase() === client.email.toLowerCase()) ? "Convite pendente" : "Aguardando convite"}</p>
+                    <p className="mt-1 text-[11px] text-slate-400">Cadastro em {new Date(client.createdAt).toLocaleDateString("pt-BR")}</p><p className="mt-1 text-[11px] font-medium text-slate-500">{client.hasAccount ? (client.active ? "Conta ativa" : "Conta inativa") : invitations.some((invitation) => invitation.email.toLowerCase() === client.email.toLowerCase()) ? "Convite pendente" : "Aguardando convite"}</p>
                   </div>
                   <ChevronDown size={18} className={"shrink-0 text-slate-500 transition-transform " + (expanded ? "rotate-180" : "")} />
                 </button>
@@ -369,6 +394,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Produtos e validade de acesso</p>
                   <ClientProfileEditor client={client} onSave={(values) => updateClient(client, values)} />
                   <div className="flex flex-wrap items-center gap-2">
+                    {client.hasAccount && <button type="button" onClick={() => void setClientStatus(client, !client.active)} disabled={saving} className={"rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-50 " + (client.active ? "border border-rose-200 bg-rose-50 text-rose-700" : "border border-emerald-200 bg-emerald-50 text-emerald-700")}>{client.active ? "Inativar conta" : "Ativar conta"}</button>}
                     <button type="button" onClick={() => void sendInvitation(client)} disabled={saving || client.hasAccount} className="rounded-lg bg-[#101a2b] px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{client.hasAccount ? "Conta já ativada" : invitations.some((invitation) => invitation.email.toLowerCase() === client.email.toLowerCase()) ? "Reenviar convite" : "Enviar convite"}</button>
                     {inviteUrl && inviteClientId === client.id && <button type="button" onClick={() => void copyInvite()} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"><Copy size={13} /> Copiar link</button>}
                   </div>
@@ -389,7 +415,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
         {invitations.length === 0 ? <p className="mt-5 text-sm text-slate-500">Nenhum convite pendente.</p> : <div className="mt-4 divide-y divide-slate-100">
           {invitations.map((invitation) => <div key={invitation.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
             <div><p className="text-sm font-medium text-slate-800">{invitation.email}</p><p className="mt-1 text-xs text-slate-500">{invitation.productTypes.map((item) => PRODUCTS.find((p) => p.value === item)?.label ?? item).join(" · ")}</p></div>
-            <p className="text-xs text-slate-500">Expira em {new Date(invitation.expiresAt).toLocaleDateString("pt-BR")}</p>
+            <div className="flex items-center gap-3"><p className="text-xs text-slate-500">Expira em {new Date(invitation.expiresAt).toLocaleDateString("pt-BR")}</p><button type="button" onClick={() => void cancelInvitation(invitation)} disabled={saving} className="rounded-lg border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50">Cancelar convite</button></div>
           </div>)}
         </div>}
       </div>
