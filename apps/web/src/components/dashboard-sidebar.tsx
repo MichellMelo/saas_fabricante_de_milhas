@@ -9,8 +9,7 @@ export type SidebarNavItem = { key: DashboardRoute; label: string; icon: LucideI
 
 const iconByRoute: Partial<Record<DashboardRoute, LucideIcon>> = {
   dashboard: LayoutDashboard, oportunidades: Sparkles, aprender: GraduationCap, programas: CreditCard, "programas-admin": Settings2,
-  "clientes-admin": Users, financeiro: Wallet, "grupo-vip": MessageCircle,
-  auloes: Video, mentorias: GraduationCap, calculadoras: Calculator, passagens: Plane, historico: Clock3,
+  "clientes-admin": Users, financeiro: Wallet, calculadoras: Calculator, passagens: Plane, historico: Clock3,
 };
 
 export function DashboardSidebar({ mobileOpen, route, navItems, navigate, notify }: {
