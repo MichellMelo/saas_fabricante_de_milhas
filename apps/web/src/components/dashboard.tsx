@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { DashboardSidebar, type DashboardRoute, type SidebarNavItem } from "@/components/dashboard-sidebar";
 import { DashboardFooter } from "@/components/dashboard-footer";
@@ -192,6 +192,18 @@ export function Dashboard({ user }: { user: DashboardUser }) {
   const [period, setPeriod] = useState("30");
   const [toast, setToast] = useState("");
   const [updated, setUpdated] = useState(false);
+
+  useEffect(() => {
+    const syncRouteFromHash = () => {
+      const hash = window.location.hash.slice(1);
+      if (navItems.some((item) => item.key === hash)) {
+        setRoute(hash as RouteKey);
+      }
+    };
+    syncRouteFromHash();
+    window.addEventListener("hashchange", syncRouteFromHash);
+    return () => window.removeEventListener("hashchange", syncRouteFromHash);
+  }, []);
   function notify(message: string) {
     setToast(message);
     window.setTimeout(() => setToast(""), 3200);
