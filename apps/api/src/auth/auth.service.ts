@@ -66,8 +66,11 @@ export class AuthService {
  async login(dto: LoginDto) {
   const email = dto.email.trim().toLowerCase();
   const user = await this.prisma.user.findUnique({ where: { email } });
-  if (!user?.active || !user.passwordHash || !(await compare(dto.password, user.passwordHash))) {
+  if (!user || !user.passwordHash || !(await compare(dto.password, user.passwordHash))) {
    throw new UnauthorizedException("E-mail ou senha inválidos.");
+  }
+  if (!user.active) {
+   throw new UnauthorizedException("Sua conta está inativa. Entre em contato com o administrador para solicitar a reativação.");
   }
   return {
    user: { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt },
