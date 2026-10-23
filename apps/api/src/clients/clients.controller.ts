@@ -25,6 +25,12 @@ export class ClientsController {
     return this.clients.listClients();
   }
 
+  @Get("clients/expiring-access")
+  listExpiringAccesses(@Req() request: AuthenticatedRequest) {
+    this.assertAdmin(request);
+    return this.clients.listExpiringAccesses();
+  }
+
   @Get("invitations")
   listInvitations(@Req() request: AuthenticatedRequest) {
     this.assertAdmin(request);
