@@ -298,7 +298,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                 <Alert className="demo-notice">
                   <ShieldCheck size={16} className="shrink-0" />
                   <AlertDescription>
-                    <strong>Ambiente de demonstração.</strong> Os saldos, valores
+                    <strong>AMBIENTE DE DEMONSTRAÇÃO.</strong> Os saldos, valores
                     e oportunidades abaixo são fictícios e servem apenas para
                     apresentar a interface.
                   </AlertDescription>
