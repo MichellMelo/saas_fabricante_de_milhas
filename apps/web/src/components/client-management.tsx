@@ -180,7 +180,7 @@ function ClientPayments({ client, payments, onCreate, onSetPaid }: {
   </section>;
 }
 
-export function ClientManagement({ onBack }: { onBack: () => void }) {
+export function ClientManagement({ onBack, selectedClientId }: { onBack: () => void; selectedClientId?: string }) {
   const [clients, setClients] = useState<Client[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -196,7 +196,11 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
   const [notice, setNotice] = useState("");
   const [clientQuery, setClientQuery] = useState("");
   const [accessFilter, setAccessFilter] = useState<"all" | "active" | "none">("all");
-  const [expandedClientId, setExpandedClientId] = useState<string | null>(null);
+  const [expandedClientId, setExpandedClientId] = useState<string | null>(selectedClientId ?? null);
+
+  useEffect(() => {
+    if (selectedClientId) setExpandedClientId(selectedClientId);
+  }, [selectedClientId]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -386,6 +390,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
 
   const normalizedQuery = clientQuery.trim().toLocaleLowerCase("pt-BR");
   const filteredClients = clients.filter((client) => {
+    if (selectedClientId && client.id !== selectedClientId) return false;
     const matchesQuery = !normalizedQuery || [client.name ?? "", client.email].some((value) => value.toLocaleLowerCase("pt-BR").includes(normalizedQuery));
     const hasActiveAccess = client.productAccesses.some((access) => isAccessActive(access));
     const matchesAccess = accessFilter === "all" || (accessFilter === "active" ? hasActiveAccess : !hasActiveAccess);
@@ -397,8 +402,8 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a6792d]">Administração · Clientes</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Clientes e produtos</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Crie convites e controle o acesso de cada cliente ao Grupo VIP, aulões e mentorias. A API valida as permissões no servidor.</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">{selectedClientId ? "Ficha do cliente" : "Clientes e produtos"}</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{selectedClientId ? "Consulte e gerencie os dados, acessos e pagamentos deste cliente." : "Crie convites e controle o acesso de cada cliente ao Grupo VIP, aulões e mentorias. A API valida as permissões no servidor."}</p>
         </div>
         <button onClick={() => void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 disabled:opacity-50"><RefreshCw size={15} /> Atualizar</button>
       </div>
@@ -406,8 +411,8 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
       {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
       {notice && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{notice}</div>}
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(320px,0.8fr)_minmax(0,1.2fr)]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className={"grid gap-5 " + (selectedClientId ? "grid-cols-1" : "xl:grid-cols-[minmax(320px,0.8fr)_minmax(0,1.2fr)]")}>
+        {!selectedClientId && <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f6f0e2] text-[#9a7129]"><UserPlus size={19} /></span>
             <div><h2 className="font-semibold text-slate-900">Novo cliente</h2><p className="mt-1 text-xs text-slate-500">Cadastre primeiro; o convite pode ser enviado depois.</p></div>
@@ -428,14 +433,14 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
             <button type="submit" disabled={saving} className="w-full rounded-xl bg-[#101a2b] px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{saving ? "Cadastrando..." : "Cadastrar cliente"}</button>
           </form>
 
-        </div>
+        </div>}
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-          <div className="flex items-center gap-3">
+          {!selectedClientId && <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-slate-700"><Users size={19} /></span>
             <div><h2 className="font-semibold text-slate-900">Base de clientes</h2><p className="mt-1 text-xs text-slate-500">{clients.length} contas cadastradas · {clients.filter((client) => client.productAccesses.some((access) => isAccessActive(access))).length} com acesso ativo</p></div>
-          </div>
-          {!loading && clients.length > 0 && <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
+          </div>}
+          {!selectedClientId && !loading && clients.length > 0 && <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
             <label className="relative block">
               <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input value={clientQuery} onChange={(event) => setClientQuery(event.target.value)} placeholder="Buscar por nome ou e-mail" aria-label="Buscar clientes por nome ou e-mail" className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none focus:border-[#b58a37] focus:ring-2 focus:ring-[#d6b66f]/20" />
@@ -451,7 +456,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
               const expanded = expandedClientId === client.id;
               const activeAccessCount = client.productAccesses.filter((access) => isAccessActive(access)).length;
               return <article key={client.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-                <button type="button" aria-expanded={expanded} onClick={() => setExpandedClientId(expanded ? null : client.id)} className="flex w-full flex-wrap items-center justify-between gap-3 p-4 text-left transition hover:bg-slate-50">
+                <button type="button" aria-expanded={expanded} onClick={() => selectedClientId ? undefined : window.location.assign("/clientes/" + encodeURIComponent(client.id))} className="flex w-full flex-wrap items-center justify-between gap-3 p-4 text-left transition hover:bg-slate-50">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-semibold text-slate-900">{client.name || "Sem nome"}</h3>
@@ -460,7 +465,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
                     <p className="mt-1 truncate text-xs text-slate-500">{client.email}</p>
                     <p className="mt-1 text-[11px] text-slate-400">Cadastro em {new Date(client.createdAt).toLocaleDateString("pt-BR")}</p><p className="mt-1 text-[11px] font-medium text-slate-500">{client.hasAccount ? (client.active ? "Conta ativa" : "Conta inativa") : invitations.some((invitation) => invitation.email.toLowerCase() === client.email.toLowerCase()) ? "Convite pendente" : "Aguardando convite"}</p>
                   </div>
-                  <ChevronDown size={18} className={"shrink-0 text-slate-500 transition-transform " + (expanded ? "rotate-180" : "")} />
+                  {selectedClientId ? <span className="text-xs font-semibold text-[#9a7129]">Ficha aberta</span> : <ChevronDown size={18} className="shrink-0 text-slate-500" />}
                 </button>
                 {expanded && <div className="space-y-3 border-t border-slate-200 bg-slate-50/60 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Produtos e validade de acesso</p>
@@ -483,7 +488,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      {!selectedClientId && <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex items-center gap-3"><ShieldCheck size={19} className="text-[#a6792d]" /><div><h2 className="font-semibold text-slate-900">Convites pendentes</h2><p className="mt-1 text-xs text-slate-500">Convites ativos ainda não utilizados.</p></div></div>
         {invitations.length === 0 ? <p className="mt-5 text-sm text-slate-500">Nenhum convite pendente.</p> : <div className="mt-4 divide-y divide-slate-100">
           {invitations.map((invitation) => <div key={invitation.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
@@ -491,8 +496,9 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
             <div className="flex items-center gap-3"><p className="text-xs text-slate-500">Expira em {new Date(invitation.expiresAt).toLocaleDateString("pt-BR")}</p><button type="button" onClick={() => void cancelInvitation(invitation)} disabled={saving} className="rounded-lg border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50">Cancelar convite</button></div>
           </div>)}
         </div>}
-      </div>
-      <button onClick={onBack} className="text-sm font-semibold text-slate-600 hover:text-slate-900">← Voltar ao painel</button>
+      </div>}
+      {!selectedClientId && <button onClick={onBack} className="text-sm font-semibold text-slate-600 hover:text-slate-900">← Voltar ao painel</button>}
+      {selectedClientId && <button onClick={() => window.location.assign("/#clientes-admin")} className="text-sm font-semibold text-slate-600 hover:text-slate-900">← Voltar à lista de clientes</button>}
     </section>
   );
 }
