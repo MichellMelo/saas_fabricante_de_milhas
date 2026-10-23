@@ -149,10 +149,6 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
 
   useEffect(() => { void load(); }, [load]);
 
-  function toggleProduct(product: Product) {
-    setProducts((current) => current.includes(product) ? current.filter((item) => item !== product) : [...current, product]);
-  }
-
   async function createClient(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
@@ -280,16 +276,13 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
             <label className="block text-sm font-medium text-slate-700">Nome <span className="font-normal text-slate-400">(opcional)</span>
               <input maxLength={100} value={name} onChange={(event) => setName(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-3.5 py-3 outline-none focus:border-[#b58a37] focus:ring-2 focus:ring-[#d6b66f]/20" placeholder="Nome do cliente" />
             </label>
-            <fieldset>
-              <legend className="text-sm font-medium text-slate-700">Produtos liberados</legend>
-              <div className="mt-3 space-y-2">
-                {PRODUCTS.map((product) => <label key={product.value} className="flex items-center gap-3 rounded-xl border border-slate-200 px-3.5 py-3 text-sm text-slate-700">
-                  <input type="checkbox" checked={products.includes(product.value)} onChange={() => toggleProduct(product.value)} className="h-4 w-4 accent-[#a6792d]" />
-                  {product.label}
-                </label>)}
-              </div>
-            </fieldset>
-            <button type="submit" disabled={saving || products.length === 0} className="w-full rounded-xl bg-[#101a2b] px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{saving ? "Criando convite..." : "Criar convite seguro"}</button>
+            <label className="block text-sm font-medium text-slate-700">Telefone <span className="font-normal text-slate-400">(opcional)</span>
+              <input type="tel" maxLength={40} value={phone} onChange={(event) => setPhone(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-3.5 py-3 outline-none focus:border-[#b58a37] focus:ring-2 focus:ring-[#d6b66f]/20" placeholder="(00) 00000-0000" />
+            </label>
+            <label className="block text-sm font-medium text-slate-700">Observações <span className="font-normal text-slate-400">(opcional)</span>
+              <textarea maxLength={5000} value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} className="mt-2 w-full rounded-xl border border-slate-300 px-3.5 py-3 outline-none focus:border-[#b58a37] focus:ring-2 focus:ring-[#d6b66f]/20" placeholder="Informações importantes sobre o cliente" />
+            </label>
+            <button type="submit" disabled={saving} className="w-full rounded-xl bg-[#101a2b] px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{saving ? "Cadastrando..." : "Cadastrar cliente"}</button>
           </form>
 
         </div>
