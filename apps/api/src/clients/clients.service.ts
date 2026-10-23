@@ -18,7 +18,7 @@ export class ClientsService {
         name: true,
         createdAt: true,
         productAccesses: {
-          select: { id: true, product: true, active: true, startsAt: true, expiresAt: true },
+          select: { id: true, product: true, period: true, active: true, startsAt: true, expiresAt: true },
           orderBy: { product: "asc" },
         },
       },
