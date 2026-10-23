@@ -209,6 +209,7 @@ type DashboardUser = {
   name: string | null;
   createdAt: string;
   isAdmin?: boolean;
+  productAccesses?: { product: "GROUP_VIP" | "AULAO" | "MENTORSHIP"; active: boolean; startsAt: string; expiresAt: string | null }[];
 };
 
 export function Dashboard({ user }: { user: DashboardUser }) {
@@ -276,7 +277,13 @@ export function Dashboard({ user }: { user: DashboardUser }) {
       <DashboardSidebar
         mobileOpen={mobileOpen}
         route={route}
-        navItems={user.isAdmin ? navItems : navItems.filter((item) => item.key !== "clientes-admin" && item.key !== "financeiro")}
+        navItems={user.isAdmin ? navItems : navItems.filter((item) => {
+          if (item.key === "clientes-admin" || item.key === "financeiro" || item.key === "programas-admin") return false;
+          if (item.key === "grupo-vip") return user.productAccesses?.some((access) => access.product === "GROUP_VIP") ?? false;
+          if (item.key === "auloes") return user.productAccesses?.some((access) => access.product === "AULAO") ?? false;
+          if (item.key === "mentorias") return user.productAccesses?.some((access) => access.product === "MENTORSHIP") ?? false;
+          return true;
+        })}
         navigate={navigate}
         notify={notify}
       />
