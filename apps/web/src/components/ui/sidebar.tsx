@@ -19,15 +19,16 @@ export function SidebarProvider({ children, mobileOpen = false, setMobileOpen = 
   );
 }
 
-export function Sidebar({ children, className, ...props }: React.HTMLAttributes<HTMLElement>) {
+export function Sidebar({ children, className, mobileOpen, ...props }: React.HTMLAttributes<HTMLElement> & { mobileOpen?: boolean }) {
   const context = React.useContext(SidebarContext);
+  const isMobileOpen = mobileOpen ?? context?.mobileOpen ?? false;
   return (
     <aside
       data-sidebar="sidebar"
-      data-state={context?.mobileOpen ? "open" : "closed"}
+      data-state={isMobileOpen ? "open" : "closed"}
       className={cn(
         "group/sidebar fixed inset-y-0 left-0 z-40 flex h-svh w-[16rem] flex-col border-r border-white/10 bg-[#101b2d] text-slate-300 shadow-xl transition-transform duration-200 ease-out md:translate-x-0 md:shadow-none",
-        context?.mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+        isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         className,
       )}
       {...props}
