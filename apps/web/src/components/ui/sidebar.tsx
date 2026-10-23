@@ -27,7 +27,7 @@ export function Sidebar({ children, className, mobileOpen, ...props }: React.HTM
       data-sidebar="sidebar"
       data-state={isMobileOpen ? "open" : "closed"}
       className={cn(
-        "group/sidebar fixed inset-y-0 left-0 z-40 flex h-svh w-[16rem] flex-col border-r border-white/10 bg-[#101b2d] text-slate-300 shadow-xl transition-transform duration-200 ease-out md:translate-x-0 md:shadow-none",
+        "group/sidebar fixed inset-y-0 left-0 z-40 flex h-dvh w-[16rem] flex-col overflow-hidden border-r border-white/10 bg-[#101b2d] text-slate-300 shadow-xl transition-transform duration-200 ease-out md:translate-x-0 md:shadow-none",
         isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         className,
       )}
@@ -43,7 +43,7 @@ export function SidebarHeader({ className, ...props }: React.HTMLAttributes<HTML
 }
 
 export function SidebarContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div data-sidebar="content" className={cn("flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 py-2", className)} {...props} />;
+  return <div data-sidebar="content" className={cn("flex min-h-0 flex-1 flex-col gap-5 overflow-y-visible px-3 py-2", className)} {...props} />;
 }
 
 export function SidebarFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
