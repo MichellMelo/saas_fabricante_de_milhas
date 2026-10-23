@@ -5,6 +5,7 @@ import { CreateInvitationDto } from "./dto/create-invitation.dto";
 import { SetProductAccessDto } from "./dto/set-product-access.dto";
 import { CreateClientDto } from "./dto/create-client.dto";
 import { UpdateClientDto } from "./dto/update-client.dto";
+import { CreateClientPaymentDto } from "./dto/create-client-payment.dto";
 
 @UseGuards(JwtAuthGuard)
 @Controller("admin")
@@ -31,6 +32,27 @@ export class ClientsController {
   updateClient(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() dto: UpdateClientDto) {
     this.assertAdmin(request);
     return this.clients.updateClient(id, dto);
+  }
+
+  @Get("payments")
+  listPayments(@Req() request: AuthenticatedRequest) {
+    this.assertAdmin(request);
+    return this.clients.listPayments();
+  }
+
+  @Post("payments")
+  createPayment(@Req() request: AuthenticatedRequest, @Body() dto: CreateClientPaymentDto) {
+    this.assertAdmin(request);
+    return this.clients.createPayment(dto);
+  }
+
+  @Post("payments/:id/status")
+  setPaymentPaid(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() body: { paid?: boolean }) {
+    this.assertAdmin(request);
+    if (typeof body.paid !== "boolean") {
+      throw new ForbiddenException("Informe se o lançamento foi pago.");
+    }
+    return this.clients.setPaymentPaid(id, body.paid);
   }
 
   @Get("clients")
