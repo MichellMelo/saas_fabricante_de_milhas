@@ -38,6 +38,8 @@ import { FinanceDashboard } from "@/components/finance-dashboard";
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
   { key: "dashboard", label: "Visão geral", icon: LayoutDashboard },
+  { key: "oportunidades", label: "Oportunidades", icon: Sparkles },
+  { key: "aprender", label: "Aprender", icon: GraduationCap },
   {
     key: "programas",
     label: "Programas e saldos",
@@ -57,6 +59,18 @@ const routeCopy: Record<
   Exclude<RouteKey, "dashboard">,
   { title: string; eyebrow: string; description: string; icon: LucideIcon }
 > = {
+  oportunidades: {
+    title: "Oportunidades",
+    eyebrow: "OFERTAS ESTRATÉGICAS",
+    description: "Consulte oportunidades publicadas, avalie as regras e acesse a fonte original antes de tomar uma decisão.",
+    icon: Sparkles,
+  },
+  aprender: {
+    title: "Aprender",
+    eyebrow: "CONTEÚDO EDUCACIONAL",
+    description: "Acesse Aulões, Mentorias e materiais liberados para seus produtos.",
+    icon: GraduationCap,
+  },
   programas: {
     title: "Programas e saldos",
     eyebrow: "PATRIMÔNIO DE PONTOS",
@@ -522,11 +536,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                       variant="ghost"
                       size="icon"
                       aria-label="Ver todas as oportunidades"
-                      onClick={() =>
-                        notify(
-                          "A lista completa de oportunidades fará parte de uma próxima fase.",
-                        )
-                      }
+                      onClick={() => navigate("oportunidades")}
                     >
                       ···
                     </Button>
@@ -582,11 +592,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   </div>
                   <button
                     className="panel-footer-link"
-                    onClick={() =>
-                      notify(
-                        "As oportunidades exibidas são exemplos fictícios, sem ofertas vigentes.",
-                      )
-                    }
+                    onClick={() => navigate("oportunidades")}
                   >
                     Explorar oportunidades <ArrowRight size={15} />
                   </button>
@@ -667,6 +673,10 @@ export function Dashboard({ user }: { user: DashboardUser }) {
               </motion.section>
               <DashboardFooter reduceMotion={reduceMotion} notify={notify} />
             </>
+          ) : route === "oportunidades" ? (
+            <OpportunityCenter />
+          ) : route === "aprender" ? (
+            <LearningHub navigate={navigate} />
           ) : route === "programas" ? (
             <LoyaltyAccounts onBack={() => navigate("dashboard")} />
           ) : route === "programas-admin" ? (
@@ -689,6 +699,28 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           )}
         </motion.div>
       </main>
+      {!mobileOpen && (
+        <nav className="mobile-bottom-nav" aria-label="Navegação principal">
+          {([
+            { key: "dashboard", label: "Início", icon: LayoutDashboard },
+            { key: "oportunidades", label: "Oportunidades", icon: Sparkles },
+            { key: "programas", label: "Meus Pontos", icon: CreditCard },
+            { key: "grupo-vip", label: "Comunidade", icon: MessageCircle },
+            { key: "aprender", label: "Aprender", icon: GraduationCap },
+          ] as const).map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              type="button"
+              className={`mobile-nav-item ${route === key ? "is-active" : ""}`}
+              onClick={() => navigate(key)}
+              aria-current={route === key ? "page" : undefined}
+            >
+              <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
+              <span>{label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -707,6 +739,60 @@ export function Dashboard({ user }: { user: DashboardUser }) {
     </div>
   );
 }
+function OpportunityCenter() {
+  return (
+    <section className="space-y-6">
+      <div className="welcome-row">
+        <div>
+          <div className="eyebrow"><span className="eyebrow-line" /> OFERTAS ESTRATÉGICAS</div>
+          <h1 className="page-title">Oportunidades<span className="gold-period">.</span></h1>
+          <p className="page-subtitle">Avalie regras, restrições, validade e fonte original antes de agir.</p>
+        </div>
+      </div>
+      <Alert className="demo-notice">
+        <ShieldCheck size={16} className="shrink-0" />
+        <AlertDescription>
+          <strong>Somente ofertas verificadas.</strong> Esta área ainda não está conectada a um catálogo de oportunidades; nenhuma oferta fictícia será apresentada como vigente.
+        </AlertDescription>
+      </Alert>
+      <Card className="panel opportunity-empty-state">
+        <div className="placeholder-mark"><Sparkles size={25} /></div>
+        <h2>Nenhuma oportunidade publicada</h2>
+        <p>Quando houver ofertas cadastradas, você poderá abrir os detalhes, consultar regras e restrições, conferir a validade e acessar a fonte original.</p>
+        <Badge variant="gold">Aguardando publicação</Badge>
+      </Card>
+    </section>
+  );
+}
+
+function LearningHub({ navigate }: { navigate: (route: DashboardRoute) => void }) {
+  return (
+    <section className="space-y-6">
+      <div className="welcome-row">
+        <div>
+          <div className="eyebrow"><span className="eyebrow-line" /> CONTEÚDO EDUCACIONAL</div>
+          <h1 className="page-title">Aprender<span className="gold-period">.</span></h1>
+          <p className="page-subtitle">Acesse os materiais e experiências liberados para sua conta.</p>
+        </div>
+      </div>
+      <div className="learning-hub-grid">
+        <Card className="panel learning-hub-card">
+          <div className="placeholder-mark"><Video size={24} /></div>
+          <h2>Aulões</h2>
+          <p>Gravações, materiais e orientações dos aulões disponíveis para você.</p>
+          <Button onClick={() => navigate("auloes")}>Acessar Aulões <ArrowRight size={14} /></Button>
+        </Card>
+        <Card className="panel learning-hub-card">
+          <div className="placeholder-mark"><GraduationCap size={24} /></div>
+          <h2>Mentorias</h2>
+          <p>Materiais, orientações e links liberados conforme seu acesso contratado.</p>
+          <Button onClick={() => navigate("mentorias")}>Acessar Mentorias <ArrowRight size={14} /></Button>
+        </Card>
+      </div>
+    </section>
+  );
+}
+
 function ModulePlaceholder({
   route,
   onBack,
