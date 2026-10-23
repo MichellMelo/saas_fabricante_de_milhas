@@ -2,7 +2,8 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { createHash, randomBytes } from "node:crypto";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateInvitationDto } from "./dto/create-invitation.dto";
-import { SubscriptionPeriod } from "@prisma/client";
+import { PaymentStatus, SubscriptionPeriod } from "@prisma/client";
+import { CreateClientPaymentDto } from "./dto/create-client-payment.dto";
 import { SetProductAccessDto } from "./dto/set-product-access.dto";
 import { CreateClientDto } from "./dto/create-client.dto";
 import { UpdateClientDto } from "./dto/update-client.dto";
@@ -96,6 +97,60 @@ export class ClientsService {
       where: { id },
       data: { active },
       select: { id: true, email: true, active: true },
+    });
+  }
+
+  async listPayments() {
+    const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
+    return this.prisma.clientPayment.findMany({
+      where: adminEmails.length ? { user: { email: { notIn: adminEmails } } } : undefined,
+      orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
+      select: {
+        id: true, userId: true, product: true, amount: true, dueAt: true, status: true,
+        method: true, paidAt: true, notes: true, createdAt: true,
+        user: { select: { id: true, name: true, email: true } },
+      },
+    });
+  }
+
+  async createPayment(dto: CreateClientPaymentDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, select: { id: true, email: true } });
+    if (!user) throw new NotFoundException("Cliente não encontrado.");
+    const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
+    if (adminEmails.includes(user.email.trim().toLowerCase())) {
+      throw new BadRequestException("Não é permitido registrar cobranças para uma conta administrativa.");
+    }
+    const amount = Number(dto.amount);
+    if (!Number.isFinite(amount) || amount <= 0) throw new BadRequestException("O valor deve ser maior que zero.");
+    const dueAt = new Date(dto.dueAt);
+    if (Number.isNaN(dueAt.getTime())) throw new BadRequestException("Informe uma data de vencimento válida.");
+    return this.prisma.clientPayment.create({
+      data: {
+        userId: user.id,
+        product: dto.product,
+        amount,
+        dueAt,
+        method: dto.method,
+        notes: dto.notes?.trim() || null,
+      },
+      select: {
+        id: true, userId: true, product: true, amount: true, dueAt: true, status: true,
+        method: true, paidAt: true, notes: true, createdAt: true,
+      },
+    });
+  }
+
+  async setPaymentPaid(id: string, paid: boolean) {
+    const payment = await this.prisma.clientPayment.findUnique({ where: { id }, select: { id: true, user: { select: { email: true } } } });
+    if (!payment) throw new NotFoundException("Lançamento financeiro não encontrado.");
+    const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
+    if (adminEmails.includes(payment.user.email.trim().toLowerCase())) {
+      throw new BadRequestException("Não é permitido alterar cobranças de uma conta administrativa.");
+    }
+    return this.prisma.clientPayment.update({
+      where: { id },
+      data: { status: paid ? PaymentStatus.PAID : PaymentStatus.PENDING, paidAt: paid ? new Date() : null },
+      select: { id: true, status: true, paidAt: true },
     });
   }
 
