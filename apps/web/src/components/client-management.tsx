@@ -10,12 +10,100 @@ const PRODUCTS = [
 ] as const;
 
 type Product = (typeof PRODUCTS)[number]["value"];
-type Access = { id: string; product: Product; active: boolean; startsAt: string; expiresAt: string | null };
+type Period = "MONTHLY" | "SEMIANNUAL" | "ANNUAL" | "CUSTOM";
+const PERIODS: { value: Period; label: string; months: number | null }[] = [
+  { value: "MONTHLY", label: "Mensal", months: 1 },
+  { value: "SEMIANNUAL", label: "Semestral (6 meses)", months: 6 },
+  { value: "ANNUAL", label: "Anual (12 meses)", months: 12 },
+  { value: "CUSTOM", label: "Personalizado / sem prazo automático", months: null },
+];
+type Access = { id: string; product: Product; period: Period; active: boolean; startsAt: string; expiresAt: string | null };
 type Client = { id: string; email: string; name: string | null; createdAt: string; productAccesses: Access[] };
 type Invitation = { id: string; email: string; name: string | null; productTypes: Product[]; expiresAt: string; createdAt: string };
 
+function toDateInput(value?: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
+}
+
+function dateAtLocalNoon(value: string) {
+  return new Date(value + "T12:00:00").toISOString();
+}
+
+function addMonthsToDate(value: string, months: number | null) {
+  if (!value || months === null) return "";
+  const date = new Date(value + "T12:00:00");
+  const day = date.getDate();
+  date.setDate(1);
+  date.setMonth(date.getMonth() + months);
+  const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  date.setDate(Math.min(day, lastDay));
+  return toDateInput(date.toISOString());
+}
+
 function isAccessActive(access?: Access) {
   return Boolean(access?.active && new Date(access.startsAt) <= new Date() && (!access.expiresAt || new Date(access.expiresAt) > new Date()));
+}
+
+function ProductAccessEditor({ product, label, access, onSave }: {
+  product: Product;
+  label: string;
+  access?: Access;
+  onSave: (active: boolean, period: Period, startsAt: string, expiresAt: string) => Promise<void>;
+}) {
+  const [active, setActive] = useState(isAccessActive(access));
+  const [period, setPeriod] = useState<Period>(access?.period ?? "MONTHLY");
+  const initialStart = toDateInput(access?.startsAt) || toDateInput(new Date().toISOString());
+  const [startsAt, setStartsAt] = useState(initialStart);
+  const initialMonths = PERIODS.find((item) => item.value === (access?.period ?? "MONTHLY"))?.months ?? 1;
+  const [expiresAt, setExpiresAt] = useState(toDateInput(access?.expiresAt) || addMonthsToDate(initialStart, initialMonths));
+  const [saving, setSaving] = useState(false);
+
+  function changePeriod(next: Period) {
+    setPeriod(next);
+    const months = PERIODS.find((item) => item.value === next)?.months ?? null;
+    setExpiresAt(months === null ? "" : addMonthsToDate(startsAt, months));
+  }
+
+  function changeStart(next: string) {
+    setStartsAt(next);
+    const months = PERIODS.find((item) => item.value === period)?.months ?? null;
+    if (months !== null) setExpiresAt(addMonthsToDate(next, months));
+  }
+
+  async function save() {
+    setSaving(true);
+    try { await onSave(active, period, startsAt, expiresAt); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-200 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-800">
+          <input type="checkbox" checked={active} onChange={(event) => setActive(event.target.checked)} className="h-4 w-4 accent-[#a6792d]" />
+          {label}
+        </label>
+        <span className={"rounded-full px-2.5 py-1 text-[11px] font-semibold " + (active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500")}>{active ? "Ativo" : "Inativo"}</span>
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <label className="text-xs font-medium text-slate-600">Tipo de assinatura
+          <select value={period} onChange={(event) => changePeriod(event.target.value as Period)} className="mt-1.5 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-700">
+            {PERIODS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+          </select>
+        </label>
+        <label className="text-xs font-medium text-slate-600">Data de adesão
+          <input type="date" required value={startsAt} onChange={(event) => changeStart(event.target.value)} className="mt-1.5 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-sm text-slate-700" />
+        </label>
+        <label className="text-xs font-medium text-slate-600 sm:col-span-2">Data final
+          <input type="date" value={expiresAt} onChange={(event) => setExpiresAt(event.target.value)} disabled={period !== "CUSTOM"} className="mt-1.5 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-sm text-slate-700 disabled:bg-slate-50 disabled:text-slate-500" />
+          <span className="mt-1 block font-normal text-slate-400">{period === "CUSTOM" ? "Defina a data final ou deixe em branco para não expirar automaticamente." : "Calculada automaticamente a partir da data de adesão."}</span>
+        </label>
+      </div>
+      <button type="button" onClick={() => void save()} disabled={saving || !startsAt} className="mt-3 rounded-lg bg-[#101a2b] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{saving ? "Salvando..." : "Salvar acesso"}</button>
+    </div>
+  );
 }
 
 export function ClientManagement({ onBack }: { onBack: () => void }) {
@@ -92,14 +180,14 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
     }
   }
 
-  async function updateAccess(client: Client, product: Product, active: boolean) {
+  async function updateAccess(client: Client, product: Product, active: boolean, period: Period, startsAt: string, expiresAt: string) {
     setError("");
     setNotice("");
     try {
       const response = await fetch(`/api/admin/clients/${encodeURIComponent(client.id)}/product-access`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product, active }),
+        body: JSON.stringify({ product, active, period, startsAt: dateAtLocalNoon(startsAt), expiresAt: expiresAt ? dateAtLocalNoon(expiresAt) : null }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -198,14 +286,10 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
                 <div><h3 className="font-semibold text-slate-900">{client.name || "Sem nome"}</h3><p className="mt-1 text-xs text-slate-500">{client.email}</p></div>
                 <span className="text-[11px] text-slate-400">Desde {new Date(client.createdAt).toLocaleDateString("pt-BR")}</span>
               </div>
-              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <div className="mt-4 space-y-3">
                 {PRODUCTS.map((product) => {
                   const access = client.productAccesses.find((item) => item.product === product.value);
-                  const active = isAccessActive(access);
-                  return <label key={product.value} className="flex items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-2 text-xs text-slate-700">
-                    <input type="checkbox" checked={active} onChange={(event) => void updateAccess(client, product.value, event.target.checked)} className="h-4 w-4 accent-[#a6792d]" />
-                    <span>{product.label}</span>
-                  </label>;
+                  return <ProductAccessEditor key={product.value} product={product.value} label={product.label} access={access} onSave={(active, period, startsAt, expiresAt) => updateAccess(client, product.value, active, period, startsAt, expiresAt)} />;
                 })}
               </div>
             </article>)}
