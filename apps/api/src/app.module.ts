@@ -8,6 +8,7 @@ import { GroupVipModule } from "./group-vip/group-vip.module";
 import { HealthController } from "./health.controller";
 import { LoyaltyModule } from "./loyalty/loyalty.module";
 import { PrismaModule } from "./prisma/prisma.module";
+import { ProductContentModule } from "./product-content/product-content.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PrismaModule } from "./prisma/prisma.module";
     AuthModule,
     ClientsModule,
     GroupVipModule,
+    ProductContentModule,
     LoyaltyModule,
   ],
   controllers: [HealthController],
