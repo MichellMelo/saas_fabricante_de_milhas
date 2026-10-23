@@ -1618,3 +1618,47 @@ body { font-size: 15px; }
     padding: 28px 18px;
   }
 }
+
+
+/* Mobile overflow fix: the editorial desktop grid rules are declared later
+   than the original breakpoint, so explicitly restore single-column layouts
+   at the end of the cascade. */
+@media (max-width: 760px) {
+  .page-content {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+  .content-grid,
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100%;
+    min-width: 0;
+  }
+  .content-grid > *,
+  .bottom-grid > *,
+  .kpi-grid > *,
+  .panel,
+  .quick-insight {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .quick-insight h2,
+  .quick-insight p,
+  .panel-heading h2,
+  .panel-heading p {
+    overflow-wrap: anywhere;
+  }
+  .program-content {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+  .chart-wrap,
+  .chart-legend,
+  .panel-note {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
