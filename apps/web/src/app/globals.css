@@ -1698,3 +1698,46 @@ body { font-size: 15px; }
 .topbar .topbar-actions > button:last-child:hover {
   background: rgba(255, 253, 248, .08);
 }
+
+
+/* Unified module page headers */
+.module-welcome-row {
+  position: relative;
+  margin: -28px -28px 28px;
+  padding: 36px 28px 30px;
+  border-bottom: 1px solid rgba(255, 253, 248, .1);
+  color: #fffdf8;
+  background: #111b2b;
+  overflow: hidden;
+}
+.module-welcome-row::after {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  right: 8%;
+  top: -205px;
+  border: 1px solid rgba(199, 164, 93, .2);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.module-welcome-row > * {
+  position: relative;
+  z-index: 1;
+}
+.module-welcome-row h1 {
+  color: #fffdf8 !important;
+}
+.module-welcome-row p {
+  color: #c0cad8 !important;
+}
+.module-welcome-row button.text-slate-500 {
+  color: #c0cad8 !important;
+}
+@media (max-width: 760px) {
+  .module-welcome-row {
+    margin: -24px -17px 22px;
+    padding: 30px 20px 25px;
+    gap: 18px;
+  }
+}
