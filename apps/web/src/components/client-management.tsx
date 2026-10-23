@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { Copy, RefreshCw, Search, ShieldCheck, UserPlus, Users } from "lucide-react";
+import { ChevronDown, Copy, RefreshCw, Search, ShieldCheck, UserPlus, Users } from "lucide-react";
 
 const PRODUCTS = [
   { value: "GROUP_VIP", label: "Grupo VIP" },
@@ -119,6 +119,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
   const [notice, setNotice] = useState("");
   const [clientQuery, setClientQuery] = useState("");
   const [accessFilter, setAccessFilter] = useState<"all" | "active" | "none">("all");
+  const [expandedClientId, setExpandedClientId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -281,18 +282,30 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
             </select>
           </div>}
           {loading ? <p className="py-10 text-sm text-slate-500">Carregando clientes...</p> : clients.length === 0 ? <p className="py-10 text-sm text-slate-500">Nenhum usuário cadastrado ainda.</p> : filteredClients.length === 0 ? <p className="py-10 text-sm text-slate-500">Nenhum cliente corresponde aos filtros selecionados.</p> : <div className="mt-5 space-y-4">
-            {filteredClients.map((client) => <article key={client.id} className="rounded-xl border border-slate-200 p-4">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div><h3 className="font-semibold text-slate-900">{client.name || "Sem nome"}</h3><p className="mt-1 text-xs text-slate-500">{client.email}</p></div>
-                <span className="text-[11px] text-slate-400">Desde {new Date(client.createdAt).toLocaleDateString("pt-BR")}</span>
-              </div>
-              <div className="mt-4 space-y-3">
-                {PRODUCTS.map((product) => {
-                  const access = client.productAccesses.find((item) => item.product === product.value);
-                  return <ProductAccessEditor key={product.value} label={product.label} access={access} onSave={(active, period, startsAt, expiresAt) => updateAccess(client, product.value, active, period, startsAt, expiresAt)} />;
-                })}
-              </div>
-            </article>)}
+            {filteredClients.map((client) => {
+              const expanded = expandedClientId === client.id;
+              const activeAccessCount = client.productAccesses.filter((access) => isAccessActive(access)).length;
+              return <article key={client.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                <button type="button" aria-expanded={expanded} onClick={() => setExpandedClientId(expanded ? null : client.id)} className="flex w-full flex-wrap items-center justify-between gap-3 p-4 text-left transition hover:bg-slate-50">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-semibold text-slate-900">{client.name || "Sem nome"}</h3>
+                      <span className={"rounded-full px-2 py-0.5 text-[10px] font-semibold " + (activeAccessCount > 0 ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500")}>{activeAccessCount > 0 ? `${activeAccessCount} acesso(s) ativo(s)` : "Sem acesso ativo"}</span>
+                    </div>
+                    <p className="mt-1 truncate text-xs text-slate-500">{client.email}</p>
+                    <p className="mt-1 text-[11px] text-slate-400">Cadastro em {new Date(client.createdAt).toLocaleDateString("pt-BR")}</p>
+                  </div>
+                  <ChevronDown size={18} className={"shrink-0 text-slate-500 transition-transform " + (expanded ? "rotate-180" : "")} />
+                </button>
+                {expanded && <div className="space-y-3 border-t border-slate-200 bg-slate-50/60 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Produtos e validade de acesso</p>
+                  {PRODUCTS.map((product) => {
+                    const access = client.productAccesses.find((item) => item.product === product.value);
+                    return <ProductAccessEditor key={product.value} label={product.label} access={access} onSave={(active, period, startsAt, expiresAt) => updateAccess(client, product.value, active, period, startsAt, expiresAt)} />;
+                  })}
+                </div>}
+              </article>;
+            })}
           </div>}
         </div>
       </div>
