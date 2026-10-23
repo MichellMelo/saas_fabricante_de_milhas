@@ -238,6 +238,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
   }
 
   async function setClientStatus(client: Client, active: boolean) {
+    if (!active && !window.confirm("Inativar a conta de " + (client.name || client.email) + "? A pessoa perderá o acesso à plataforma até ser reativada.")) return;
     setError(""); setNotice("");
     try {
       const response = await fetch("/api/admin/clients/" + encodeURIComponent(client.id) + "/status", {
