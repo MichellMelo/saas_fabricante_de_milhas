@@ -1,5 +1,5 @@
 import { IsBoolean, IsDateString, IsEnum, IsOptional } from "class-validator";
-import { ProductType } from "@prisma/client";
+import { ProductType, SubscriptionPeriod } from "@prisma/client";
 
 export class SetProductAccessDto {
   @IsEnum(ProductType)
@@ -7,6 +7,14 @@ export class SetProductAccessDto {
 
   @IsBoolean()
   active!: boolean;
+
+  @IsOptional()
+  @IsEnum(SubscriptionPeriod)
+  period?: SubscriptionPeriod;
+
+  @IsOptional()
+  @IsDateString()
+  startsAt?: string;
 
   @IsOptional()
   @IsDateString()
