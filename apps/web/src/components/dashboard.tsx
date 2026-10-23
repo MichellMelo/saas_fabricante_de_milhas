@@ -48,9 +48,6 @@ const navItems: SidebarNavItem[] = [
   { key: "programas-admin", label: "Cadastro de programas", icon: Settings2 },
   { key: "clientes-admin", label: "Clientes e produtos", icon: Users },
   { key: "financeiro", label: "Financeiro", icon: Wallet },
-  { key: "grupo-vip", label: "Grupo VIP", icon: MessageCircle },
-  { key: "auloes", label: "Aulões", icon: Video },
-  { key: "mentorias", label: "Mentorias", icon: GraduationCap },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator, soon: true },
   { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
   { key: "historico", label: "Histórico", icon: Clock3, soon: true },
@@ -676,7 +673,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           ) : route === "oportunidades" ? (
             <OpportunityCenter />
           ) : route === "aprender" ? (
-            <LearningHub navigate={navigate} />
+            <LearningHub navigate={navigate} user={user} />
           ) : route === "programas" ? (
             <LoyaltyAccounts onBack={() => navigate("dashboard")} />
           ) : route === "programas-admin" ? (
@@ -765,30 +762,37 @@ function OpportunityCenter() {
   );
 }
 
-function LearningHub({ navigate }: { navigate: (route: DashboardRoute) => void }) {
+function LearningHub({ navigate, user }: { navigate: (route: DashboardRoute) => void; user: DashboardUser }) {
+  const hasAccess = (product: "GROUP_VIP" | "AULAO" | "MENTORSHIP") =>
+    Boolean(user.isAdmin || user.productAccesses?.some((access) => access.product === product && access.active));
+  const cards = [
+    { product: "GROUP_VIP" as const, title: "Grupo VIP", description: "Publicações, materiais e conteúdos exclusivos da comunidade.", icon: MessageCircle, route: "grupo-vip" as const, action: "Acessar Grupo VIP" },
+    { product: "AULAO" as const, title: "Aulões", description: "Gravações, materiais e orientações dos aulões disponíveis para você.", icon: Video, route: "auloes" as const, action: "Acessar Aulões" },
+    { product: "MENTORSHIP" as const, title: "Mentorias", description: "Materiais, orientações e links liberados para sua mentoria.", icon: GraduationCap, route: "mentorias" as const, action: "Acessar Mentorias" },
+  ].filter((card) => hasAccess(card.product));
   return (
     <section className="space-y-6">
       <div className="welcome-row">
         <div>
           <div className="eyebrow"><span className="eyebrow-line" /> CONTEÚDO EDUCACIONAL</div>
           <h1 className="page-title">Aprender<span className="gold-period">.</span></h1>
-          <p className="page-subtitle">Acesse os materiais e experiências liberados para sua conta.</p>
+          <p className="page-subtitle">Grupo VIP, Aulões e Mentorias em um só lugar. Os conteúdos exibidos respeitam os acessos liberados para sua conta.</p>
         </div>
       </div>
-      <div className="learning-hub-grid">
-        <Card className="panel learning-hub-card">
-          <div className="placeholder-mark"><Video size={24} /></div>
-          <h2>Aulões</h2>
-          <p>Gravações, materiais e orientações dos aulões disponíveis para você.</p>
-          <Button onClick={() => navigate("auloes")}>Acessar Aulões <ArrowRight size={14} /></Button>
-        </Card>
-        <Card className="panel learning-hub-card">
-          <div className="placeholder-mark"><GraduationCap size={24} /></div>
-          <h2>Mentorias</h2>
-          <p>Materiais, orientações e links liberados conforme seu acesso contratado.</p>
-          <Button onClick={() => navigate("mentorias")}>Acessar Mentorias <ArrowRight size={14} /></Button>
-        </Card>
-      </div>
+      {cards.length ? <div className="learning-hub-grid">
+        {cards.map(({ title, description, icon: Icon, route, action }) => (
+          <Card key={route} className="panel learning-hub-card">
+            <div className="placeholder-mark"><Icon size={24} /></div>
+            <h2>{title}</h2>
+            <p>{description}</p>
+            <Button onClick={() => navigate(route)}>{action} <ArrowRight size={14} /></Button>
+          </Card>
+        ))}
+      </div> : <Card className="panel opportunity-empty-state">
+        <div className="placeholder-mark"><GraduationCap size={25} /></div>
+        <h2>Nenhum conteúdo liberado</h2>
+        <p>Quando um produto for associado à sua conta, ele aparecerá aqui.</p>
+      </Card>}
     </section>
   );
 }
