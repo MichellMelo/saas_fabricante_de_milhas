@@ -20,6 +20,16 @@ const PERIODS: { value: Period; label: string; months: number | null }[] = [
 type Access = { id: string; product: Product; period: Period; active: boolean; startsAt: string; expiresAt: string | null };
 type Client = { id: string; email: string; name: string | null; phone: string | null; notes: string | null; active: boolean; hasAccount: boolean; createdAt: string; productAccesses: Access[] };
 type Invitation = { id: string; email: string; name: string | null; productTypes: Product[]; expiresAt: string; createdAt: string };
+type Payment = { id: string; userId: string; product: Product; amount: string | number; dueAt: string; status: "PENDING" | "PAID" | "CANCELLED"; method: "PIX" | "BANK_TRANSFER" | "CREDIT_CARD" | "CASH" | "OTHER" | null; paidAt: string | null; notes: string | null; createdAt: string; user?: { id: string; name: string | null; email: string } };
+const PAYMENT_METHODS = [{ value: "PIX", label: "Pix" }, { value: "BANK_TRANSFER", label: "Transferência" }, { value: "CREDIT_CARD", label: "Cartão" }, { value: "CASH", label: "Dinheiro" }, { value: "OTHER", label: "Outro" }] as const;
+function paymentStatus(payment: Payment) {
+  if (payment.status === "PAID") return "Pago";
+  if (payment.status === "CANCELLED") return "Cancelado";
+  return new Date(payment.dueAt) < new Date() ? "Vencido" : "Pendente";
+}
+function money(value: number | string) {
+  return Number(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
 
 function toDateInput(value?: string | null) {
   if (!value) return "";
@@ -135,6 +145,7 @@ function ClientProfileEditor({ client, onSave }: {
 export function ClientManagement({ onBack }: { onBack: () => void }) {
   const [clients, setClients] = useState<Client[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -153,19 +164,22 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
     setLoading(true);
     setError("");
     try {
-      const [clientResponse, inviteResponse] = await Promise.all([
+      const [clientResponse, inviteResponse, paymentResponse] = await Promise.all([
         fetch("/api/admin/clients", { cache: "no-store" }),
         fetch("/api/admin/invitations", { cache: "no-store" }),
+        fetch("/api/admin/payments", { cache: "no-store" }),
       ]);
       const clientData = await clientResponse.json().catch(() => ({}));
       const inviteData = await inviteResponse.json().catch(() => ({}));
-      if (!clientResponse.ok || !inviteResponse.ok) {
-        const payload = !clientResponse.ok ? clientData : inviteData;
+      const paymentData = await paymentResponse.json().catch(() => ({}));
+      if (!clientResponse.ok || !inviteResponse.ok || !paymentResponse.ok) {
+        const payload = !clientResponse.ok ? clientData : !inviteResponse.ok ? inviteData : paymentData;
         const message = payload.message;
         throw new Error(Array.isArray(message) ? message.join(" ") : message || "Não foi possível carregar a gestão de clientes.");
       }
       setClients(clientData);
       setInvitations(inviteData);
+      setPayments(paymentData);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Não foi possível carregar os dados.");
     } finally {
