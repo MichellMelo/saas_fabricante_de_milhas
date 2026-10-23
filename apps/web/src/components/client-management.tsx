@@ -18,7 +18,7 @@ const PERIODS: { value: Period; label: string; months: number | null }[] = [
   { value: "CUSTOM", label: "Personalizado / sem prazo automático", months: null },
 ];
 type Access = { id: string; product: Product; period: Period; active: boolean; startsAt: string; expiresAt: string | null };
-type Client = { id: string; email: string; name: string | null; createdAt: string; productAccesses: Access[] };
+type Client = { id: string; email: string; name: string | null; phone: string | null; notes: string | null; hasAccount: boolean; createdAt: string; productAccesses: Access[] };
 type Invitation = { id: string; email: string; name: string | null; productTypes: Product[]; expiresAt: string; createdAt: string };
 
 function toDateInput(value?: string | null) {
@@ -111,8 +111,10 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [products, setProducts] = useState<Product[]>(["GROUP_VIP"]);
+  const [phone, setPhone] = useState("");
+  const [notes, setNotes] = useState("");
   const [inviteUrl, setInviteUrl] = useState("");
+  const [inviteClientId, setInviteClientId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -151,8 +153,42 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
     setProducts((current) => current.includes(product) ? current.filter((item) => item !== product) : [...current, product]);
   }
 
-  async function createInvitation(event: FormEvent<HTMLFormElement>) {
+  async function createClient(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setSaving(true);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch("/api/admin/clients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), name: name.trim() || undefined, phone: phone.trim() || undefined, notes: notes.trim() || undefined }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = result.message;
+        throw new Error(Array.isArray(message) ? message.join(" ") : message || "Não foi possível cadastrar o cliente.");
+      }
+      setNotice("Cliente cadastrado. Agora você pode configurar os produtos e enviar o convite quando quiser.");
+      setEmail("");
+      setName("");
+      setPhone("");
+      setNotes("");
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível cadastrar o cliente.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function sendInvitation(client: Client) {
+    const selectedProducts = [...new Set(client.productAccesses.filter((access) => access.active).map((access) => access.product))];
+    if (!selectedProducts.length) {
+      setError("Configure e ative pelo menos um produto na ficha do cliente antes de enviar o convite.");
+      setNotice("");
+      return;
+    }
     setSaving(true);
     setError("");
     setNotice("");
@@ -161,7 +197,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
       const response = await fetch("/api/admin/invitations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), name: name.trim() || undefined, products }),
+        body: JSON.stringify({ email: client.email, name: client.name || undefined, products: selectedProducts }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -169,10 +205,8 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
         throw new Error(Array.isArray(message) ? message.join(" ") : message || "Não foi possível criar o convite.");
       }
       setInviteUrl(result.inviteUrl);
+      setInviteClientId(client.id);
       setNotice("Convite criado. Copie o link e envie ao cliente por um canal seguro. O link expira em 7 dias.");
-      setEmail("");
-      setName("");
-      setProducts(["GROUP_VIP"]);
       await load();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Não foi possível criar o convite.");
@@ -237,9 +271,9 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f6f0e2] text-[#9a7129]"><UserPlus size={19} /></span>
-            <div><h2 className="font-semibold text-slate-900">Convidar cliente</h2><p className="mt-1 text-xs text-slate-500">O convite é válido por 7 dias.</p></div>
+            <div><h2 className="font-semibold text-slate-900">Novo cliente</h2><p className="mt-1 text-xs text-slate-500">Cadastre primeiro; o convite pode ser enviado depois.</p></div>
           </div>
-          <form onSubmit={createInvitation} className="mt-6 space-y-4">
+          <form onSubmit={createClient} className="mt-6 space-y-4">
             <label className="block text-sm font-medium text-slate-700">E-mail do cliente
               <input type="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-3.5 py-3 outline-none focus:border-[#b58a37] focus:ring-2 focus:ring-[#d6b66f]/20" placeholder="cliente@exemplo.com" />
             </label>
@@ -257,12 +291,7 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
             </fieldset>
             <button type="submit" disabled={saving || products.length === 0} className="w-full rounded-xl bg-[#101a2b] px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{saving ? "Criando convite..." : "Criar convite seguro"}</button>
           </form>
-          {inviteUrl && <div className="mt-5 rounded-xl border border-[#e7d7ad] bg-[#fcf8ed] p-4">
-            <p className="text-sm font-semibold text-slate-900">Link de ativação</p>
-            <input readOnly value={inviteUrl} onFocus={(event) => event.currentTarget.select()} className="mt-2 w-full rounded-lg border border-[#e7d7ad] bg-white px-3 py-2 text-xs text-slate-700" aria-label="Link do convite" />
-            <button onClick={() => void copyInvite()} className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#101a2b] px-3 py-2 text-xs font-semibold text-white"><Copy size={13} /> Copiar link</button>
-            <p className="mt-2 text-xs leading-5 text-slate-500">O link contém um token de uso único. Envie apenas ao destinatário correto.</p>
-          </div>}
+
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -293,12 +322,18 @@ export function ClientManagement({ onBack }: { onBack: () => void }) {
                       <span className={"rounded-full px-2 py-0.5 text-[10px] font-semibold " + (activeAccessCount > 0 ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500")}>{activeAccessCount > 0 ? `${activeAccessCount} acesso(s) ativo(s)` : "Sem acesso ativo"}</span>
                     </div>
                     <p className="mt-1 truncate text-xs text-slate-500">{client.email}</p>
-                    <p className="mt-1 text-[11px] text-slate-400">Cadastro em {new Date(client.createdAt).toLocaleDateString("pt-BR")}</p>
+                    <p className="mt-1 text-[11px] text-slate-400">Cadastro em {new Date(client.createdAt).toLocaleDateString("pt-BR")}</p><p className="mt-1 text-[11px] font-medium text-slate-500">{client.hasAccount ? "Conta ativada" : invitations.some((invitation) => invitation.email.toLowerCase() === client.email.toLowerCase()) ? "Convite pendente" : "Aguardando convite"}</p>
                   </div>
                   <ChevronDown size={18} className={"shrink-0 text-slate-500 transition-transform " + (expanded ? "rotate-180" : "")} />
                 </button>
                 {expanded && <div className="space-y-3 border-t border-slate-200 bg-slate-50/60 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Produtos e validade de acesso</p>
+                  {client.notes && <p className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600"><span className="font-semibold text-slate-800">Observações:</span> {client.notes}</p>}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button type="button" onClick={() => void sendInvitation(client)} disabled={saving || client.hasAccount} className="rounded-lg bg-[#101a2b] px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{client.hasAccount ? "Conta já ativada" : invitations.some((invitation) => invitation.email.toLowerCase() === client.email.toLowerCase()) ? "Reenviar convite" : "Enviar convite"}</button>
+                    {inviteUrl && inviteClientId === client.id && <button type="button" onClick={() => void copyInvite()} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"><Copy size={13} /> Copiar link</button>}
+                  </div>
+                  {inviteUrl && inviteClientId === client.id && <div className="rounded-lg border border-[#e7d7ad] bg-[#fcf8ed] p-3"><label className="text-xs font-semibold text-slate-800">Link de ativação<input readOnly value={inviteUrl} onFocus={(event) => event.currentTarget.select()} className="mt-2 w-full rounded-lg border border-[#e7d7ad] bg-white px-3 py-2 text-xs text-slate-700" /></label><p className="mt-2 text-xs leading-5 text-slate-500">Link de uso único, válido por 7 dias. Envie apenas ao destinatário correto.</p></div>}
                   {PRODUCTS.map((product) => {
                     const access = client.productAccesses.find((item) => item.product === product.value);
                     return <ProductAccessEditor key={product.value} label={product.label} access={access} onSave={(active, period, startsAt, expiresAt) => updateAccess(client, product.value, active, period, startsAt, expiresAt)} />;
