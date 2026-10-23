@@ -196,6 +196,9 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
   const [notice, setNotice] = useState("");
   const [clientQuery, setClientQuery] = useState("");
   const [accessFilter, setAccessFilter] = useState<"all" | "active" | "none">("all");
+  const [clientPage, setClientPage] = useState(1);
+  const [detailTab, setDetailTab] = useState<"overview" | "access" | "finance">("overview");
+  const pageSize = 10;
   const [expandedClientId, setExpandedClientId] = useState<string | null>(selectedClientId ?? null);
 
   useEffect(() => {
@@ -396,6 +399,11 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
     const matchesAccess = accessFilter === "all" || (accessFilter === "active" ? hasActiveAccess : !hasActiveAccess);
     return matchesQuery && matchesAccess;
   });
+  const pageCount = Math.max(1, Math.ceil(filteredClients.length / pageSize));
+  const paginatedClients = filteredClients.slice((clientPage - 1) * pageSize, clientPage * pageSize);
+
+  useEffect(() => { setClientPage(1); }, [clientQuery, accessFilter]);
+  useEffect(() => { if (clientPage > pageCount) setClientPage(pageCount); }, [clientPage, pageCount]);
 
   return (
     <section className="space-y-7">
@@ -451,8 +459,8 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
               <option value="none">Sem acesso ativo</option>
             </select>
           </div>}
-          {loading ? <p className="py-10 text-sm text-slate-500">Carregando clientes...</p> : clients.length === 0 ? <p className="py-10 text-sm text-slate-500">Nenhum usuário cadastrado ainda.</p> : filteredClients.length === 0 ? <p className="py-10 text-sm text-slate-500">Nenhum cliente corresponde aos filtros selecionados.</p> : <div className="mt-5 space-y-4">
-            {filteredClients.map((client) => {
+          {loading ? <p className="py-10 text-sm text-slate-500">Carregando clientes...</p> : clients.length === 0 ? <p className="py-10 text-sm text-slate-500">Nenhum usuário cadastrado ainda.</p> : filteredClients.length === 0 ? <p className="py-10 text-sm text-slate-500">{selectedClientId ? "Cliente não encontrado ou sem permissão para visualizar a ficha." : "Nenhum cliente corresponde aos filtros selecionados."}</p> : <div className="mt-5 space-y-4">
+            {paginatedClients.map((client) => {
               const expanded = expandedClientId === client.id;
               const activeAccessCount = client.productAccesses.filter((access) => isAccessActive(access)).length;
               return <article key={client.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -468,22 +476,28 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
                   {selectedClientId ? <span className="text-xs font-semibold text-[#9a7129]">Ficha aberta</span> : <ChevronDown size={18} className="shrink-0 text-slate-500" />}
                 </button>
                 {expanded && <div className="space-y-3 border-t border-slate-200 bg-slate-50/60 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Produtos e validade de acesso</p>
-                  <ClientProfileEditor client={client} onSave={(values) => updateClient(client, values)} />
-                  <div className="flex flex-wrap items-center gap-2">
+                  {selectedClientId && <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+                    {([{ key: "overview", label: "Visão geral" }, { key: "access", label: "Produtos e acessos" }, { key: "finance", label: "Financeiro" }] as const).map((tab) => <button key={tab.key} type="button" onClick={() => setDetailTab(tab.key)} className={"rounded-lg px-3 py-2 text-sm font-semibold " + (detailTab === tab.key ? "bg-[#101a2b] text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100")}>{tab.label}</button>)}
+                  </div>}
+                  {(!selectedClientId || detailTab === "overview") && <ClientProfileEditor client={client} onSave={(values) => updateClient(client, values)} />}
+                  {(!selectedClientId || detailTab === "overview") && <div className="flex flex-wrap items-center gap-2">
                     {client.hasAccount && <button type="button" onClick={() => void setClientStatus(client, !client.active)} disabled={saving} className={"rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-50 " + (client.active ? "border border-rose-200 bg-rose-50 text-rose-700" : "border border-emerald-200 bg-emerald-50 text-emerald-700")}>{client.active ? "Inativar conta" : "Ativar conta"}</button>}
                     <button type="button" onClick={() => void sendInvitation(client)} disabled={saving || client.hasAccount} className="rounded-lg bg-[#101a2b] px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{client.hasAccount ? "Conta já ativada" : invitations.some((invitation) => invitation.email.toLowerCase() === client.email.toLowerCase()) ? "Reenviar convite" : "Enviar convite"}</button>
                     {inviteUrl && inviteClientId === client.id && <button type="button" onClick={() => void copyInvite()} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"><Copy size={13} /> Copiar link</button>}
-                  </div>
-                  {inviteUrl && inviteClientId === client.id && <div className="rounded-lg border border-[#e7d7ad] bg-[#fcf8ed] p-3"><label className="text-xs font-semibold text-slate-800">Link de ativação<input readOnly value={inviteUrl} onFocus={(event) => event.currentTarget.select()} className="mt-2 w-full rounded-lg border border-[#e7d7ad] bg-white px-3 py-2 text-xs text-slate-700" /></label><p className="mt-2 text-xs leading-5 text-slate-500">Link de uso único, válido por 7 dias. Envie apenas ao destinatário correto.</p></div>}
-                  {PRODUCTS.map((product) => {
+                  </div>}
+                  {(!selectedClientId || detailTab === "overview") && inviteUrl && inviteClientId === client.id && <div className="rounded-lg border border-[#e7d7ad] bg-[#fcf8ed] p-3"><label className="text-xs font-semibold text-slate-800">Link de ativação<input readOnly value={inviteUrl} onFocus={(event) => event.currentTarget.select()} className="mt-2 w-full rounded-lg border border-[#e7d7ad] bg-white px-3 py-2 text-xs text-slate-700" /></label><p className="mt-2 text-xs leading-5 text-slate-500">Link de uso único, válido por 7 dias. Envie apenas ao destinatário correto.</p></div>}
+                  {(!selectedClientId || detailTab === "access") && PRODUCTS.map((product) => {
                     const access = client.productAccesses.find((item) => item.product === product.value);
                     return <ProductAccessEditor key={product.value} label={product.label} access={access} onSave={(active, period, startsAt, expiresAt) => updateAccess(client, product.value, active, period, startsAt, expiresAt)} />;
                   })}
-                  <ClientPayments client={client} payments={payments.filter((payment) => payment.userId === client.id)} onCreate={createPayment} onSetPaid={setPaymentPaid} />
+                  {(!selectedClientId || detailTab === "finance") && <ClientPayments client={client} payments={payments.filter((payment) => payment.userId === client.id)} onCreate={createPayment} onSetPaid={setPaymentPaid} />}
                 </div>}
               </article>;
             })}
+            {!selectedClientId && pageCount > 1 && <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+              <p className="text-xs text-slate-500">Mostrando {(clientPage - 1) * pageSize + 1}–{Math.min(clientPage * pageSize, filteredClients.length)} de {filteredClients.length} clientes</p>
+              <div className="flex items-center gap-2"><button type="button" onClick={() => setClientPage((page) => Math.max(1, page - 1))} disabled={clientPage === 1} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-40">Anterior</button><span className="text-xs text-slate-500">Página {clientPage} de {pageCount}</span><button type="button" onClick={() => setClientPage((page) => Math.min(pageCount, page + 1))} disabled={clientPage === pageCount} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-40">Próxima</button></div>
+            </div>}
           </div>}
         </div>
       </div>
