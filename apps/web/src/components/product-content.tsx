@@ -48,7 +48,7 @@ export function ProductContent({ isAdmin, product }: { isAdmin: boolean; product
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [product, productLabel]);
 
   useEffect(() => { void load(); }, [load]);
 
