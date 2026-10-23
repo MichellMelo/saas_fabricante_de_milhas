@@ -22,12 +22,12 @@ export function DashboardSidebar({ mobileOpen, route, navItems, navigate, notify
 }) {
   return (
     <Sidebar mobileOpen={mobileOpen}>
-      <SidebarHeader className="px-5 pb-5 pt-6">
-        <button className="group flex min-h-[88px] items-center justify-center rounded-xl px-3 transition-colors hover:bg-white/[.035] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c]/70" onClick={() => navigate("dashboard")} aria-label="Fabricante de Milhas, início">
-          <img src="/logo-sem-background.png" alt="Fabricante de Milhas" width="176" height="118" className="h-[116px] w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]" />
+      <SidebarHeader className="px-5 pb-3 pt-4">
+        <button className="group flex min-h-[68px] items-center justify-center rounded-xl px-3 transition-colors hover:bg-white/[.035] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c]/70" onClick={() => navigate("dashboard")} aria-label="Fabricante de Milhas, início">
+          <img src="/logo-sem-background.png" alt="Fabricante de Milhas" width="154" height="92" className="h-[88px] w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]" />
         </button>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="overflow-y-visible">
         <SidebarGroup>
           <SidebarGroupLabel>Espaço de trabalho</SidebarGroupLabel>
           <SidebarMenu>
