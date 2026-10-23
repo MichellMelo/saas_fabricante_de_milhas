@@ -21,7 +21,7 @@ export function DashboardSidebar({ mobileOpen, route, navItems, navigate, notify
   notify: (message: string) => void;
 }) {
   return (
-    <Sidebar data-mobile-open={mobileOpen}>
+    <Sidebar mobileOpen={mobileOpen}>
       <SidebarHeader className="px-5 pb-5 pt-6">
         <button className="group flex min-h-[88px] items-center justify-center rounded-xl px-3 transition-colors hover:bg-white/[.035] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c]/70" onClick={() => navigate("dashboard")} aria-label="Fabricante de Milhas, início">
           <img src="/logo-sem-background.png" alt="Fabricante de Milhas" width="176" height="118" className="h-[116px] w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]" />
