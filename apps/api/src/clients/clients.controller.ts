@@ -3,6 +3,8 @@ import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { ClientsService } from "./clients.service";
 import { CreateInvitationDto } from "./dto/create-invitation.dto";
 import { SetProductAccessDto } from "./dto/set-product-access.dto";
+import { CreateClientDto } from "./dto/create-client.dto";
+import { UpdateClientDto } from "./dto/update-client.dto";
 
 @UseGuards(JwtAuthGuard)
 @Controller("admin")
@@ -17,6 +19,18 @@ export class ClientsController {
     if (!admins.includes(request.user.email.trim().toLowerCase())) {
       throw new ForbiddenException("Apenas administradores podem gerenciar clientes.");
     }
+  }
+
+  @Post("clients")
+  createClient(@Req() request: AuthenticatedRequest, @Body() dto: CreateClientDto) {
+    this.assertAdmin(request);
+    return this.clients.createClient(dto);
+  }
+
+  @Post("clients/:id")
+  updateClient(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() dto: UpdateClientDto) {
+    this.assertAdmin(request);
+    return this.clients.updateClient(id, dto);
   }
 
   @Get("clients")
