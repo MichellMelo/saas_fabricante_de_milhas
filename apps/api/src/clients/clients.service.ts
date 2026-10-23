@@ -73,7 +73,11 @@ export class ClientsService {
     const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
     if (!user) throw new NotFoundException("Cliente não encontrado.");
 
-    const expiresAt = dto.expiresAt ? new Date(dto.expiresAt) : null;
+    const expiresAt = dto.expiresAt === undefined
+      ? undefined
+      : dto.expiresAt
+        ? new Date(dto.expiresAt)
+        : null;
     if (dto.active && expiresAt && expiresAt <= new Date()) {
       throw new BadRequestException("A data de expiração deve estar no futuro.");
     }
@@ -85,11 +89,11 @@ export class ClientsService {
         product: dto.product,
         active: dto.active,
         startsAt: new Date(),
-        expiresAt,
+        expiresAt: expiresAt ?? null,
       },
       update: {
         active: dto.active,
-        expiresAt,
+        ...(expiresAt !== undefined ? { expiresAt } : {}),
       },
       select: { id: true, userId: true, product: true, active: true, startsAt: true, expiresAt: true },
     });
