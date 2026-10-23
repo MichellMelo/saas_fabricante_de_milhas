@@ -18,7 +18,7 @@ const PRODUCT_LABELS: Record<ExpiringAccess["product"], string> = {
   MENTORSHIP: "Mentorias",
 };
 
-export function DashboardHeader({ title, mobileOpen, onToggleMobile, notify, user, onLogout }: {
+export function DashboardHeader({ title, mobileOpen, onToggleMobile, user, onLogout }: {
   title: string;
   mobileOpen: boolean;
   onToggleMobile: () => void;
