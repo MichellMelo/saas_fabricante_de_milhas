@@ -48,7 +48,7 @@ export class ClientsService {
   }
 
   async listClients() {
-    return this.prisma.user.findMany({
+    const clients = await this.prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -56,6 +56,7 @@ export class ClientsService {
         name: true,
         phone: true,
         notes: true,
+        passwordHash: true,
         createdAt: true,
         productAccesses: {
           select: { id: true, product: true, period: true, active: true, startsAt: true, expiresAt: true },
@@ -63,6 +64,7 @@ export class ClientsService {
         },
       },
     });
+    return clients.map(({ passwordHash, ...client }) => ({ ...client, hasAccount: Boolean(passwordHash) }));
   }
 
   async listExpiringAccesses() {
