@@ -28,9 +28,15 @@ export class ClientsService {
   }
 
   async updateClient(id: string, dto: UpdateClientDto) {
-    const existing = await this.prisma.user.findUnique({ where: { id }, select: { id: true } });
+    const existing = await this.prisma.user.findUnique({ where: { id }, select: { id: true, email: true } });
     if (!existing) throw new NotFoundException("Cliente não encontrado.");
     const email = dto.email?.trim().toLowerCase();
+    if (email && email !== existing.email) {
+      await this.prisma.clientInvitation.updateMany({
+        where: { email: existing.email, acceptedAt: null, expiresAt: { gt: new Date() } },
+        data: { expiresAt: new Date() },
+      });
+    }
     if (email) {
       const duplicate = await this.prisma.user.findFirst({ where: { email, NOT: { id } }, select: { id: true } });
       if (duplicate) throw new ConflictException("Já existe um cliente cadastrado com esse e-mail.");
