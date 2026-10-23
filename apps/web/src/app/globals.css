@@ -1662,3 +1662,39 @@ body { font-size: 15px; }
     max-width: 100%;
   }
 }
+
+
+/* Brand header color alignment */
+.topbar {
+  background: #111b2b !important;
+  border-bottom-color: rgba(255, 253, 248, .14);
+  color: #fffdf8;
+}
+.topbar .breadcrumbs {
+  color: #aeb8c7;
+}
+.topbar .breadcrumbs strong {
+  color: #fffdf8;
+}
+.topbar .breadcrumbs .text-slate-300 {
+  color: #687589 !important;
+}
+.topbar .profile-chip {
+  color: #fffdf8;
+}
+.topbar .chevron {
+  color: #aeb8c7;
+}
+.topbar .menu-toggle,
+.topbar .topbar-actions > button,
+.topbar .topbar-actions > div > button {
+  color: #fffdf8;
+}
+.topbar .topbar-actions > button:last-child {
+  border-color: rgba(255, 253, 248, .24);
+  color: #fffdf8;
+  background: transparent;
+}
+.topbar .topbar-actions > button:last-child:hover {
+  background: rgba(255, 253, 248, .08);
+}
