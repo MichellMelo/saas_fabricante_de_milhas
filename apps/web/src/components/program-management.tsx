@@ -121,7 +121,7 @@ export function ProgramManagement({ onBack }: { onBack: () => void }) {
     <section className="space-y-6">
       <div className="welcome-row">
         <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> Catálogo e personalização</div>
+          <div className="eyebrow"><span className="eyebrow-line" /> CATÁLOGO E PERSONALIZAÇÃO</div>
           <h1 className="page-title">Cadastro de programas</h1>
           <p className="page-subtitle">Consulte o catálogo compartilhado e crie programas personalizados sem alterar a lista dos demais usuários.</p>
         </div>
