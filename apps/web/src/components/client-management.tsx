@@ -490,6 +490,21 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
                   {selectedClientId && <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
                     {([{ key: "overview", label: "Visão geral" }, { key: "access", label: "Produtos e acessos" }, { key: "finance", label: "Financeiro" }] as const).map((tab) => <button key={tab.key} type="button" onClick={() => setDetailTab(tab.key)} className={"rounded-lg px-3 py-2 text-sm font-semibold " + (detailTab === tab.key ? "bg-[#101a2b] text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100")}>{tab.label}</button>)}
                   </div>}
+                  {selectedClientId && detailTab === "overview" && (() => {
+                    const clientPayments = payments.filter((payment) => payment.userId === client.id);
+                    const activeAccesses = client.productAccesses.filter((access) => isAccessActive(access));
+                    const paidPayments = clientPayments.filter((payment) => payment.status === "PAID");
+                    const paidTotal = paidPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+                    const pendingPayments = clientPayments.filter((payment) => payment.status === "PENDING");
+                    const pendingTotal = pendingPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+                    const accountStatus = !client.hasAccount ? (invitations.some((invitation) => invitation.email.toLowerCase() === client.email.toLowerCase()) ? "Convite pendente" : "Aguardando convite") : client.active ? "Conta ativa" : "Conta inativa";
+                    return <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-xs font-medium text-slate-500">Status da conta</p><p className="mt-2 text-base font-semibold text-slate-900">{accountStatus}</p><p className="mt-1 text-xs text-slate-500">Cadastro em {new Date(client.createdAt).toLocaleDateString("pt-BR")}</p></div>
+                      <div className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-xs font-medium text-slate-500">Produtos ativos</p><p className="mt-2 text-base font-semibold text-slate-900">{activeAccesses.length} de {PRODUCTS.length}</p><p className="mt-1 text-xs leading-5 text-slate-500">{activeAccesses.length ? activeAccesses.map((access) => PRODUCTS.find((product) => product.value === access.product)?.label ?? access.product).join(" · ") : "Nenhum produto ativo"}</p></div>
+                      <div className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-xs font-medium text-slate-500">Pagamentos recebidos</p><p className="mt-2 text-base font-semibold text-emerald-700">{money(paidTotal)}</p><p className="mt-1 text-xs text-slate-500">{paidPayments.length} lançamento(s) pago(s)</p></div>
+                      <div className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-xs font-medium text-slate-500">Em aberto</p><p className="mt-2 text-base font-semibold text-slate-900">{money(pendingTotal)}</p><p className="mt-1 text-xs text-slate-500">{pendingPayments.length} lançamento(s) pendente(s)</p></div>
+                    </div>;
+                  })()}
                   {(!selectedClientId || detailTab === "overview") && <ClientProfileEditor client={client} onSave={(values) => updateClient(client, values)} />}
                   {(!selectedClientId || detailTab === "overview") && <div className="flex flex-wrap items-center gap-2">
                     {client.hasAccount && <button type="button" onClick={() => void setClientStatus(client, !client.active)} disabled={saving} className={"rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-50 " + (client.active ? "border border-rose-200 bg-rose-50 text-rose-700" : "border border-emerald-200 bg-emerald-50 text-emerald-700")}>{client.active ? "Inativar conta" : "Ativar conta"}</button>}
