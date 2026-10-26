@@ -417,11 +417,14 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
 
   return (
     <section className="space-y-7">
-      <div className="mb-6 min-w-0">
-        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#9b824d]">Administração · Clientes</p>
-        <h1 className="m-0 text-2xl font-bold tracking-tight text-[#142137] sm:text-3xl">{selectedClientId ? "Ficha do cliente" : "Clientes e produtos"}<span className="text-[#c6a45c]">.</span></h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">{selectedClientId ? "Consulte e gerencie os dados, acessos e pagamentos deste cliente." : "Crie convites e controle o acesso de cada cliente ao Grupo VIP, aulões e mentorias."}</p>
-      </div>
+      <header className="relative mb-6 min-w-0 overflow-hidden rounded-2xl bg-[#172337] px-6 py-7 text-white shadow-sm sm:px-8 sm:py-9">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-28 h-64 w-64 rounded-full border border-white/[0.06]" />
+        <div className="relative">
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#d2b36d]">Administração · Clientes</p>
+          <h1 className="m-0 text-3xl font-bold tracking-tight text-white sm:text-4xl">{selectedClientId ? "Ficha do cliente" : "Clientes e produtos"}<span className="text-[#c6a45c]">.</span></h1>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300 sm:text-base">{selectedClientId ? "Consulte e gerencie os dados, acessos e pagamentos deste cliente." : "Crie convites e controle o acesso de cada cliente ao Grupo VIP, aulões e mentorias."}</p>
+        </div>
+      </header>
 
       {error && <Alert role="alert" className="border-red-200 bg-red-50 px-4 py-3 text-red-800 shadow-sm"><AlertDescription>{error}</AlertDescription></Alert>}
       {notice && <Alert role="status" className="border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 shadow-sm"><AlertDescription>{notice}</AlertDescription></Alert>}
