@@ -119,23 +119,25 @@ export function CalculatorTools() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        {tabs.map(({ key, label, icon: Icon, description }) => (
+      <div role="tablist" aria-label="Ferramentas de cálculo" className="flex min-w-0 gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm">
+        {tabs.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
+            id={`calculator-tab-${key}`}
             type="button"
+            role="tab"
+            aria-selected={active === key}
+            aria-controls={`calculator-panel-${key}`}
             onClick={() => setActive(key)}
-            aria-pressed={active === key}
-            className={`rounded-2xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c] ${active === key ? "border-[#c6a45c] bg-[#f8f5ed] shadow-sm" : "border-slate-200 bg-white hover:border-slate-300"}`}
+            className={`flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-3 py-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c] ${active === key ? "bg-[#111b2b] text-[#f0d38e] shadow-sm" : "text-slate-600 hover:bg-[#f8f5ed] hover:text-slate-900"}`}
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#111b2b] text-[#e0c47f]"><Icon size={19} /></span>
-            <span className="mt-3 block font-semibold text-slate-900">{label}</span>
-            <span className="mt-1 block text-sm leading-5 text-slate-600">{description}</span>
+            <Icon size={17} className="shrink-0" />
+            <span>{label}</span>
           </button>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,.8fr)]">
+      <div id={`calculator-panel-${active}`} role="tabpanel" aria-labelledby={`calculator-tab-${active}`} className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,.8fr)]">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 md:p-7">
           {active === "milheiro" ? (
             <>
