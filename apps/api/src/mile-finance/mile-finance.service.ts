@@ -203,6 +203,33 @@ export class MileFinanceService {
       await tx.mileInventoryMovement.create({
         data: { userId, loyaltyProgramId: program.id, type: MileInventoryMovementType.SALE, miles: -dto.miles, unitCostCpm: acquisitionCpm, totalCost: costOfGoodsSold, saleId: sale.id, occurredAt: soldAt },
       });
+
+      // Keep the points wallet synchronized with the financial sale when the
+      // user has a matching loyalty account. Reject rather than create a negative balance.
+      const loyaltyAccount = await tx.loyaltyAccount.findUnique({
+        where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: program.id } },
+      });
+      if (loyaltyAccount) {
+        const walletBalance = new Prisma.Decimal(loyaltyAccount.balance);
+        const soldPoints = new Prisma.Decimal(dto.miles);
+        if (walletBalance.lt(soldPoints)) {
+          throw new BadRequestException("Saldo insuficiente em Programas e saldos para registrar essa venda.");
+        }
+        await tx.loyaltyAccount.update({
+          where: { id: loyaltyAccount.id },
+          data: { balance: { decrement: soldPoints }, lastBalanceAt: soldAt },
+        });
+        await tx.pointTransaction.create({
+          data: {
+            userId,
+            loyaltyAccountId: loyaltyAccount.id,
+            type: "ADJUSTMENT",
+            points: soldPoints.negated(),
+            occurredAt: soldAt,
+            notes: `Venda integrada ao Financeiro de Milhas.${dto.buyerName?.trim() ? ` Comprador: ${dto.buyerName.trim()}.` : ""}`,
+          },
+        });
+      }
       return sale;
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
