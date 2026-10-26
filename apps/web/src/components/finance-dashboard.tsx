@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, CheckCircle2, Clock3, RefreshCw, Wallet } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock3, Wallet } from "lucide-react";
 
 type Payment = {
   id: string;
