@@ -19,37 +19,49 @@ export class MileFinanceService {
     const range: Prisma.DateTimeFilter = {};
     if (from) range.gte = this.validDate(from, "início do período");
     if (to) range.lte = this.validDate(to, "fim do período");
-    const [purchases, sales, inventory] = await Promise.all([
+    const [purchases, sales, profitSales, inventory, walletAccounts] = await Promise.all([
       this.prisma.milePurchase.aggregate({
         where: { userId, ...(from || to ? { purchasedAt: range } : {}) },
         _sum: { grossAmount: true, fees: true, miles: true },
         _count: { _all: true },
       }),
       this.prisma.mileSale.aggregate({
-        where: { userId, inventoryManaged: true, status: MileSaleStatus.COMPLETED, ...(from || to ? { soldAt: range } : {}) },
-        _sum: { grossAmount: true, fees: true, costOfGoodsSold: true, miles: true },
+        where: { userId, status: MileSaleStatus.COMPLETED, ...(from || to ? { soldAt: range } : {}) },
+        _sum: { grossAmount: true, fees: true, miles: true },
         _count: { _all: true },
+      }),
+      this.prisma.mileSale.aggregate({
+        where: { userId, inventoryManaged: true, status: MileSaleStatus.COMPLETED, ...(from || to ? { soldAt: range } : {}) },
+        _sum: { grossAmount: true, fees: true, costOfGoodsSold: true },
       }),
       this.prisma.mileInventory.findMany({
         where: { userId },
         include: { loyaltyProgram: { select: { id: true, name: true, code: true, type: true } } },
         orderBy: { loyaltyProgram: { name: "asc" } },
       }),
+      this.prisma.loyaltyAccount.findMany({
+        where: { userId },
+        select: { loyaltyProgramId: true, balance: true },
+      }),
     ]);
     const revenue = new Prisma.Decimal(sales._sum.grossAmount ?? 0);
     const saleFees = new Prisma.Decimal(sales._sum.fees ?? 0);
-    const cogs = new Prisma.Decimal(sales._sum.costOfGoodsSold ?? 0);
+    const knownCostRevenue = new Prisma.Decimal(profitSales._sum.grossAmount ?? 0);
+    const knownCostFees = new Prisma.Decimal(profitSales._sum.fees ?? 0);
+    const cogs = new Prisma.Decimal(profitSales._sum.costOfGoodsSold ?? 0);
     return {
       period: { from: from ?? null, to: to ?? null },
       purchases: { count: purchases._count._all, grossAmount: purchases._sum.grossAmount ?? new Prisma.Decimal(0), fees: purchases._sum.fees ?? new Prisma.Decimal(0), miles: purchases._sum.miles ?? 0 },
       sales: { count: sales._count._all, grossAmount: revenue, fees: saleFees, miles: sales._sum.miles ?? 0 },
-      estimatedProfit: revenue.minus(saleFees).minus(cogs).toDecimalPlaces(2),
+      estimatedProfit: knownCostRevenue.minus(knownCostFees).minus(cogs).toDecimalPlaces(2),
+      hasSalesWithUnknownCost: sales._count._all > (await this.prisma.mileSale.count({ where: { userId, inventoryManaged: true, status: MileSaleStatus.COMPLETED, ...(from || to ? { soldAt: range } : {}) } })),
       inventory: inventory.map((item) => ({
         id: item.id, loyaltyProgram: item.loyaltyProgram, miles: item.miles,
         totalCost: item.totalCost, averageCpm: item.averageCpm, updatedAt: item.updatedAt,
       })),
       inventoryTotalCost: inventory.reduce((sum, item) => sum.plus(item.totalCost), new Prisma.Decimal(0)),
       inventoryMiles: inventory.reduce((sum, item) => sum + item.miles, 0),
+      walletBalances: walletAccounts.map((account) => ({ loyaltyProgramId: account.loyaltyProgramId, miles: Number(account.balance) })),
     };
   }
 
@@ -77,7 +89,7 @@ export class MileFinanceService {
     if (from) soldAt.gte = this.validDate(from, "início do período");
     if (to) soldAt.lte = this.validDate(to, "fim do período");
     return this.prisma.mileSale.findMany({
-      where: { userId, inventoryManaged: true, ...(from || to ? { soldAt } : {}) },
+      where: { userId, ...(from || to ? { soldAt } : {}) },
       include: { loyaltyProgram: { select: { id: true, name: true, code: true, type: true } } },
       orderBy: [{ soldAt: "desc" }, { createdAt: "desc" }],
     });
@@ -176,7 +188,39 @@ export class MileFinanceService {
       const inventory = await tx.mileInventory.findUnique({
         where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: program.id } },
       });
-      if (!inventory || inventory.miles < dto.miles) throw new BadRequestException("Saldo de milhas insuficiente para esse programa.");
+
+      // Manually reported wallet balances may have no acquisition cost/inventory record.
+      // Permit a wallet-only sale when no finance-managed stock exists, without inventing a cost.
+      if (!inventory || inventory.miles === 0) {
+        const account = await tx.loyaltyAccount.findUnique({
+          where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: program.id } },
+        });
+        if (!account || new Prisma.Decimal(account.balance).lt(dto.miles)) {
+          throw new BadRequestException("Saldo insuficiente em Programas e saldos para esse programa.");
+        }
+        const sale = await tx.mileSale.create({
+          data: {
+            userId, loyaltyProgramId: program.id, buyerName: dto.buyerName?.trim() || null,
+            miles: dto.miles, acquisitionCpm: new Prisma.Decimal(0), costOfGoodsSold: null,
+            grossAmount: gross, fees, soldAt, status: MileSaleStatus.COMPLETED,
+            notes: [ "Custo de aquisição desconhecido; venda de saldo informado manualmente.", dto.notes?.trim() ].filter(Boolean).join(" "),
+            inventoryManaged: false,
+          },
+        });
+        await tx.loyaltyAccount.update({
+          where: { id: account.id },
+          data: { balance: { decrement: new Prisma.Decimal(dto.miles) }, lastBalanceAt: soldAt },
+        });
+        await tx.pointTransaction.create({
+          data: {
+            userId, loyaltyAccountId: account.id, type: "ADJUSTMENT",
+            points: new Prisma.Decimal(dto.miles).negated(), occurredAt: soldAt,
+            notes: `Venda de saldo sem custo conhecido integrada ao Financeiro de Milhas.${dto.buyerName?.trim() ? ` Comprador: ${dto.buyerName.trim()}.` : ""}`,
+          },
+        });
+        return sale;
+      }
+      if (inventory.miles < dto.miles) throw new BadRequestException("O estoque financeiro é insuficiente. O saldo informado manualmente pode ser vendido quando não houver estoque financeiro registrado.");
       const costOfGoodsSold = inventory.totalCost.mul(dto.miles).div(inventory.miles).toDecimalPlaces(2);
       const acquisitionCpm = costOfGoodsSold.div(dto.miles).mul(1000).toDecimalPlaces(4);
       const updated = await tx.mileInventory.updateMany({
