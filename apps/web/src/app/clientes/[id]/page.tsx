@@ -30,8 +30,8 @@ export default async function ClientDetailPage({
   if (!payload.user?.isAdmin) notFound();
 
   return (
-    <main className="min-h-screen bg-[#f7f5ef] px-4 py-6 sm:px-8 sm:py-8">
-      <div className="mx-auto w-full max-w-[1540px]">
+    <main className="min-h-screen w-full max-w-full overflow-x-clip bg-[#f7f5ef] px-4 py-6 sm:px-8 sm:py-8">
+      <div className="mx-auto w-full min-w-0 max-w-[1540px]">
         <div className="mb-5">
           <a href="/#clientes-admin" className="inline-flex min-h-10 items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
             ← Voltar à lista
