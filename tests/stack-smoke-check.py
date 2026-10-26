@@ -50,7 +50,7 @@ checks = {
  "JWT secret is required and documented": "JWT_SECRET" in read("apps/api/src/main.ts") and "JWT_SECRET" in read(".env.example"),
  "NestJS health endpoint and API prefix exist": '@Controller("health")' in read("apps/api/src/health.controller.ts") and 'setGlobalPrefix("api")' in read("apps/api/src/main.ts"),
  "Dashboard uses Lucide and shadcn primitives": 'from "lucide-react"' in dashboard and 'from "@/components/ui/button"' in dashboard and 'from "@/components/ui/card"' in dashboard,
- "Demo values are disclosed as fictitious": "fictícios" in dashboard and "DEMONSTRAÇÃO" in dashboard,
+ "Dashboard avoids fictitious values and explains unavailable metrics": "Sem custo de aquisição suficiente para estimar com segurança" in dashboard and "histórico será exibido quando houver uma série temporal confiável" in dashboard and "DEMONSTRAÇÃO" not in dashboard and "fictícios" not in dashboard,
  "CI installs, generates Prisma, typechecks and builds": all(token in workflow for token in ("npm install", "npm run prisma:generate", "npm run typecheck", "npm run build")),
  "Environment template exists and ignores real secrets": (root / ".env.example").exists() and ".env" in read(".gitignore") and "DATABASE_URL" in read(".env.example")
 }
