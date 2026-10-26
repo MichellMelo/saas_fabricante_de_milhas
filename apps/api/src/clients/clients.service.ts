@@ -175,7 +175,7 @@ export class ClientsService {
       data: {
         userId: adminUserId,
         buyerName: dto.buyerName?.trim() || null,
-        miles: BigInt(dto.miles),
+        miles: dto.miles,
         acquisitionCpm: dto.acquisitionCpm,
         grossAmount: dto.grossAmount,
         fees: dto.fees ?? 0,
