@@ -64,18 +64,18 @@ function Result({ label, value, detail }: { label: string; value: string; detail
 
 export function CalculatorTools() {
   const [active, setActive] = useState<ToolKey>("milheiro");
-  const [paid, setPaid] = useState("500");
+  const [paid, setPaid] = useState("0");
   const [fees, setFees] = useState("0");
-  const [points, setPoints] = useState("25000");
+  const [points, setPoints] = useState("0");
   const [program, setProgram] = useState<ProgramKey>("latam");
-  const [originPoints, setOriginPoints] = useState("50000");
-  const [bonus, setBonus] = useState("80");
-  const [originCost, setOriginCost] = useState("700");
+  const [originPoints, setOriginPoints] = useState("0");
+  const [bonus, setBonus] = useState("0");
+  const [originCost, setOriginCost] = useState("0");
   const [transferFees, setTransferFees] = useState("0");
-  const [cashFare, setCashFare] = useState("1200");
-  const [awardMiles, setAwardMiles] = useState("40000");
+  const [cashFare, setCashFare] = useState("0");
+  const [awardMiles, setAwardMiles] = useState("0");
   const [awardFees, setAwardFees] = useState("120");
-  const [personalCpm, setPersonalCpm] = useState("20");
+  const [personalCpm, setPersonalCpm] = useState("0");
 
   const milheiro = useMemo(() => {
     const total = Math.max(0, parse(paid)) + Math.max(0, parse(fees));
@@ -101,9 +101,9 @@ export function CalculatorTools() {
   }, [cashFare, awardMiles, awardFees, personalCpm]);
 
   const reset = () => {
-    setPaid("500"); setFees("0"); setPoints("25000");
-    setOriginPoints("50000"); setBonus("80"); setOriginCost("700"); setTransferFees("0");
-    setCashFare("1200"); setAwardMiles("40000"); setAwardFees("120"); setPersonalCpm("20");
+    setPaid("0"); setFees("0"); setPoints("0");
+    setOriginPoints("0"); setBonus("0"); setOriginCost("0"); setTransferFees("0");
+    setCashFare("0"); setAwardMiles("0"); setAwardFees("120"); setPersonalCpm("0");
   };
 
   const tabs: { key: ToolKey; label: string; icon: typeof Calculator; description: string }[] = [
