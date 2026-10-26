@@ -70,6 +70,7 @@ export function CalculatorTools() {
   const [program, setProgram] = useState<ProgramKey>("latam");
   const [originPoints, setOriginPoints] = useState("0");
   const [bonus, setBonus] = useState("0");
+  const [firstTransferBonus, setFirstTransferBonus] = useState("0");
   const [originCost, setOriginCost] = useState("0");
   const [transferFees, setTransferFees] = useState("0");
   const [cashFare, setCashFare] = useState("0");
@@ -85,10 +86,12 @@ export function CalculatorTools() {
 
   const transfer = useMemo(() => {
     const qty = Math.max(0, parse(originPoints));
-    const finalMiles = qty * (1 + Math.max(0, parse(bonus)) / 100);
+    const percentageBonusMiles = qty * (1 + Math.max(0, parse(bonus)) / 100);
+    const firstTransferBonusMiles = Math.max(0, parse(firstTransferBonus));
+    const finalMiles = percentageBonusMiles + firstTransferBonusMiles;
     const totalCost = Math.max(0, parse(originCost)) + Math.max(0, parse(transferFees));
     return { finalMiles, totalCost, cpm: finalMiles > 0 ? (totalCost / finalMiles) * 1000 : 0 };
-  }, [originPoints, bonus, originCost, transferFees]);
+  }, [originPoints, bonus, firstTransferBonus, originCost, transferFees]);
 
   const redemption = useMemo(() => {
     const cash = Math.max(0, parse(cashFare));
@@ -102,7 +105,7 @@ export function CalculatorTools() {
 
   const reset = () => {
     setPaid("0"); setFees("0"); setPoints("0");
-    setOriginPoints("0"); setBonus("0"); setOriginCost("0"); setTransferFees("0");
+    setOriginPoints("0"); setBonus("0"); setFirstTransferBonus("0"); setOriginCost("0"); setTransferFees("0");
     setCashFare("0"); setAwardMiles("0"); setAwardFees("120"); setPersonalCpm("0");
   };
 
@@ -186,6 +189,7 @@ export function CalculatorTools() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Pontos transferidos" value={originPoints} onChange={setOriginPoints} suffix="pts" hint="Quantidade que sairá do programa de origem antes do bônus." />
                 <Field label="Bônus de transferência" value={bonus} onChange={setBonus} suffix="%" hint="Informe o percentual anunciado, por exemplo, 80 para um bônus de 80%." />
+                <Field label="Bônus de 1ª transferência" value={firstTransferBonus} onChange={setFirstTransferBonus} suffix="milhas extras" hint="Informe a quantidade fixa de milhas extras oferecidas por ser sua primeira transferência. Esse valor é somado após o bônus percentual." />
                 <Field label="Custo dos pontos de origem" value={originCost} onChange={setOriginCost} suffix="R$" hint="Quanto custaram os pontos transferidos. Para pontos do cartão, estime seu custo real." />
                 <Field label="Taxas da transferência" value={transferFees} onChange={setTransferFees} suffix="R$" hint="Inclua cobranças necessárias para concluir a transferência, se houver." />
                 <label className="block min-w-0 space-y-2 sm:col-span-2">
@@ -197,7 +201,7 @@ export function CalculatorTools() {
                 </label>
               </div>
               <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Result label="Milhas finais estimadas" value={number(transfer.finalMiles)} detail="Considera o bônus percentual aplicado aos pontos transferidos." />
+                <Result label="Milhas finais estimadas" value={number(transfer.finalMiles)} detail="Considera o bônus percentual e as milhas extras da primeira transferência, quando informadas." />
                 <Result label="Custo por milheiro final" value={transfer.finalMiles > 0 ? currency(transfer.cpm) : "—"} detail={`Custo total considerado: ${currency(transfer.totalCost)}.`} />
               </div>
               <div className={"mt-4 rounded-xl border p-4 " + (transfer.finalMiles <= 0 ? "border-slate-200 bg-slate-50" : transfer.cpm < MILEIRO_REFERENCES[program].good ? "border-emerald-200 bg-emerald-50" : transfer.cpm === MILEIRO_REFERENCES[program].good ? "border-amber-200 bg-amber-50" : "border-red-200 bg-red-50")}>
