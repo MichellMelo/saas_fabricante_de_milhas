@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { Building2, Check, CirclePlus, Pencil, ShieldCheck, UserRound } from "lucide-react";
+import { Building2, Check, ChevronDown, CirclePlus, Pencil, ShieldCheck, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -35,6 +35,8 @@ export function ProgramManagement({ onBack }: { onBack: () => void }) {
   const [name, setName] = useState("");
   const [type, setType] = useState<ProgramType>("AIRLINE");
   const [editing, setEditing] = useState<Program | null>(null);
+  const [catalogExpanded, setCatalogExpanded] = useState(false);
+  const [personalExpanded, setPersonalExpanded] = useState(false);
 
   const loadPrograms = useCallback(async () => {
     setLoading(true);
@@ -172,21 +174,31 @@ export function ProgramManagement({ onBack }: { onBack: () => void }) {
         {scope === "catalog" && !canManageCatalog && !editing && <p className="mt-3 text-xs text-amber-800">O catálogo geral é administrado centralmente. Você pode criar programas personalizados nesta página.</p>}
       </Card>
 
-      <div className="grid gap-5 xl:grid-cols-2">
-        <Card className="border-slate-200 bg-white p-5 shadow-none">
-          <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold text-slate-900">Catálogo geral</h2><span className="text-sm text-slate-500">{catalogPrograms.length} programas</span></div>
-          {loading ? <p className="py-6 text-sm text-slate-500">Carregando catálogo...</p> : catalogPrograms.length === 0 ? <p className="py-6 text-sm text-slate-500">Nenhum programa no catálogo.</p> : <div className="divide-y divide-slate-100">
-            {catalogPrograms.map((program) => <div key={program.id} className="flex items-center gap-3 py-3">
-              <div className="min-w-0 flex-1"><div className="font-medium text-slate-900">{program.name}</div><div className="mt-1 text-xs text-slate-500">{typeLabel[program.type]} · {program.code}</div></div>
-              <span className={`rounded-full px-2.5 py-1 text-xs ${program.active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{program.active ? "Ativo" : "Inativo"}</span>
-              {canManageCatalog && <div className="flex gap-1"><Button type="button" variant="outline" size="icon" aria-label={`Editar ${program.name}`} onClick={() => beginEdit(program)}><Pencil size={14} /></Button><Button type="button" variant="outline" onClick={() => void toggleActive(program)} disabled={saving}>{program.active ? "Desativar" : "Ativar"}</Button></div>}
-            </div>)}
+      <div className="space-y-3">
+        <Card className="overflow-hidden border-slate-200 bg-white p-0 shadow-none">
+          <button type="button" aria-expanded={catalogExpanded} aria-controls="catalog-programs-panel" onClick={() => setCatalogExpanded((expanded) => !expanded)} className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-500">
+            <span className="flex min-w-0 items-center gap-3"><Building2 size={18} className="shrink-0 text-slate-500" /><span className="text-lg font-semibold text-slate-900">Catálogo geral</span></span>
+            <span className="flex shrink-0 items-center gap-3"><span className="text-sm text-slate-500">{catalogPrograms.length} programas</span><ChevronDown size={18} className={`text-slate-500 transition-transform ${catalogExpanded ? "rotate-180" : ""}`} /></span>
+          </button>
+          {catalogExpanded && <div id="catalog-programs-panel" className="border-t border-slate-100 px-5">
+            {loading ? <p className="py-6 text-sm text-slate-500">Carregando catálogo...</p> : catalogPrograms.length === 0 ? <p className="py-6 text-sm text-slate-500">Nenhum programa no catálogo.</p> : <div className="divide-y divide-slate-100">
+              {catalogPrograms.map((program) => <div key={program.id} className="flex flex-wrap items-center gap-3 py-3">
+                <div className="min-w-0 flex-1"><div className="font-medium text-slate-900">{program.name}</div><div className="mt-1 text-xs text-slate-500">{typeLabel[program.type]} · {program.code}</div></div>
+                <span className={`rounded-full px-2.5 py-1 text-xs ${program.active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{program.active ? "Ativo" : "Inativo"}</span>
+                {canManageCatalog && <div className="flex gap-1"><Button type="button" variant="outline" size="icon" aria-label={`Editar ${program.name}`} onClick={() => beginEdit(program)}><Pencil size={14} /></Button><Button type="button" variant="outline" onClick={() => void toggleActive(program)} disabled={saving}>{program.active ? "Desativar" : "Ativar"}</Button></div>}
+              </div>)}
+            </div>}
           </div>}
         </Card>
-        <Card className="border-slate-200 bg-white p-5 shadow-none">
-          <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold text-slate-900">Meus programas</h2><span className="text-sm text-slate-500">{personalPrograms.length} programas</span></div>
-          {loading ? <p className="py-6 text-sm text-slate-500">Carregando seus programas...</p> : personalPrograms.length === 0 ? <div className="py-8 text-center"><CirclePlus className="mx-auto text-amber-700" size={26} /><p className="mt-3 text-sm text-slate-500">Você ainda não criou programas personalizados.</p></div> : <div className="divide-y divide-slate-100">
-            {personalPrograms.map((program) => <div key={program.id} className="flex items-center gap-3 py-3"><div className="min-w-0 flex-1"><div className="font-medium text-slate-900">{program.name}</div><div className="mt-1 text-xs text-slate-500">{typeLabel[program.type]} · disponível apenas para você</div></div><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs text-emerald-700"><Check size={12} className="mr-1 inline" />Ativo</span></div>)}
+        <Card className="overflow-hidden border-slate-200 bg-white p-0 shadow-none">
+          <button type="button" aria-expanded={personalExpanded} aria-controls="personal-programs-panel" onClick={() => setPersonalExpanded((expanded) => !expanded)} className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-500">
+            <span className="flex min-w-0 items-center gap-3"><UserRound size={18} className="shrink-0 text-slate-500" /><span className="text-lg font-semibold text-slate-900">Meus programas</span></span>
+            <span className="flex shrink-0 items-center gap-3"><span className="text-sm text-slate-500">{personalPrograms.length} programas</span><ChevronDown size={18} className={`text-slate-500 transition-transform ${personalExpanded ? "rotate-180" : ""}`} /></span>
+          </button>
+          {personalExpanded && <div id="personal-programs-panel" className="border-t border-slate-100 px-5">
+            {loading ? <p className="py-6 text-sm text-slate-500">Carregando seus programas...</p> : personalPrograms.length === 0 ? <div className="py-8 text-center"><CirclePlus className="mx-auto text-amber-700" size={26} /><p className="mt-3 text-sm text-slate-500">Você ainda não criou programas personalizados.</p></div> : <div className="divide-y divide-slate-100">
+              {personalPrograms.map((program) => <div key={program.id} className="flex items-center gap-3 py-3"><div className="min-w-0 flex-1"><div className="font-medium text-slate-900">{program.name}</div><div className="mt-1 text-xs text-slate-500">{typeLabel[program.type]} · disponível apenas para você</div></div><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs text-emerald-700"><Check size={12} className="mr-1 inline" />Ativo</span></div>)}
+            </div>}
           </div>}
         </Card>
       </div>
