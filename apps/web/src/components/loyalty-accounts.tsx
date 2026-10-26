@@ -136,15 +136,11 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
     <section className="space-y-6">
       <div className="welcome-row">
         <div>
-          <button type="button" onClick={onBack} className="welcome-back">
-            <ArrowLeft size={16} /> Voltar à visão geral
-          </button>
           <div className="eyebrow"><span className="eyebrow-line" /> Patrimônio de pontos</div>
           <h1 className="page-title">Programas e saldos</h1>
           <p className="page-subtitle">Organize suas contas de fidelidade e registre movimentações para manter os saldos consistentes.</p>
         </div>
         <div className="welcome-actions">
-          <Button variant="outline" onClick={() => void loadData()} disabled={loading || saving}><RefreshCw size={15} /> Atualizar</Button>
           <Button onClick={() => { setShowCreate((value) => !value); setError(""); }} disabled={availablePrograms.length === 0}><Plus size={16} /> Adicionar programa</Button>
         </div>
       </div>
