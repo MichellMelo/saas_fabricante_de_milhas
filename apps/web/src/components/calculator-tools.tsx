@@ -232,7 +232,7 @@ export function CalculatorTools() {
                 <p className="mt-2 text-xs leading-5 text-slate-500">A classificação considera o custo efetivo após o bônus e as taxas informadas. Referências iniciais da Fabricante de Milhas; não garantem rentabilidade.</p>
               </div>
             </>
-          ) : (
+          ) : active === "resgate" ? (
             <>
               <div className="mb-6">
                 <h2 className="text-xl font-semibold text-slate-900">Dinheiro ou resgate com milhas</h2>
@@ -267,6 +267,28 @@ export function CalculatorTools() {
                   </div>
                 )}
                 <p className="mt-2 text-xs leading-5 text-slate-500">A classificação compara o valor por milheiro obtido no resgate com seu custo efetivo informado. Considere também a economia líquida, disponibilidade e regras da passagem.</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-slate-900">Venda de milhas</h2>
+                <p className="mt-1 text-sm leading-6 text-slate-600">Calcule o custo efetivo e o percentual de ganho na venda de pontos ou milhas.</p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Custo por milheiro" value={saleCpm} onChange={setSaleCpm} suffix="R$/1.000" hint="Custo efetivo de aquisição de cada 1.000 milhas." />
+                <Field label="Quantidade de milhas vendidas" value={saleMiles} onChange={setSaleMiles} suffix="milhas" hint="Quantidade total de milhas incluída na venda." />
+                <Field label="Valor total da venda" value={saleTotal} onChange={setSaleTotal} suffix="R$" hint="Valor bruto recebido pela venda, antes de taxas ou comissões." />
+                <Field label="Taxas ou comissões" value={saleFees} onChange={setSaleFees} suffix="R$" hint="Custos diretamente relacionados à venda; serão descontados da receita." />
+              </div>
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Result label="Custo por milheiro final" value={sale.miles > 0 ? currency(sale.finalCostPerThousand) : "—"} detail="Custo de aquisição acrescido das taxas da venda, por milheiro." />
+                <Result label="Percentual de ganho" value={sale.acquisitionCost > 0 ? number(sale.gainPercent) + "%" : "—"} detail={sale.acquisitionCost > 0 ? "Ganho líquido estimado: " + currency(sale.profit) + "." : "Informe custo por milheiro e quantidade maior que zero."} />
+              </div>
+              <div role="status" className={"mt-4 rounded-xl border p-4 " + (sale.acquisitionCost <= 0 || sale.miles <= 0 ? "border-slate-200 bg-slate-50 text-slate-700" : sale.profit > 0 ? "border-emerald-200 bg-emerald-50 text-emerald-800" : sale.profit === 0 ? "border-amber-200 bg-amber-50 text-amber-800" : "border-red-200 bg-red-50 text-red-800")}>
+                <div className="font-semibold">{sale.acquisitionCost <= 0 || sale.miles <= 0 ? "Informe os dados da operação" : sale.profit > 0 ? "Venda com ganho estimado" : sale.profit === 0 ? "Operação no ponto de equilíbrio" : "Atenção: venda com prejuízo estimado"}</div>
+                <p className="mt-2 text-sm leading-6">{sale.acquisitionCost <= 0 || sale.miles <= 0 ? "Preencha custo por milheiro e quantidade de milhas para avaliar o resultado." : "Resultado após taxas: " + currency(sale.profit) + " (" + number(sale.gainPercent) + "% sobre o custo de aquisição)."}</p>
+                <p className="mt-2 text-xs leading-5 opacity-80">O percentual é calculado sobre o custo de aquisição. Inclua todos os custos relevantes; o resultado é uma estimativa.</p>
               </div>
             </>
           )}
