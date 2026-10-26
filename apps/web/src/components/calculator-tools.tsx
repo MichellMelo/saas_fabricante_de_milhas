@@ -217,10 +217,27 @@ export function CalculatorTools() {
                 <Field label="Milhas exigidas" value={awardMiles} onChange={setAwardMiles} suffix="milhas" />
                 <Field label="Taxas do resgate" value={awardFees} onChange={setAwardFees} suffix="R$" />
                 <Field label="Seu custo por milheiro" value={personalCpm} onChange={setPersonalCpm} suffix="R$/1.000" />
+                <label className="block min-w-0 space-y-2 sm:col-span-2">
+                  <span className="block text-sm font-medium text-slate-700">Programa de fidelidade</span>
+                  <select value={program} onChange={(event) => setProgram(event.target.value as ProgramKey)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base text-slate-900 focus:border-[#b9954d] focus:outline-none focus:ring-2 focus:ring-[#c6a45c]/20">
+                    {Object.entries(MILEIRO_REFERENCES).map(([key, reference]) => <option key={key} value={key}>{reference.label}</option>)}
+                  </select>
+                </label>
               </div>
               <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Result label="Valor por milheiro no resgate" value={redemption.miles > 0 ? currency(redemption.cpm) : "—"} detail="Fórmula: (preço em dinheiro − taxas do resgate) ÷ milhas × 1.000." />
                 <Result label="Economia líquida estimada" value={currency(redemption.netSavings)} detail={redemption.netSavings >= 0 ? "Positiva após descontar taxas e custo de oportunidade das milhas." : "Negativa: comprar a passagem em dinheiro pode ser financeiramente melhor, com estes valores."} />
+              </div>
+              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+                <div className="font-semibold text-slate-900">Referência de custo — {MILEIRO_REFERENCES[program].label}</div>
+                <p className="mt-1 text-sm leading-6 text-slate-600">Referência de aquisição: excelente abaixo de {currency(MILEIRO_REFERENCES[program].good)} · bom em {currency(MILEIRO_REFERENCES[program].good)} · ruim acima de {currency(MILEIRO_REFERENCES[program].good)} por milheiro.</p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-slate-600">Valor líquido obtido no resgate:</span>
+                  <span className={"rounded-full px-3 py-1 text-sm font-semibold " + (redemption.miles <= 0 ? "bg-slate-100 text-slate-600" : redemption.cpm > MILEIRO_REFERENCES[program].good ? "bg-emerald-50 text-emerald-700" : redemption.cpm === MILEIRO_REFERENCES[program].good ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700")}>
+                    {redemption.miles <= 0 ? "Informe as milhas" : redemption.cpm > MILEIRO_REFERENCES[program].good ? "Acima da referência" : redemption.cpm === MILEIRO_REFERENCES[program].good ? "No limite da referência" : "Abaixo da referência"}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-slate-500">Aqui, comparamos o valor líquido por milheiro obtido no resgate com a referência de custo de aquisição. Superar a referência é um sinal favorável, mas não substitui a análise da economia líquida, disponibilidade e regras da passagem.</p>
               </div>
             </>
           )}
