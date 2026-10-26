@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { AlertCircle, ArrowDownLeft, ArrowUpRight, Boxes, LoaderCircle, Plus, RefreshCw, ShoppingCart, TrendingUp } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ArrowDownLeft, Boxes, LoaderCircle, Plus, RefreshCw, ShoppingCart, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
