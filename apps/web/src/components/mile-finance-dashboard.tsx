@@ -116,10 +116,17 @@ export function MileFinanceDashboard() {
   return (
     <section className="space-y-6">
       {toast && <div role={toast.type === "error" ? "alert" : "status"} aria-live={toast.type === "error" ? "assertive" : "polite"} className={`fixed right-5 top-5 z-[100] max-w-[min(420px,calc(100vw-2.5rem))] rounded-xl border px-4 py-3 text-sm font-medium shadow-xl ${toast.type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-rose-200 bg-rose-50 text-rose-900"}`}>{toast.message}<button type="button" onClick={() => setToast(null)} aria-label="Fechar aviso" className="ml-4 font-bold">×</button></div>}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div><div className="eyebrow"><span className="eyebrow-line" /> GESTÃO DE OPERAÇÕES</div><h1 className="page-title">Financeiro de Milhas<span className="gold-period">.</span></h1><p className="page-subtitle">Compras, vendas, estoque e resultado por programa — separado do financeiro administrativo.</p></div>
-        <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => openForm("purchase")}><Plus size={15} className="mr-2" />Registrar compra</Button><Button onClick={() => openForm("sale")}><Plus size={15} className="mr-2" />Registrar venda</Button></div>
-      </div>
+      <header className="flex flex-col gap-5 border-b border-slate-200/80 pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0">
+          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-amber-600"><span className="inline-block h-px w-6 bg-amber-500" />Gestão de operações</div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Financeiro de Milhas<span className="text-amber-500">.</span></h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">Compras, vendas, estoque e resultado por programa — separado do financeiro administrativo.</p>
+        </div>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Button variant="outline" onClick={() => openForm("purchase")}><Plus size={15} className="mr-2" />Registrar compra</Button>
+          <Button onClick={() => openForm("sale")}><Plus size={15} className="mr-2" />Registrar venda</Button>
+        </div>
+      </header>
       {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800"><span>{error}</span><Button variant="outline" onClick={() => void load()}>Tentar novamente</Button></div>}
       {formType && <Card className="panel p-5"><form onSubmit={submit} className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="md:col-span-2 xl:col-span-3"><h2 className="text-lg font-semibold">{formType === "purchase" ? "Registrar compra de milhas" : "Registrar venda de milhas"}</h2><p className="text-sm text-slate-500">{formType === "sale" ? `Saldo disponível neste programa: ${integer(selectedInventory?.miles ?? 0)} milhas` : "O custo médio será atualizado automaticamente após a compra."}</p></div>
