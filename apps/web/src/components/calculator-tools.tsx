@@ -237,7 +237,17 @@ export function CalculatorTools() {
                     {redemption.miles <= 0 ? "Informe as milhas" : redemption.cpm > MILEIRO_REFERENCES[program].good ? "Acima da referência" : redemption.cpm === MILEIRO_REFERENCES[program].good ? "No limite da referência" : "Abaixo da referência"}
                   </span>
                 </div>
-                <p className="mt-2 text-xs leading-5 text-slate-500">Aqui, comparamos o valor líquido por milheiro obtido no resgate com a referência de custo de aquisição. Superar a referência é um sinal favorável, mas não substitui a análise da economia líquida, disponibilidade e regras da passagem.</p>
+                {redemption.miles > 0 && redemption.netSavings < 0 && (
+                  <div role="status" className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium leading-5 text-red-800">
+                    Resgate não vantajoso frente ao pagamento em dinheiro: a economia líquida estimada é negativa em {currency(Math.abs(redemption.netSavings))}.
+                  </div>
+                )}
+                {redemption.miles > 0 && redemption.netSavings >= 0 && (
+                  <div role="status" className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium leading-5 text-emerald-800">
+                    O resgate apresenta economia líquida estimada positiva de {currency(redemption.netSavings)} frente ao pagamento em dinheiro.
+                  </div>
+                )}
+                <p className="mt-2 text-xs leading-5 text-slate-500">A classificação acima compara o valor por milheiro com a referência do programa. A decisão de resgatar considera também a economia líquida, disponibilidade e regras da passagem.</p>
               </div>
             </>
           )}
