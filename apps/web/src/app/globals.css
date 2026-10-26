@@ -1750,3 +1750,22 @@ body { font-size: 15px; }
   color: #7d8796 !important;
   font-size: 12px !important;
 }
+
+
+/* Interação consistente: hover sutil em todos os botões da aplicação. */
+:where(button:not(:disabled), [role="button"]:not([aria-disabled="true"]), input[type="button"]:not(:disabled), input[type="submit"]:not(:disabled), input[type="reset"]:not(:disabled)) {
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease;
+}
+:where(button:not(:disabled), [role="button"]:not([aria-disabled="true"]), input[type="button"]:not(:disabled), input[type="submit"]:not(:disabled), input[type="reset"]:not(:disabled)):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 27, 45, 0.12);
+}
+:where(button:not(:disabled), [role="button"]:not([aria-disabled="true"]), input[type="button"]:not(:disabled), input[type="submit"]:not(:disabled), input[type="reset"]:not(:disabled)):active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(16, 27, 45, 0.1);
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]) {
+    transition: none;
+  }
+}
