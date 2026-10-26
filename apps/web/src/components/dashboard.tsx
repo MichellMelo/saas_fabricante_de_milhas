@@ -34,6 +34,7 @@ import { ClientManagement } from "@/components/client-management";
 import { GroupVipContent } from "@/components/group-vip-content";
 import { ProductContent } from "@/components/product-content";
 import { FinanceDashboard } from "@/components/finance-dashboard";
+import { CalculatorTools } from "@/components/calculator-tools";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -48,7 +49,7 @@ const navItems: SidebarNavItem[] = [
   { key: "programas-admin", label: "Cadastro de programas", icon: Settings2 },
   { key: "clientes-admin", label: "Clientes e produtos", icon: Users },
   { key: "financeiro", label: "Financeiro", icon: Wallet },
-  { key: "calculadoras", label: "Calculadoras", icon: Calculator, soon: true },
+  { key: "calculadoras", label: "Calculadoras", icon: Calculator },
   { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
   { key: "historico", label: "Histórico", icon: Clock3, soon: true },
 ];
@@ -115,7 +116,7 @@ const routeCopy: Record<
     title: "Calculadoras",
     eyebrow: "DECISÕES COM NÚMEROS",
     description:
-      "Compare custos, resgates e oportunidades antes de tomar uma decisão. As regras de cálculo serão implementadas e testadas antes de usar dados reais.",
+      "Calcule custo por milheiro, transferência bonificada e valor de resgate com fórmulas transparentes e dados informados por você.",
     icon: Calculator,
   },
   passagens: {
@@ -680,6 +681,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <ProgramManagement onBack={() => navigate("dashboard")} />
           ) : route === "clientes-admin" ? (
             <ClientManagement onBack={() => navigate("dashboard")} />
+          ) : route === "calculadoras" ? (
+            <CalculatorTools />
           ) : route === "financeiro" ? (
             user.isAdmin ? <FinanceDashboard /> : <ModulePlaceholder route="historico" onBack={() => navigate("dashboard")} />
           ) : route === "grupo-vip" ? (
