@@ -418,7 +418,7 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
 
   return (
     <section className="space-y-7">
-      <section className="welcome-row mb-6 min-w-0">
+      <section className={"welcome-row mb-6 min-w-0 " + (selectedClientId ? "client-detail-welcome" : "")}>
         <div>
           <div className="eyebrow"><span className="eyebrow-line" /> ADMINISTRAÇÃO · CLIENTES</div>
           <h1 className="page-title">{selectedClientId ? "Ficha do cliente" : "Clientes e produtos"}<span className="gold-period">.</span></h1>
