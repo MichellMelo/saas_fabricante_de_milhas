@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { ChevronDown, Copy, RefreshCw, Search, ShieldCheck, UserPlus, Users } from "lucide-react";
+import { ChevronDown, Copy, Search, ShieldCheck, UserPlus, Users } from "lucide-react";
 
 const PRODUCTS = [
   { value: "GROUP_VIP", label: "Grupo VIP" },
