@@ -64,9 +64,12 @@ export function FinanceDashboard() {
   const [period, setPeriod] = useState("30");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sales, setSales] = useState<MileSale[]>([]);
+  const [salesLoading, setSalesLoading] = useState(true);
+  const [salesLoadError, setSalesLoadError] = useState("");
   const [showSaleForm, setShowSaleForm] = useState(false);
   const [saleSaving, setSaleSaving] = useState(false);
   const [saleError, setSaleError] = useState("");
+  const [saleSuccess, setSaleSuccess] = useState("");
   const [buyerName, setBuyerName] = useState("");
   const [saleMiles, setSaleMiles] = useState("");
   const [saleAcquisitionCpm, setSaleAcquisitionCpm] = useState("");
@@ -91,12 +94,35 @@ export function FinanceDashboard() {
     }
   }
 
-  useEffect(() => { void load(); }, []);
+  async function loadSales() {
+    setSalesLoading(true);
+    setSalesLoadError("");
+    try {
+      const response = await fetch("/api/admin/mile-sales", { cache: "no-store" });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = Array.isArray(payload.message) ? payload.message.join(" ") : payload.message;
+        throw new Error(message || "A venda foi salva, mas não foi possível atualizar a listagem.");
+      }
+      if (!Array.isArray(payload)) throw new Error("A resposta de vendas veio em um formato inesperado.");
+      setSales(payload as MileSale[]);
+    } catch (cause) {
+      setSalesLoadError(cause instanceof Error ? cause.message : "Não foi possível carregar as vendas de milhas.");
+    } finally {
+      setSalesLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void load();
+    void loadSales();
+  }, []);
 
   async function createSale(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaleSaving(true);
     setSaleError("");
+    setSaleSuccess("");
     try {
       const response = await fetch("/api/admin/mile-sales", {
         method: "POST",
@@ -116,7 +142,8 @@ export function FinanceDashboard() {
       if (!response.ok) throw new Error(payload.message || "Não foi possível registrar a venda.");
       setBuyerName(""); setSaleMiles(""); setSaleAcquisitionCpm(""); setSaleGrossAmount(""); setSaleFees("0"); setSaleDate(new Date().toISOString().slice(0, 10)); setSaleNotes("");
       setShowSaleForm(false);
-      await load();
+      setSaleSuccess("Venda registrada com sucesso.");
+      await loadSales();
     } catch (cause) {
       setSaleError(cause instanceof Error ? cause.message : "Não foi possível registrar a venda.");
     } finally {
@@ -186,8 +213,10 @@ export function FinanceDashboard() {
         {saleError && <p role="alert" className="text-sm text-rose-700 sm:col-span-2 xl:col-span-3">{saleError}</p>}
         <div className="flex flex-wrap items-center justify-between gap-3 sm:col-span-2 xl:col-span-3"><p className="text-xs text-slate-500">Lucro estimado = venda bruta − taxas − custo de aquisição calculado pelo milheiro informado.</p><button disabled={saleSaving} type="submit" className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{saleSaving ? "Salvando…" : "Salvar venda"}</button></div>
       </form>}
+      {saleSuccess && <div role="status" aria-live="polite" className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{saleSuccess}</div>}
+      {salesLoadError && <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"><span>{salesLoadError}</span><button type="button" onClick={() => void loadSales()} className="rounded-md border border-amber-300 px-3 py-1.5 font-semibold hover:bg-amber-100">Tentar atualizar</button></div>}
       <div className="mt-5 overflow-x-auto">
-        {sales.length === 0 ? <p className="py-8 text-center text-sm text-slate-500">Nenhuma venda de milhas registrada.</p> : <table className="w-full min-w-[760px] text-left text-sm">
+        {salesLoading ? <p className="py-8 text-center text-sm text-slate-500">Carregando vendas de milhas…</p> : sales.length === 0 ? <p className="py-8 text-center text-sm text-slate-500">Nenhuma venda de milhas registrada.</p> : <table className="w-full min-w-[760px] text-left text-sm">
           <thead><tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500"><th className="px-3 py-3">Data</th><th className="px-3 py-3">Comprador</th><th className="px-3 py-3">Milhas</th><th className="px-3 py-3">Valor bruto</th><th className="px-3 py-3">Lucro estimado</th><th className="px-3 py-3">Situação</th></tr></thead>
           <tbody>{sales.map((sale) => { const profit = Number(sale.grossAmount) - Number(sale.fees) - Number(sale.acquisitionCpm) * Number(sale.miles) / 1000; return <tr key={sale.id} className="border-b border-slate-100 last:border-0"><td className="px-3 py-3 text-slate-600">{dateLabel(sale.soldAt)}</td><td className="px-3 py-3 text-slate-700">{sale.buyerName || "—"}</td><td className="px-3 py-3 text-slate-700">{new Intl.NumberFormat("pt-BR").format(Number(sale.miles))}</td><td className="px-3 py-3 font-medium text-slate-900">{money(Number(sale.grossAmount))}</td><td className={"px-3 py-3 font-semibold " + (profit >= 0 ? "text-emerald-700" : "text-rose-700")}>{sale.status === "CANCELLED" ? "—" : money(profit)}</td><td className="px-3 py-3"><span className={"rounded-full px-2.5 py-1 text-xs font-semibold " + (sale.status === "COMPLETED" ? "bg-emerald-50 text-emerald-700" : sale.status === "CANCELLED" ? "bg-slate-100 text-slate-500" : "bg-amber-50 text-amber-700")}>{sale.status === "COMPLETED" ? "Concluída" : sale.status === "CANCELLED" ? "Cancelada" : "Pendente"}</span></td></tr>; })}</tbody>
         </table>}
