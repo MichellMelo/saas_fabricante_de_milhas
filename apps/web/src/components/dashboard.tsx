@@ -366,7 +366,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                 </div>
               </motion.section>
               {dashboardError && (
-                <Alert variant="destructive" role="alert" className="mb-5">
+                <Alert role="alert" className="mb-5 border-red-200 bg-red-50 text-red-800">
                   <AlertDescription>{dashboardError}</AlertDescription>
                 </Alert>
               )}
