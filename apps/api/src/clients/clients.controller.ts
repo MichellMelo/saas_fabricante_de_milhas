@@ -78,6 +78,18 @@ export class ClientsController {
     return this.clients.createPayment(dto);
   }
 
+  @Put("payments/:id")
+  updatePayment(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() dto: CreateClientPaymentDto) {
+    this.assertAdmin(request);
+    return this.clients.updatePayment(id, dto);
+  }
+
+  @Delete("payments/:id")
+  deletePayment(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
+    this.assertAdmin(request);
+    return this.clients.deletePayment(id);
+  }
+
   @Post("payments/:id/status")
   setPaymentPaid(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() body: { paid?: boolean }) {
     this.assertAdmin(request);
