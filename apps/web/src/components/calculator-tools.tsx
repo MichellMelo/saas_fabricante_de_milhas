@@ -221,12 +221,7 @@ export function CalculatorTools() {
                 <Field label="Milhas exigidas" value={awardMiles} onChange={setAwardMiles} suffix="milhas" hint="Total de milhas exigidas para os passageiros incluídos no preço em dinheiro." />
                 <Field label="Taxas do resgate" value={awardFees} onChange={setAwardFees} suffix="R$" hint="Inclua taxas aeroportuárias e cobranças pagas à parte na emissão com milhas." />
                 <Field label="Seu custo por milheiro" value={personalCpm} onChange={setPersonalCpm} suffix="R$/1.000" hint="Informe quanto você pagou efetivamente por cada 1.000 milhas. Considere o bônus de transferência e as taxas para calcular seu custo real." />
-                <label className="block min-w-0 space-y-2 sm:col-span-2">
-                  <span className="block text-sm font-medium text-slate-700">Programa de fidelidade</span>
-                  <select value={program} onChange={(event) => setProgram(event.target.value as ProgramKey)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base text-slate-900 focus:border-[#b9954d] focus:outline-none focus:ring-2 focus:ring-[#c6a45c]/20">
-                    {Object.entries(MILEIRO_REFERENCES).map(([key, reference]) => <option key={key} value={key}>{reference.label}</option>)}
-                  </select>
-                </label>
+
               </div>
               <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Result label="Valor por milheiro no resgate" value={redemption.miles > 0 ? currency(redemption.cpm) : "—"} detail="Fórmula: (preço em dinheiro − taxas do resgate) ÷ milhas × 1.000." />
@@ -249,7 +244,7 @@ export function CalculatorTools() {
                     O resgate apresenta economia líquida estimada positiva de {currency(redemption.netSavings)} frente ao pagamento em dinheiro.
                   </div>
                 )}
-                <p className="mt-2 text-xs leading-5 text-slate-500">A classificação acima compara o valor por milheiro com a referência do programa. A decisão de resgatar considera também a economia líquida, disponibilidade e regras da passagem.</p>
+                <p className="mt-2 text-xs leading-5 text-slate-500">A classificação compara o valor por milheiro obtido no resgate com seu custo efetivo informado. Considere também a economia líquida, disponibilidade e regras da passagem.</p>
               </div>
             </>
           )}
