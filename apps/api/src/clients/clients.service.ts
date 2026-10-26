@@ -141,6 +141,37 @@ export class ClientsService {
     });
   }
 
+  async updatePayment(id: string, dto: CreateClientPaymentDto) {
+    const payment = await this.prisma.clientPayment.findUnique({ where: { id }, select: { id: true, status: true } });
+    if (!payment) throw new NotFoundException("Lançamento financeiro não encontrado.");
+    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, select: { id: true, email: true } });
+    if (!user) throw new NotFoundException("Cliente não encontrado.");
+    const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
+    if (adminEmails.includes(user.email.trim().toLowerCase())) throw new BadRequestException("Não é permitido registrar cobranças para uma conta administrativa.");
+    const amount = Number(dto.amount);
+    if (!Number.isFinite(amount) || amount <= 0) throw new BadRequestException("O valor deve ser maior que zero.");
+    const dueAt = new Date(dto.dueAt);
+    if (Number.isNaN(dueAt.getTime())) throw new BadRequestException("Informe uma data de vencimento válida.");
+    return this.prisma.clientPayment.update({
+      where: { id },
+      data: {
+        userId: user.id, product: dto.product, amount, dueAt, method: dto.method ?? null,
+        notes: dto.notes?.trim() || null,
+      },
+      select: {
+        id: true, userId: true, product: true, amount: true, dueAt: true, status: true,
+        method: true, paidAt: true, notes: true, createdAt: true,
+      },
+    });
+  }
+
+  async deletePayment(id: string) {
+    const payment = await this.prisma.clientPayment.findUnique({ where: { id }, select: { id: true } });
+    if (!payment) throw new NotFoundException("Lançamento financeiro não encontrado.");
+    await this.prisma.clientPayment.delete({ where: { id } });
+    return { id, deleted: true };
+  }
+
   async setPaymentPaid(id: string, paid: boolean) {
     const payment = await this.prisma.clientPayment.findUnique({ where: { id }, select: { id: true, user: { select: { email: true } } } });
     if (!payment) throw new NotFoundException("Lançamento financeiro não encontrado.");
