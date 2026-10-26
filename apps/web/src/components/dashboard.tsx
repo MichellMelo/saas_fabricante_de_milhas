@@ -233,17 +233,34 @@ export function Dashboard({ user }: { user: DashboardUser }) {
   const [toast, setToast] = useState("");
   const [updated, setUpdated] = useState(false);
 
+  const hasAnyProduct = Boolean(user.productAccesses?.some((access) => access.active));
+  const allowedNavItems = user.isAdmin ? navItems : navItems.filter((item) => {
+    if (item.key === "clientes-admin" || item.key === "financeiro" || item.key === "programas-admin") return false;
+    if (!hasAnyProduct) return item.key === "calculadoras" || item.key === "programas";
+    if (item.key === "grupo-vip") return user.productAccesses?.some((access) => access.product === "GROUP_VIP") ?? false;
+    if (item.key === "auloes") return user.productAccesses?.some((access) => access.product === "AULAO") ?? false;
+    if (item.key === "mentorias") return user.productAccesses?.some((access) => access.product === "MENTORSHIP") ?? false;
+    return true;
+  });
+
   useEffect(() => {
     const syncRouteFromHash = () => {
       const hash = window.location.hash.slice(1);
-      if (navItems.some((item) => item.key === hash)) {
+      const allowed = allowedNavItems.some((item) => item.key === hash);
+      if (allowed) {
         setRoute(hash as RouteKey);
+      } else if (!user.isAdmin && !hasAnyProduct) {
+        setRoute("calculadoras");
+        window.history.replaceState(null, "", window.location.pathname + "#calculadoras");
+      } else if (hash) {
+        setRoute("calculadoras");
+        window.history.replaceState(null, "", window.location.pathname + "#calculadoras");
       }
     };
     syncRouteFromHash();
     window.addEventListener("hashchange", syncRouteFromHash);
     return () => window.removeEventListener("hashchange", syncRouteFromHash);
-  }, []);
+  }, [user.isAdmin, hasAnyProduct, allowedNavItems]);
   function notify(message: string) {
     setToast(message);
     window.setTimeout(() => setToast(""), 3200);
@@ -290,13 +307,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
       <DashboardSidebar
         mobileOpen={mobileOpen}
         route={route}
-        navItems={user.isAdmin ? navItems : navItems.filter((item) => {
-          if (item.key === "clientes-admin" || item.key === "financeiro" || item.key === "programas-admin") return false;
-          if (item.key === "grupo-vip") return user.productAccesses?.some((access) => access.product === "GROUP_VIP") ?? false;
-          if (item.key === "auloes") return user.productAccesses?.some((access) => access.product === "AULAO") ?? false;
-          if (item.key === "mentorias") return user.productAccesses?.some((access) => access.product === "MENTORSHIP") ?? false;
-          return true;
-        })}
+        navItems={allowedNavItems}
         navigate={navigate}
         notify={notify}
       />
