@@ -7,6 +7,7 @@ import { CreateClientPaymentDto } from "./dto/create-client-payment.dto";
 import { SetProductAccessDto } from "./dto/set-product-access.dto";
 import { CreateClientDto } from "./dto/create-client.dto";
 import { UpdateClientDto } from "./dto/update-client.dto";
+import { CreateMileSaleDto } from "./dto/create-mile-sale.dto";
 
 @Injectable()
 export class ClientsService {
@@ -151,6 +152,61 @@ export class ClientsService {
       where: { id },
       data: { status: paid ? PaymentStatus.PAID : PaymentStatus.PENDING, paidAt: paid ? new Date() : null },
       select: { id: true, status: true, paidAt: true },
+    });
+  }
+
+  async listMileSales() {
+    const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
+    return this.prisma.mileSale.findMany({
+      where: adminEmails.length ? { user: { email: { notIn: adminEmails } } } : undefined,
+      orderBy: [{ soldAt: "desc" }, { createdAt: "desc" }],
+      select: {
+        id: true, userId: true, buyerName: true, miles: true, acquisitionCpm: true,
+        grossAmount: true, fees: true, soldAt: true, status: true, notes: true, createdAt: true,
+        user: { select: { id: true, name: true, email: true } },
+      },
+    });
+  }
+
+  async createMileSale(dto: CreateMileSaleDto) {
+    const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
+    const user = await this.prisma.user.findFirst({
+      where: adminEmails.length ? { email: { notIn: adminEmails } } : {},
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    });
+    if (!user) throw new NotFoundException("Não há usuário cliente disponível para vincular a venda.");
+    const soldAt = new Date(dto.soldAt);
+    if (Number.isNaN(soldAt.getTime())) throw new BadRequestException("Informe uma data de venda válida.");
+    if (dto.fees !== undefined && dto.fees > dto.grossAmount) {
+      throw new BadRequestException("As taxas não podem superar o valor bruto da venda.");
+    }
+    return this.prisma.mileSale.create({
+      data: {
+        userId: user.id,
+        buyerName: dto.buyerName?.trim() || null,
+        miles: BigInt(dto.miles),
+        acquisitionCpm: dto.acquisitionCpm,
+        grossAmount: dto.grossAmount,
+        fees: dto.fees ?? 0,
+        soldAt,
+        status: dto.status ?? "COMPLETED",
+        notes: dto.notes?.trim() || null,
+      },
+      select: {
+        id: true, buyerName: true, miles: true, acquisitionCpm: true, grossAmount: true,
+        fees: true, soldAt: true, status: true, notes: true, createdAt: true,
+      },
+    });
+  }
+
+  async setMileSaleStatus(id: string, status: "PENDING" | "COMPLETED" | "CANCELLED") {
+    const sale = await this.prisma.mileSale.findUnique({ where: { id }, select: { id: true } });
+    if (!sale) throw new NotFoundException("Venda de milhas não encontrada.");
+    return this.prisma.mileSale.update({
+      where: { id },
+      data: { status },
+      select: { id: true, status: true },
     });
   }
 
