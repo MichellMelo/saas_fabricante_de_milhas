@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Calculator, ArrowLeftRight, Plane, RotateCcw, Info } from "lucide-react";
+import { Calculator, ArrowLeftRight, Plane, RotateCcw, Info, Wallet } from "lucide-react";
 
-type ToolKey = "milheiro" | "transferencia" | "resgate";
+type ToolKey = "milheiro" | "transferencia" | "resgate" | "venda";
 type ProgramKey = "latam" | "smiles" | "azul";
 const MILEIRO_REFERENCES: Record<ProgramKey, { label: string; good: number }> = { latam: { label: "LATAM Pass", good: 25 }, smiles: { label: "Smiles", good: 15 }, azul: { label: "Azul Fidelidade", good: 13 } };
 
@@ -77,6 +77,10 @@ export function CalculatorTools() {
   const [awardMiles, setAwardMiles] = useState("0");
   const [awardFees, setAwardFees] = useState("120");
   const [personalCpm, setPersonalCpm] = useState("0");
+  const [saleCpm, setSaleCpm] = useState("0");
+  const [saleMiles, setSaleMiles] = useState("0");
+  const [saleTotal, setSaleTotal] = useState("0");
+  const [saleFees, setSaleFees] = useState("0");
 
   const milheiro = useMemo(() => {
     const total = Math.max(0, parse(paid)) + Math.max(0, parse(fees));
@@ -103,16 +107,28 @@ export function CalculatorTools() {
     return { cpm, netSavings, cash, miles, taxes, personal };
   }, [cashFare, awardMiles, awardFees, personalCpm]);
 
+  const sale = useMemo(() => {
+    const miles = Math.max(0, parse(saleMiles));
+    const acquisitionCost = Math.max(0, parse(saleCpm)) * miles / 1000;
+    const fees = Math.max(0, parse(saleFees));
+    const netSale = Math.max(0, parse(saleTotal)) - fees;
+    const finalCostPerThousand = miles > 0 ? (acquisitionCost + fees) / miles * 1000 : 0;
+    const profit = netSale - acquisitionCost;
+    return { miles, acquisitionCost, netSale, finalCostPerThousand, profit, gainPercent: acquisitionCost > 0 ? profit / acquisitionCost * 100 : 0 };
+  }, [saleCpm, saleMiles, saleTotal, saleFees]);
+
   const reset = () => {
     setPaid("0"); setFees("0"); setPoints("0");
     setOriginPoints("0"); setBonus("0"); setFirstTransferBonus("0"); setOriginCost("0"); setTransferFees("0");
-    setCashFare("0"); setAwardMiles("0"); setAwardFees("120"); setPersonalCpm("0");
+    setCashFare("0"); setAwardMiles("0"); setAwardFees("0"); setPersonalCpm("0");
+    setSaleCpm("0"); setSaleMiles("0"); setSaleTotal("0"); setSaleFees("0");
   };
 
   const tabs: { key: ToolKey; label: string; icon: typeof Calculator; description: string }[] = [
     { key: "milheiro", label: "Custo por milheiro", icon: Calculator, description: "Calcule quanto você efetivamente paga a cada mil pontos ou milhas." },
     { key: "transferencia", label: "Transferência bonificada", icon: ArrowLeftRight, description: "Estime o saldo final e o custo efetivo após aplicar o bônus de transferência." },
     { key: "resgate", label: "Dinheiro ou milhas", icon: Plane, description: "Compare o valor extraído no resgate com o custo que você atribui às suas milhas." },
+    { key: "venda", label: "Venda de milhas", icon: Wallet, description: "Calcule custo final e percentual de ganho na venda de milhas." },
   ];
 
   return (
