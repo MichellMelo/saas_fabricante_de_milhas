@@ -148,9 +148,12 @@ export function FinanceDashboard() {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.message || "Não foi possível registrar a venda.");
+      const successMessage = editingSaleId ? "Venda atualizada com sucesso." : "Venda registrada com sucesso.";
       setBuyerName(""); setSaleMiles(""); setSaleAcquisitionCpm(""); setSaleGrossAmount(""); setSaleFees("0"); setSaleDate(new Date().toISOString().slice(0, 10)); setSaleNotes("");
+      setEditingSaleId(null);
       setShowSaleForm(false);
-      setSaleSuccess("Venda registrada com sucesso.");
+      setSaleSuccess("");
+      setToast({ type: "success", message: successMessage });
       await loadSales();
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "Não foi possível registrar a venda.";
@@ -254,7 +257,7 @@ export function FinanceDashboard() {
         {saleError && <p role="alert" className="text-sm text-rose-700 sm:col-span-2 xl:col-span-3">{saleError}</p>}
         <div className="flex flex-wrap items-center justify-between gap-3 sm:col-span-2 xl:col-span-3"><p className="text-xs text-slate-500">Lucro estimado = venda bruta − taxas − custo de aquisição calculado pelo milheiro informado.</p><button disabled={saleSaving} type="submit" className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{saleSaving ? "Salvando…" : editingSaleId ? "Salvar alterações" : "Salvar venda"}</button></div>
       </form>}
-      {saleSuccess && <div role="status" aria-live="polite" className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{saleSuccess}</div>}
+      
       {salesLoadError && <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"><span>{salesLoadError}</span><button type="button" onClick={() => void loadSales()} className="rounded-md border border-amber-300 px-3 py-1.5 font-semibold hover:bg-amber-100">Tentar atualizar</button></div>}
       <div className="mt-5 overflow-x-auto">
         {salesLoading ? <p className="py-8 text-center text-sm text-slate-500">Carregando vendas de milhas…</p> : sales.length === 0 ? <p className="py-8 text-center text-sm text-slate-500">Nenhuma venda de milhas registrada.</p> : <table className="w-full min-w-[760px] text-left text-sm">
