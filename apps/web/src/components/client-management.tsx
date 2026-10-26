@@ -212,6 +212,7 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
     const timeout = window.setTimeout(() => {
       setError("");
       setNotice("");
+      setInviteCopied(false);
     }, 5000);
     return () => window.clearTimeout(timeout);
   }, [error, notice]);
@@ -493,7 +494,7 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
                   {(!selectedClientId || detailTab === "overview") && <div className="flex flex-wrap items-center gap-2">
                     {client.hasAccount && <button type="button" onClick={() => void setClientStatus(client, !client.active)} disabled={saving} className={"rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-50 " + (client.active ? "border border-rose-200 bg-rose-50 text-rose-700" : "border border-emerald-200 bg-emerald-50 text-emerald-700")}>{client.active ? "Inativar conta" : "Ativar conta"}</button>}
                     <button type="button" onClick={() => void sendInvitation(client)} disabled={saving || client.hasAccount} className="rounded-lg bg-[#101a2b] px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{client.hasAccount ? "Conta já ativada" : invitations.some((invitation) => invitation.email.toLowerCase() === client.email.toLowerCase()) ? "Reenviar convite" : "Enviar convite"}</button>
-                    {inviteUrl && inviteClientId === client.id && <button type="button" onClick={() => void copyInvite()} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"><Copy size={13} /> {inviteCopied ? "Copiado" : "Copiar link"}</button>}
+                    {inviteUrl && inviteClientId === client.id && <button type="button" disabled={inviteCopied} onClick={() => void copyInvite()} className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-100 ${inviteCopied ? "border-emerald-200 bg-emerald-600 text-white" : "border-slate-200 bg-white text-slate-700"}`}><Copy size={13} /> {inviteCopied ? "Copiado" : "Copiar link"}</button>}
                   </div>}
                   {(!selectedClientId || detailTab === "overview") && inviteUrl && inviteClientId === client.id && <div className="rounded-lg border border-[#e7d7ad] bg-[#fcf8ed] p-3"><label className="text-xs font-semibold text-slate-800">Link de ativação<input readOnly value={inviteUrl} onFocus={(event) => event.currentTarget.select()} className="mt-2 w-full rounded-lg border border-[#e7d7ad] bg-white px-3 py-2 text-xs text-slate-700" /></label><p className="mt-2 text-xs leading-5 text-slate-500">Link de uso único, válido por 7 dias. Envie apenas ao destinatário correto.</p></div>}
                   {(!selectedClientId || detailTab === "access") && PRODUCTS.map((product) => {
