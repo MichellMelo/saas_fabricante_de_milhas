@@ -253,7 +253,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
   const hasAnyProduct = Boolean(user.productAccesses?.some((access) => access.active));
   const allowedNavItems = useMemo(() => user.isAdmin ? navItems : navItems.filter((item) => {
     if (item.key === "clientes-admin" || item.key === "financeiro" || item.key === "programas-admin") return false;
-    if (!hasAnyProduct) return item.key === "calculadoras" || item.key === "programas";
+    if (!hasAnyProduct) return item.key === "calculadoras" || item.key === "programas" || item.key === "mile-finance";
     if (item.key === "grupo-vip") return user.productAccesses?.some((access) => access.product === "GROUP_VIP") ?? false;
     if (item.key === "auloes") return user.productAccesses?.some((access) => access.product === "AULAO") ?? false;
     if (item.key === "mentorias") return user.productAccesses?.some((access) => access.product === "MENTORSHIP") ?? false;
