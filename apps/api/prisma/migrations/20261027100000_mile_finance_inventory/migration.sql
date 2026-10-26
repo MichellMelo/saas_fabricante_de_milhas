@@ -6,6 +6,9 @@ ALTER TABLE "MileSale"
 CREATE INDEX "MileSale_userId_loyaltyProgramId_soldAt_idx"
   ON "MileSale"("userId", "loyaltyProgramId", "soldAt");
 
+ALTER TABLE "MileSale"
+  ADD CONSTRAINT "MileSale_loyaltyProgramId_fkey" FOREIGN KEY ("loyaltyProgramId") REFERENCES "LoyaltyProgram"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
 CREATE TYPE "MileInventoryMovementType" AS ENUM ('PURCHASE', 'SALE', 'ADJUSTMENT_IN', 'ADJUSTMENT_OUT');
 
 CREATE TABLE "MilePurchase" (
