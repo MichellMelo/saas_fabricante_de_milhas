@@ -136,7 +136,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
     <section className="space-y-6">
       <div className="welcome-row">
         <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> Patrimônio de pontos</div>
+          <div className="eyebrow"><span className="eyebrow-line" /> PATRIMÔNIO DE PONTOS</div>
           <h1 className="page-title">Programas e saldos</h1>
           <p className="page-subtitle">Organize suas contas de fidelidade e registre movimentações para manter os saldos consistentes.</p>
         </div>
