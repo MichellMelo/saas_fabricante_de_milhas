@@ -6,6 +6,8 @@ import { SetProductAccessDto } from "./dto/set-product-access.dto";
 import { CreateClientDto } from "./dto/create-client.dto";
 import { UpdateClientDto } from "./dto/update-client.dto";
 import { CreateClientPaymentDto } from "./dto/create-client-payment.dto";
+import { CreateMileSaleDto } from "./dto/create-mile-sale.dto";
+import { UpdateMileSaleStatusDto } from "./dto/update-mile-sale-status.dto";
 
 @UseGuards(JwtAuthGuard)
 @Controller("admin")
@@ -32,6 +34,24 @@ export class ClientsController {
   updateClient(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() dto: UpdateClientDto) {
     this.assertAdmin(request);
     return this.clients.updateClient(id, dto);
+  }
+
+  @Get("mile-sales")
+  listMileSales(@Req() request: AuthenticatedRequest) {
+    this.assertAdmin(request);
+    return this.clients.listMileSales();
+  }
+
+  @Post("mile-sales")
+  createMileSale(@Req() request: AuthenticatedRequest, @Body() dto: CreateMileSaleDto) {
+    this.assertAdmin(request);
+    return this.clients.createMileSale(request.user.id, dto);
+  }
+
+  @Post("mile-sales/:id/status")
+  setMileSaleStatus(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() dto: UpdateMileSaleStatusDto) {
+    this.assertAdmin(request);
+    return this.clients.setMileSaleStatus(id, dto.status);
   }
 
   @Get("payments")
