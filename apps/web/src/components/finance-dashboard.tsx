@@ -69,7 +69,6 @@ export function FinanceDashboard() {
   const [showSaleForm, setShowSaleForm] = useState(false);
   const [saleSaving, setSaleSaving] = useState(false);
   const [saleError, setSaleError] = useState("");
-  const [saleSuccess, setSaleSuccess] = useState("");
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
   const [buyerName, setBuyerName] = useState("");
@@ -130,7 +129,6 @@ export function FinanceDashboard() {
     event.preventDefault();
     setSaleSaving(true);
     setSaleError("");
-    setSaleSuccess("");
     try {
       const response = await fetch(editingSaleId ? `/api/admin/mile-sales/${encodeURIComponent(editingSaleId)}` : "/api/admin/mile-sales", {
         method: editingSaleId ? "PUT" : "POST",
@@ -152,8 +150,7 @@ export function FinanceDashboard() {
       setBuyerName(""); setSaleMiles(""); setSaleAcquisitionCpm(""); setSaleGrossAmount(""); setSaleFees("0"); setSaleDate(new Date().toISOString().slice(0, 10)); setSaleNotes("");
       setEditingSaleId(null);
       setShowSaleForm(false);
-      setSaleSuccess("");
-      setToast({ type: "success", message: successMessage });
+        setToast({ type: "success", message: successMessage });
       await loadSales();
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "Não foi possível registrar a venda.";
