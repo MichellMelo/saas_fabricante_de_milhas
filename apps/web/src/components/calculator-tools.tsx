@@ -39,7 +39,7 @@ function Field({
           step={step}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full min-w-0 rounded-xl bg-transparent px-3 py-3 text-base text-slate-900 outline-none"
+          className="!m-0 w-full min-w-0 appearance-none rounded-xl border-0 bg-transparent px-3 py-3 text-base text-slate-900 shadow-none outline-none ring-0 focus:!border-0 focus:!shadow-none focus:!ring-0 focus-visible:!outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         />
         {suffix && <span className="shrink-0 pr-3 text-xs text-slate-500">{suffix}</span>}
       </span>
