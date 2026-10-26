@@ -287,12 +287,12 @@ export function CalculatorTools() {
                 <Field label="Taxas ou comissões" value={saleFees} onChange={setSaleFees} suffix="R$" hint="Custos diretamente relacionados à venda; serão descontados da receita." />
               </div>
               <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Result label="Custo de aquisição por milheiro" value={currency(sale.acquisitionCpm)} detail="Quanto você pagou para adquirir cada 1.000 milhas." />
-                <Result label="Valor de venda por milheiro" value={sale.miles > 0 ? currency(sale.saleCpmValue) : "—"} detail="Valor bruto da venda dividido pela quantidade de milhas e multiplicado por 1.000." />
-                <Result label="Ganho por milheiro" value={sale.miles > 0 ? currency(sale.gainPerThousand) : "—"} detail="Valor de venda por milheiro, descontando taxas por milheiro, menos o custo de aquisição." />
-                <Result label="Custo de aquisição total" value={currency(sale.acquisitionCost)} detail="Custo por milheiro multiplicado pela quantidade vendida." />
-                <Result label="Lucro estimado após taxas" value={currency(sale.profit)} detail="Valor da venda menos taxas e custo total de aquisição." />
-                <Result label="Percentual de ganho sobre o custo" value={sale.acquisitionCost > 0 ? number(sale.gainPercent) + "%" : "—"} detail="Lucro estimado após taxas dividido pelo custo de aquisição total." />
+                <Result label="Custo de aquisição por milheiro" value={sale.miles > 0 && sale.acquisitionCpm > 0 ? currency(sale.acquisitionCpm) : "—"} detail="Quanto você pagou para adquirir cada 1.000 milhas." />
+                <Result label="Valor de venda por milheiro" value={sale.miles > 0 && sale.grossSale > 0 ? currency(sale.saleCpmValue) : "—"} detail="Valor bruto da venda dividido pela quantidade de milhas e multiplicado por 1.000." />
+                <Result label="Ganho por milheiro" value={sale.miles > 0 && sale.acquisitionCpm > 0 && sale.grossSale > 0 ? currency(sale.gainPerThousand) : "—"} detail="Valor de venda por milheiro, descontando taxas por milheiro, menos o custo de aquisição." />
+                <Result label="Custo de aquisição total" value={sale.miles > 0 && sale.acquisitionCpm > 0 ? currency(sale.acquisitionCost) : "—"} detail="Custo por milheiro multiplicado pela quantidade vendida." />
+                <Result label="Lucro estimado após taxas" value={sale.miles > 0 && sale.acquisitionCpm > 0 && sale.grossSale > 0 ? currency(sale.profit) : "—"} detail="Valor da venda menos taxas e custo total de aquisição." />
+                <Result label="Percentual de ganho sobre o custo" value={sale.miles > 0 && sale.acquisitionCost > 0 && sale.grossSale > 0 ? number(sale.gainPercent) + "%" : "—"} detail="Lucro estimado após taxas dividido pelo custo de aquisição total." />
               </div>
               <div role="status" className={"mt-4 rounded-xl border p-4 " + (sale.acquisitionCost <= 0 || sale.miles <= 0 ? "border-slate-200 bg-slate-50 text-slate-700" : sale.profit > 0 ? "border-emerald-200 bg-emerald-50 text-emerald-800" : sale.profit === 0 ? "border-amber-200 bg-amber-50 text-amber-800" : "border-red-200 bg-red-50 text-red-800")}>
                 <div className="font-semibold">{sale.acquisitionCost <= 0 || sale.miles <= 0 ? "Informe os dados da operação" : sale.profit > 0 ? "Venda com ganho estimado" : sale.profit === 0 ? "Operação no ponto de equilíbrio" : "Atenção: venda com prejuízo estimado"}</div>
