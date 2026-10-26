@@ -237,9 +237,9 @@ export function CalculatorTools() {
                 <div className="font-semibold text-slate-900">Referência de custo — {MILEIRO_REFERENCES[program].label}</div>
                 <p className="mt-1 text-sm leading-6 text-slate-600">Referência de aquisição: excelente abaixo de {currency(MILEIRO_REFERENCES[program].good)} · bom em {currency(MILEIRO_REFERENCES[program].good)} · ruim acima de {currency(MILEIRO_REFERENCES[program].good)} por milheiro.</p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="text-sm text-slate-600">Valor líquido obtido no resgate:</span>
-                  <span className={"rounded-full px-3 py-1 text-sm font-semibold " + (redemption.miles <= 0 ? "bg-slate-100 text-slate-600" : redemption.cpm > MILEIRO_REFERENCES[program].good ? "bg-emerald-50 text-emerald-700" : redemption.cpm === MILEIRO_REFERENCES[program].good ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700")}>
-                    {redemption.miles <= 0 ? "Informe as milhas" : redemption.cpm > MILEIRO_REFERENCES[program].good ? "Acima da referência" : redemption.cpm === MILEIRO_REFERENCES[program].good ? "No limite da referência" : "Abaixo da referência"}
+                  <span className="text-sm text-slate-600">Valor do resgate versus seu custo:</span>
+                  <span className={"rounded-full px-3 py-1 text-sm font-semibold " + (redemption.miles <= 0 ? "bg-slate-100 text-slate-600" : redemption.cpm > (Number(personalCpm) || 0) ? "bg-emerald-50 text-emerald-700" : redemption.cpm === (Number(personalCpm) || 0) ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700")}>
+                    {redemption.miles <= 0 ? "Informe as milhas" : redemption.cpm > (Number(personalCpm) || 0) ? "Acima do seu custo" : redemption.cpm === (Number(personalCpm) || 0) ? "Igual ao seu custo" : "Abaixo do seu custo"}
                   </span>
                 </div>
                 {redemption.miles > 0 && redemption.netSavings < 0 && (
