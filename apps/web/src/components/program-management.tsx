@@ -121,14 +121,10 @@ export function ProgramManagement({ onBack }: { onBack: () => void }) {
     <section className="space-y-6">
       <div className="welcome-row">
         <div>
-          <button type="button" onClick={onBack} className="welcome-back">
-            <ArrowLeft size={16} /> Voltar à visão geral
-          </button>
           <div className="eyebrow"><span className="eyebrow-line" /> Catálogo e personalização</div>
           <h1 className="page-title">Cadastro de programas</h1>
           <p className="page-subtitle">Consulte o catálogo compartilhado e crie programas personalizados sem alterar a lista dos demais usuários.</p>
         </div>
-        <Button variant="outline" onClick={() => void loadPrograms()} disabled={loading || saving}><RefreshCw size={15} /> Atualizar</Button>
       </div>
 
       {error && <div role="alert" className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
