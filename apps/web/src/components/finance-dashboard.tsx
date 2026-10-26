@@ -88,7 +88,6 @@ export function FinanceDashboard() {
         <h1 className="page-title">Financeiro</h1>
         <p className="page-subtitle">Acompanhe cobranças, recebimentos e valores vencidos a partir dos lançamentos registrados.</p>
       </div>
-      <button type="button" onClick={() => void load()} disabled={loading} className="button welcome-refresh disabled:opacity-50"><RefreshCw size={15} /> Atualizar</button>
     </div>
     {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
     <div className="flex flex-wrap items-center justify-between gap-3">
