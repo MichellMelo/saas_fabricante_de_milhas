@@ -171,7 +171,6 @@ export function FinanceDashboard() {
     setSaleDate(new Date(sale.soldAt).toISOString().slice(0, 10));
     setSaleNotes(sale.notes ?? "");
     setSaleError("");
-    setSaleSuccess("");
     setShowSaleForm(true);
   }
 
@@ -233,7 +232,7 @@ export function FinanceDashboard() {
           <div className="flex items-center gap-2"><TrendingUp size={18} className="text-emerald-700" /><h2 className="font-semibold text-slate-900">Venda de milhas</h2></div>
           <p className="mt-1 text-sm text-slate-500">Registre vendas concluídas e acompanhe receita líquida, custo e lucro estimado.</p>
         </div>
-        <button type="button" onClick={() => { setShowSaleForm((value) => !value); setEditingSaleId(null); setSaleError(""); setSaleSuccess(""); }} className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-700">
+        <button type="button" onClick={() => { setShowSaleForm((value) => !value); setEditingSaleId(null); setSaleError(""); }} className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-700">
           {showSaleForm ? <X size={16}/> : <Plus size={16}/>} {showSaleForm ? "Cancelar" : "Registrar venda"}
         </button>
       </div>
