@@ -21,6 +21,7 @@ function Field({
   value,
   onChange,
   suffix,
+  hint,
   min = "0",
   step = "any",
 }: {
@@ -28,6 +29,7 @@ function Field({
   value: string;
   onChange: (value: string) => void;
   suffix?: string;
+  hint: string;
   min?: string;
   step?: string;
 }) {
@@ -45,6 +47,7 @@ function Field({
         />
         {suffix && <span className="shrink-0 pr-3 text-xs text-slate-500">{suffix}</span>}
       </span>
+      <span className="block rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-500">{hint}</span>
     </label>
   );
 }
@@ -146,11 +149,12 @@ export function CalculatorTools() {
                 <p className="mt-1 text-sm leading-6 text-slate-600">Inclua o desembolso e as taxas diretamente relacionadas à aquisição.</p>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Valor pago" value={paid} onChange={setPaid} suffix="R$" />
-                <Field label="Taxas adicionais" value={fees} onChange={setFees} suffix="R$" />
-                <Field label="Pontos ou milhas recebidos" value={points} onChange={setPoints} suffix="pts" />
+                <Field label="Valor pago" value={paid} onChange={setPaid} suffix="R$" hint="Informe quanto pagou para adquirir os pontos ou milhas, sem incluir as taxas abaixo." />
+                <Field label="Taxas adicionais" value={fees} onChange={setFees} suffix="R$" hint="Inclua taxas cobradas diretamente nessa compra, como tarifas de serviço." />
+                <Field label="Pontos ou milhas recebidos" value={points} onChange={setPoints} suffix="pts" hint="Digite a quantidade total creditada na operação." />
                 <label className="block min-w-0 space-y-2 sm:col-span-2">
                   <span className="block text-sm font-medium text-slate-700">Programa de fidelidade</span>
+                  <span className="block rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-500">Selecione o programa para consultar a referência de custo correspondente.</span>
                   <select value={program} onChange={(event) => setProgram(event.target.value as ProgramKey)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base text-slate-900 focus:border-[#b9954d] focus:outline-none focus:ring-2 focus:ring-[#c6a45c]/20">
                     {Object.entries(MILEIRO_REFERENCES).map(([key, reference]) => <option key={key} value={key}>{reference.label}</option>)}
                   </select>
@@ -179,12 +183,13 @@ export function CalculatorTools() {
                 <p className="mt-1 text-sm leading-6 text-slate-600">O custo informado deve representar o custo de aquisição dos pontos de origem, não o preço estimado das milhas finais.</p>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Pontos transferidos" value={originPoints} onChange={setOriginPoints} suffix="pts" />
-                <Field label="Bônus de transferência" value={bonus} onChange={setBonus} suffix="%" />
-                <Field label="Custo dos pontos de origem" value={originCost} onChange={setOriginCost} suffix="R$" />
-                <Field label="Taxas da transferência" value={transferFees} onChange={setTransferFees} suffix="R$" />
+                <Field label="Pontos transferidos" value={originPoints} onChange={setOriginPoints} suffix="pts" hint="Quantidade que sairá do programa de origem antes do bônus." />
+                <Field label="Bônus de transferência" value={bonus} onChange={setBonus} suffix="%" hint="Informe o percentual anunciado, por exemplo, 80 para um bônus de 80%." />
+                <Field label="Custo dos pontos de origem" value={originCost} onChange={setOriginCost} suffix="R$" hint="Quanto custaram os pontos transferidos. Para pontos do cartão, estime seu custo real." />
+                <Field label="Taxas da transferência" value={transferFees} onChange={setTransferFees} suffix="R$" hint="Inclua cobranças necessárias para concluir a transferência, se houver." />
                 <label className="block min-w-0 space-y-2 sm:col-span-2">
                   <span className="block text-sm font-medium text-slate-700">Programa de destino</span>
+                  <span className="block rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-500">Escolha onde as milhas serão creditadas; a referência se ajusta ao programa.</span>
                   <select value={program} onChange={(event) => setProgram(event.target.value as ProgramKey)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base text-slate-900 focus:border-[#b9954d] focus:outline-none focus:ring-2 focus:ring-[#c6a45c]/20">
                     {Object.entries(MILEIRO_REFERENCES).map(([key, reference]) => <option key={key} value={key}>{reference.label}</option>)}
                   </select>
@@ -213,10 +218,10 @@ export function CalculatorTools() {
                 <p className="mt-1 text-sm leading-6 text-slate-600">Compare o preço da passagem em dinheiro com o valor líquido coberto pelas milhas, descontando as taxas do resgate.</p>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Preço em dinheiro" value={cashFare} onChange={setCashFare} suffix="R$" />
-                <Field label="Milhas exigidas" value={awardMiles} onChange={setAwardMiles} suffix="milhas" />
-                <Field label="Taxas do resgate" value={awardFees} onChange={setAwardFees} suffix="R$" />
-                <Field label="Seu custo por milheiro" value={personalCpm} onChange={setPersonalCpm} suffix="R$/1.000" />
+                <Field label="Preço em dinheiro" value={cashFare} onChange={setCashFare} suffix="R$" hint="Preço total de uma passagem equivalente, incluindo taxas e bagagem necessária." />
+                <Field label="Milhas exigidas" value={awardMiles} onChange={setAwardMiles} suffix="milhas" hint="Total de milhas exigidas para os passageiros incluídos no preço em dinheiro." />
+                <Field label="Taxas do resgate" value={awardFees} onChange={setAwardFees} suffix="R$" hint="Inclua taxas aeroportuárias e cobranças pagas à parte na emissão com milhas." />
+                <Field label="Seu custo por milheiro" value={personalCpm} onChange={setPersonalCpm} suffix="R$/1.000" hint="Seu custo efetivo por 1.000 milhas; é o custo de oportunidade usado na comparação." />
                 <label className="block min-w-0 space-y-2 sm:col-span-2">
                   <span className="block text-sm font-medium text-slate-700">Programa de fidelidade</span>
                   <select value={program} onChange={(event) => setProgram(event.target.value as ProgramKey)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base text-slate-900 focus:border-[#b9954d] focus:outline-none focus:ring-2 focus:ring-[#c6a45c]/20">
