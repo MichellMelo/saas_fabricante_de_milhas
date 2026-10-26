@@ -301,8 +301,10 @@ export function CalculatorTools() {
               <p className="mt-3 text-sm leading-6 text-slate-200">Um custo menor não significa automaticamente uma boa compra. Compare o resultado com o valor realista que você consegue obter ao resgatar e inclua custos indiretos relevantes.</p>
             ) : active === "transferencia" ? (
               <p className="mt-3 text-sm leading-6 text-slate-200">Bônus alto não garante uma boa operação. Verifique elegibilidade, prazo, validade das milhas, regras de estorno e se há taxa ou custo de oportunidade para transferir.</p>
-            ) : (
+            ) : active === "resgate" ? (
               <p className="mt-3 text-sm leading-6 text-slate-200">O resgate tende a ser mais interessante quando o valor por milheiro supera seu custo de aquisição ou o valor de uma alternativa viável. Considere bagagem, flexibilidade, disponibilidade e regras tarifárias.</p>
+            ) : (
+              <p className="mt-3 text-sm leading-6 text-slate-200">O percentual de ganho é calculado sobre o custo de aquisição, descontando as taxas informadas. Inclua todos os custos relevantes da operação.</p>
             )}
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-5">
