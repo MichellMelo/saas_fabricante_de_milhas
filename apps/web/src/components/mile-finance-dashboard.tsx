@@ -123,7 +123,7 @@ export function MileFinanceDashboard() {
           <p className="page-subtitle">Compras, vendas, estoque e resultado por programa — separado do financeiro administrativo.</p>
         </div>
         <div className="welcome-actions">
-          <Button variant="outline" onClick={() => openForm("purchase")}><Plus size={15} className="mr-2" />Registrar compra</Button>
+          <Button variant="outline" className="!border-slate-200 !bg-white !text-[#142137] hover:!bg-slate-50" onClick={() => openForm("purchase")}><Plus size={15} className="mr-2" />Registrar compra</Button>
           <Button onClick={() => openForm("sale")}><Plus size={15} className="mr-2" />Registrar venda</Button>
         </div>
       </div>
