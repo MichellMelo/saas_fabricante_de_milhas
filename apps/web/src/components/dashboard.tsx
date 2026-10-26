@@ -7,7 +7,6 @@ import { DashboardFooter } from "@/components/dashboard-footer";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   ArrowRight,
-  ArrowUpRight,
   Calculator,
   Clock3,
   CreditCard,
