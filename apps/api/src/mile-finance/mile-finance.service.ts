@@ -188,13 +188,28 @@ export class MileFinanceService {
       select: { id: true },
     });
     if (!program) throw new NotFoundException("Programa de fidelidade não encontrado ou inativo.");
-    if (dto.direction === "IN") throw new BadRequestException("Entrada manual exige custo de aquisição e será habilitada com a validação de custo.");
+    if (dto.direction === "IN" && dto.unitCostCpm === undefined) throw new BadRequestException("Informe o custo por milheiro para uma entrada manual.");
     return this.prisma.$transaction(async (tx) => {
       const inventory = await tx.mileInventory.findUnique({ where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: program.id } } });
-      if (!inventory || inventory.miles < dto.miles) throw new BadRequestException("Saldo insuficiente para esse ajuste.");
-      const removedCost = inventory.totalCost.mul(dto.miles).div(inventory.miles).toDecimalPlaces(2);
-      await tx.mileInventory.update({ where: { id: inventory.id }, data: { miles: { decrement: dto.miles }, totalCost: { decrement: removedCost }, averageCpm: inventory.miles === dto.miles ? 0 : inventory.totalCost.minus(removedCost).div(inventory.miles - dto.miles).mul(1000).toDecimalPlaces(4) } });
-      return tx.mileInventoryMovement.create({ data: { userId, loyaltyProgramId: program.id, type: MileInventoryMovementType.ADJUSTMENT_OUT, miles: -dto.miles, unitCostCpm: inventory.averageCpm, totalCost: removedCost, reason: dto.reason } });
+      if (dto.direction === "OUT" && (!inventory || inventory.miles < dto.miles)) throw new BadRequestException("Saldo insuficiente para esse ajuste.");
+      if (dto.direction === "IN") {
+        const unitCost = new Prisma.Decimal(dto.unitCostCpm ?? 0);
+        const addedCost = unitCost.mul(dto.miles).div(1000).toDecimalPlaces(2);
+        if (!inventory) {
+          await tx.mileInventory.create({ data: { userId, loyaltyProgramId: program.id, miles: dto.miles, totalCost: addedCost, averageCpm: unitCost } });
+        } else {
+          const nextMiles = inventory.miles + dto.miles;
+          const nextCost = inventory.totalCost.plus(addedCost).toDecimalPlaces(2);
+          await tx.mileInventory.update({ where: { id: inventory.id }, data: { miles: nextMiles, totalCost: nextCost, averageCpm: nextCost.div(nextMiles).mul(1000).toDecimalPlaces(4) } });
+        }
+        return tx.mileInventoryMovement.create({ data: { userId, loyaltyProgramId: program.id, type: MileInventoryMovementType.ADJUSTMENT_IN, miles: dto.miles, unitCostCpm: unitCost, totalCost: addedCost, reason: dto.reason } });
+      }
+      const current = inventory!;
+      const removedCost = current.totalCost.mul(dto.miles).div(current.miles).toDecimalPlaces(2);
+      const nextMiles = current.miles - dto.miles;
+      const nextCost = current.totalCost.minus(removedCost).toDecimalPlaces(2);
+      await tx.mileInventory.update({ where: { id: current.id }, data: { miles: nextMiles, totalCost: nextMiles === 0 ? 0 : nextCost, averageCpm: nextMiles === 0 ? 0 : nextCost.div(nextMiles).mul(1000).toDecimalPlaces(4) } });
+      return tx.mileInventoryMovement.create({ data: { userId, loyaltyProgramId: program.id, type: MileInventoryMovementType.ADJUSTMENT_OUT, miles: -dto.miles, unitCostCpm: current.averageCpm, totalCost: removedCost, reason: dto.reason } });
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
 }
