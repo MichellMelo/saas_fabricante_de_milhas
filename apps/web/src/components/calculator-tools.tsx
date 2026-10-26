@@ -165,6 +165,7 @@ export function CalculatorTools() {
                 <Result label="Desembolso total" value={currency(milheiro.total)} detail={milheiro.qty > 0 ? `Quantidade considerada: ${number(milheiro.qty)} pontos.` : "Informe uma quantidade maior que zero para calcular o milheiro."} />
               </div>
 
+              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <span className="text-sm text-slate-600">Seu resultado:</span>
                   <span className={"rounded-full px-3 py-1 text-sm font-semibold " + (milheiro.qty <= 0 ? "bg-slate-100 text-slate-600" : milheiro.cpm < MILEIRO_REFERENCES[program].good ? "bg-emerald-50 text-emerald-700" : milheiro.cpm === MILEIRO_REFERENCES[program].good ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700")}>
@@ -232,8 +233,6 @@ export function CalculatorTools() {
                 <Result label="Economia líquida estimada" value={currency(redemption.netSavings)} detail={redemption.netSavings >= 0 ? "Positiva após descontar taxas e custo de oportunidade das milhas." : "Negativa: comprar a passagem em dinheiro pode ser financeiramente melhor, com estes valores."} />
               </div>
               <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
-                <div className="font-semibold text-slate-900">Referência de custo — {MILEIRO_REFERENCES[program].label}</div>
-                <p className="mt-1 text-sm leading-6 text-slate-600">Referência de aquisição: excelente abaixo de {currency(MILEIRO_REFERENCES[program].good)} · bom em {currency(MILEIRO_REFERENCES[program].good)} · ruim acima de {currency(MILEIRO_REFERENCES[program].good)} por milheiro.</p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <span className="text-sm text-slate-600">Valor do resgate versus seu custo:</span>
                   <span className={"rounded-full px-3 py-1 text-sm font-semibold " + (redemption.miles <= 0 ? "bg-slate-100 text-slate-600" : redemption.cpm > (Number(personalCpm) || 0) ? "bg-emerald-50 text-emerald-700" : redemption.cpm === (Number(personalCpm) || 0) ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700")}>
