@@ -190,6 +190,7 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [inviteUrl, setInviteUrl] = useState("");
+  const [inviteCopied, setInviteCopied] = useState(false);
   const [inviteClientId, setInviteClientId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -279,6 +280,7 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
     setError("");
     setNotice("");
     setInviteUrl("");
+    setInviteCopied(false);
     try {
       const response = await fetch("/api/admin/invitations", {
         method: "POST",
@@ -390,9 +392,13 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
   async function copyInvite() {
     try {
       await navigator.clipboard.writeText(inviteUrl);
-      setNotice("Link do convite copiado.");
+      setInviteCopied(true);
+      setError("");
+      setNotice("Link do convite copiado com sucesso.");
     } catch {
-      setNotice("Copie o link exibido no campo abaixo.");
+      setInviteCopied(false);
+      setError("Não foi possível copiar automaticamente. Selecione e copie o link exibido.");
+      setNotice("");
     }
   }
 
@@ -488,7 +494,7 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
                   {(!selectedClientId || detailTab === "overview") && <div className="flex flex-wrap items-center gap-2">
                     {client.hasAccount && <button type="button" onClick={() => void setClientStatus(client, !client.active)} disabled={saving} className={"rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-50 " + (client.active ? "border border-rose-200 bg-rose-50 text-rose-700" : "border border-emerald-200 bg-emerald-50 text-emerald-700")}>{client.active ? "Inativar conta" : "Ativar conta"}</button>}
                     <button type="button" onClick={() => void sendInvitation(client)} disabled={saving || client.hasAccount} className="rounded-lg bg-[#101a2b] px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{client.hasAccount ? "Conta já ativada" : invitations.some((invitation) => invitation.email.toLowerCase() === client.email.toLowerCase()) ? "Reenviar convite" : "Enviar convite"}</button>
-                    {inviteUrl && inviteClientId === client.id && <button type="button" onClick={() => void copyInvite()} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"><Copy size={13} /> Copiar link</button>}
+                    {inviteUrl && inviteClientId === client.id && <button type="button" onClick={() => void copyInvite()} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"><Copy size={13} /> {inviteCopied ? "Copiado" : "Copiar link"}</button>}
                   </div>}
                   {(!selectedClientId || detailTab === "overview") && inviteUrl && inviteClientId === client.id && <div className="rounded-lg border border-[#e7d7ad] bg-[#fcf8ed] p-3"><label className="text-xs font-semibold text-slate-800">Link de ativação<input readOnly value={inviteUrl} onFocus={(event) => event.currentTarget.select()} className="mt-2 w-full rounded-lg border border-[#e7d7ad] bg-white px-3 py-2 text-xs text-slate-700" /></label><p className="mt-2 text-xs leading-5 text-slate-500">Link de uso único, válido por 7 dias. Envie apenas ao destinatário correto.</p></div>}
                   {(!selectedClientId || detailTab === "access") && PRODUCTS.map((product) => {
