@@ -216,7 +216,7 @@ model MileSale {
   id String @id @default(cuid())
   userId String
   buyerName String?
-  miles BigInt
+  miles Int
   acquisitionCpm Decimal @db.Decimal(12, 4)
   grossAmount Decimal @db.Decimal(12, 2)
   fees Decimal @default(0) @db.Decimal(12, 2)
