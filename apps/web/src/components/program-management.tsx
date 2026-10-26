@@ -121,12 +121,12 @@ export function ProgramManagement({ onBack }: { onBack: () => void }) {
     <section className="space-y-6">
       <div className="welcome-row">
         <div>
-          <button type="button" onClick={onBack} className="mb-4 inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-slate-900">
+          <button type="button" onClick={onBack} className="welcome-back">
             <ArrowLeft size={16} /> Voltar à visão geral
           </button>
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">Catálogo e personalização</div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Cadastro de programas</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Consulte o catálogo compartilhado e crie programas personalizados sem alterar a lista dos demais usuários.</p>
+          <div className="eyebrow"><span className="eyebrow-line" /> Catálogo e personalização</div>
+          <h1 className="page-title">Cadastro de programas</h1>
+          <p className="page-subtitle">Consulte o catálogo compartilhado e crie programas personalizados sem alterar a lista dos demais usuários.</p>
         </div>
         <Button variant="outline" onClick={() => void loadPrograms()} disabled={loading || saving}><RefreshCw size={15} /> Atualizar</Button>
       </div>
