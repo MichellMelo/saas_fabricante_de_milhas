@@ -4,7 +4,7 @@ CREATE TABLE "MileSale" (
   "id" TEXT NOT NULL,
   "userId" TEXT NOT NULL,
   "buyerName" TEXT,
-  "miles" BIGINT NOT NULL,
+  "miles" INTEGER NOT NULL,
   "acquisitionCpm" DECIMAL(12,4) NOT NULL,
   "grossAmount" DECIMAL(12,2) NOT NULL,
   "fees" DECIMAL(12,2) NOT NULL DEFAULT 0,
