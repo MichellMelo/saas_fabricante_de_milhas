@@ -165,9 +165,9 @@ export function CalculatorTools() {
                 <Result label="Desembolso total" value={currency(milheiro.total)} detail={milheiro.qty > 0 ? `Quantidade considerada: ${number(milheiro.qty)} pontos.` : "Informe uma quantidade maior que zero para calcular o milheiro."} />
               </div>
 
-              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+              <div className={"mt-4 rounded-xl border p-4 " + (milheiro.qty <= 0 ? "border-slate-200 bg-slate-50" : milheiro.cpm < MILEIRO_REFERENCES[program].good ? "border-emerald-200 bg-emerald-50" : milheiro.cpm === MILEIRO_REFERENCES[program].good ? "border-amber-200 bg-amber-50" : "border-red-200 bg-red-50")}>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="text-sm text-slate-600">Seu resultado:</span>
+                  <span className="text-sm text-slate-700">Seu resultado:</span>
                   <span className={"rounded-full px-3 py-1 text-sm font-semibold " + (milheiro.qty <= 0 ? "bg-slate-100 text-slate-600" : milheiro.cpm < MILEIRO_REFERENCES[program].good ? "bg-emerald-50 text-emerald-700" : milheiro.cpm === MILEIRO_REFERENCES[program].good ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700")}>
                     {milheiro.qty <= 0 ? "Informe a quantidade" : milheiro.cpm < MILEIRO_REFERENCES[program].good ? "Excelente" : milheiro.cpm === MILEIRO_REFERENCES[program].good ? "Bom" : "Ruim"}
                   </span>
@@ -198,7 +198,7 @@ export function CalculatorTools() {
                 <Result label="Milhas finais estimadas" value={number(transfer.finalMiles)} detail="Considera o bônus percentual aplicado aos pontos transferidos." />
                 <Result label="Custo por milheiro final" value={transfer.finalMiles > 0 ? currency(transfer.cpm) : "—"} detail={`Custo total considerado: ${currency(transfer.totalCost)}.`} />
               </div>
-              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+              <div className={"mt-4 rounded-xl border p-4 " + (transfer.finalMiles <= 0 ? "border-slate-200 bg-slate-50" : transfer.cpm < MILEIRO_REFERENCES[program].good ? "border-emerald-200 bg-emerald-50" : transfer.cpm === MILEIRO_REFERENCES[program].good ? "border-amber-200 bg-amber-50" : "border-red-200 bg-red-50")}>
                 <div className="font-semibold text-slate-900">Referência de custo — {MILEIRO_REFERENCES[program].label}</div>
                 <p className="mt-1 text-sm leading-6 text-slate-600">Excelente: abaixo de {currency(MILEIRO_REFERENCES[program].good)} · Bom: {currency(MILEIRO_REFERENCES[program].good)} · Ruim: acima de {currency(MILEIRO_REFERENCES[program].good)} por milheiro final.</p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
