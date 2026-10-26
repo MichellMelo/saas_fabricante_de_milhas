@@ -63,8 +63,8 @@ CREATE TABLE "MileInventoryMovement" (
   CONSTRAINT "MileInventoryMovement_pkey" PRIMARY KEY ("id"),
   CONSTRAINT "MileInventoryMovement_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT "MileInventoryMovement_loyaltyProgramId_fkey" FOREIGN KEY ("loyaltyProgramId") REFERENCES "LoyaltyProgram"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT "MileInventoryMovement_purchaseId_fkey" FOREIGN KEY ("purchaseId") REFERENCES "MilePurchase"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT "MileInventoryMovement_saleId_fkey" FOREIGN KEY ("saleId") REFERENCES "MileSale"("id") ON DELETE RESTRICT ON UPDATE CASCADE
+  CONSTRAINT "MileInventoryMovement_purchaseId_fkey" FOREIGN KEY ("purchaseId") REFERENCES "MilePurchase"("id") ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT "MileInventoryMovement_saleId_fkey" FOREIGN KEY ("saleId") REFERENCES "MileSale"("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE INDEX "MileInventoryMovement_userId_occurredAt_idx" ON "MileInventoryMovement"("userId", "occurredAt");
