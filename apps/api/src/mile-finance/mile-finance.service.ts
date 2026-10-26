@@ -133,6 +133,31 @@ export class MileFinanceService {
       await tx.mileInventoryMovement.create({
         data: { userId, loyaltyProgramId: program.id, type: MileInventoryMovementType.PURCHASE, miles, unitCostCpm: purchaseCpm, totalCost, purchaseId: purchase.id, occurredAt: purchasedAt },
       });
+
+      // If this user already tracks the same loyalty program in their wallet,
+      // keep its points balance and transaction history in sync with the purchase.
+      const loyaltyAccount = await tx.loyaltyAccount.findUnique({
+        where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: program.id } },
+        select: { id: true },
+      });
+      if (loyaltyAccount) {
+        await tx.loyaltyAccount.update({
+          where: { id: loyaltyAccount.id },
+          data: { balance: { increment: miles }, lastBalanceAt: purchasedAt },
+        });
+        await tx.pointTransaction.create({
+          data: {
+            userId,
+            loyaltyAccountId: loyaltyAccount.id,
+            type: "PURCHASE",
+            points: new Prisma.Decimal(miles),
+            unitCostBrl: totalCost.div(miles).toDecimalPlaces(4),
+            cashValueBrl: totalCost,
+            occurredAt: purchasedAt,
+            notes: `Compra integrada ao Financeiro de Milhas.${dto.notes?.trim() ? ` ${dto.notes.trim()}` : ""}`,
+          },
+        });
+      }
       return purchase;
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
