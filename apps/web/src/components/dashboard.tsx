@@ -13,6 +13,7 @@ import {
   CreditCard,
   LayoutDashboard,
   Plane,
+  Plus,
   ShieldCheck,
   Sparkles,
   Star,
@@ -706,14 +707,15 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             { key: "oportunidades", label: "Oportunidades", icon: Sparkles },
             { key: "programas", label: "Meus Pontos", icon: CreditCard },
             { key: "grupo-vip", label: "Comunidade", icon: MessageCircle },
-            { key: "aprender", label: "Aprender", icon: GraduationCap },
+            { key: "menu", label: "Mais", icon: Plus },
           ] as const).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               type="button"
-              className={`mobile-nav-item ${route === key ? "is-active" : ""}`}
-              onClick={() => navigate(key)}
-              aria-current={route === key ? "page" : undefined}
+              className={`mobile-nav-item ${key === "menu" ? "mobile-nav-more" : route === key ? "is-active" : ""}`}
+              onClick={() => key === "menu" ? setMobileOpen(true) : navigate(key)}
+              aria-current={key !== "menu" && route === key ? "page" : undefined}
+              aria-label={key === "menu" ? "Mais opções, abrir menu" : label}
             >
               <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
               <span>{label}</span>
