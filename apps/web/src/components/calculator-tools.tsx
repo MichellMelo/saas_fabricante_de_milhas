@@ -221,7 +221,7 @@ export function CalculatorTools() {
                 <Field label="Preço em dinheiro" value={cashFare} onChange={setCashFare} suffix="R$" hint="Preço total de uma passagem equivalente, incluindo taxas e bagagem necessária." />
                 <Field label="Milhas exigidas" value={awardMiles} onChange={setAwardMiles} suffix="milhas" hint="Total de milhas exigidas para os passageiros incluídos no preço em dinheiro." />
                 <Field label="Taxas do resgate" value={awardFees} onChange={setAwardFees} suffix="R$" hint="Inclua taxas aeroportuárias e cobranças pagas à parte na emissão com milhas." />
-                <Field label="Seu custo por milheiro" value={personalCpm} onChange={setPersonalCpm} suffix="R$/1.000" hint="Seu custo efetivo por 1.000 milhas; é o custo de oportunidade usado na comparação." />
+                <Field label="Seu custo por milheiro" value={personalCpm} onChange={setPersonalCpm} suffix="R$/1.000" hint="Informe quanto você pagou efetivamente por cada 1.000 milhas. Considere o bônus de transferência e as taxas para calcular seu custo real." />
                 <label className="block min-w-0 space-y-2 sm:col-span-2">
                   <span className="block text-sm font-medium text-slate-700">Programa de fidelidade</span>
                   <select value={program} onChange={(event) => setProgram(event.target.value as ProgramKey)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base text-slate-900 focus:border-[#b9954d] focus:outline-none focus:ring-2 focus:ring-[#c6a45c]/20">
