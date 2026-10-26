@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Post, Put, Req, UseGuards } from "@nestjs/common";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { ClientsService } from "./clients.service";
 import { CreateInvitationDto } from "./dto/create-invitation.dto";
@@ -46,6 +46,18 @@ export class ClientsController {
   createMileSale(@Req() request: AuthenticatedRequest, @Body() dto: CreateMileSaleDto) {
     this.assertAdmin(request);
     return this.clients.createMileSale(request.user.id, dto);
+  }
+
+  @Put("mile-sales/:id")
+  updateMileSale(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() dto: CreateMileSaleDto) {
+    this.assertAdmin(request);
+    return this.clients.updateMileSale(id, dto);
+  }
+
+  @Delete("mile-sales/:id")
+  deleteMileSale(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
+    this.assertAdmin(request);
+    return this.clients.deleteMileSale(id);
   }
 
   @Post("mile-sales/:id/status")
