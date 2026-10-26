@@ -146,7 +146,7 @@ export function CalculatorTools() {
         </div>
       </div>
 
-      <div role="tablist" aria-label="Ferramentas de cálculo" className="flex min-w-0 gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm">
+      <div role="tablist" aria-label="Ferramentas de cálculo" className="grid min-w-0 grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm sm:flex sm:gap-1 sm:p-1.5">
         {tabs.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -156,10 +156,11 @@ export function CalculatorTools() {
             aria-selected={active === key}
             aria-controls={`calculator-panel-${key}`}
             onClick={() => setActive(key)}
-            className={`flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-3 py-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c] ${active === key ? "bg-[#111b2b] text-[#f0d38e] shadow-sm" : "text-slate-600 hover:bg-[#f8f5ed] hover:text-slate-900"}`}
+            className={`flex min-h-12 min-w-0 items-center justify-start gap-2 rounded-lg px-3 py-3 text-left text-sm font-semibold leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c] sm:flex-1 sm:justify-center sm:whitespace-nowrap sm:px-3 sm:text-center ${active === key ? "bg-[#111b2b] text-[#f0d38e] shadow-sm" : "text-slate-600 hover:bg-[#f8f5ed] hover:text-slate-900"}`}
           >
             <Icon size={17} className="shrink-0" />
-            <span>{label}</span>
+            <span className="min-w-0 sm:hidden">{key === "milheiro" ? "Milheiro" : key === "transferencia" ? "Transferência" : key === "resgate" ? "Resgate" : "Venda de milhas"}</span>
+            <span className="hidden sm:inline">{label}</span>
           </button>
         ))}
       </div>
