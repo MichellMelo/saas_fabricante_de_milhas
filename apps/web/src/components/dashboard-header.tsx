@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Bell, ChevronDown, Menu, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 type DashboardUser = { id: string; email: string; name: string | null; createdAt: string; isAdmin?: boolean };
@@ -68,9 +67,6 @@ export function DashboardHeader({ title, mobileOpen, onToggleMobile, user, onLog
                 </strong>
               </div>
               <div className="topbar-actions">
-                <Badge variant="gold" className="demo-pill">
-                  <span /> DEMONSTRAÇÃO
-                </Badge>
                 {user.isAdmin && <div className="relative">
                   <Button
                     variant="ghost"
