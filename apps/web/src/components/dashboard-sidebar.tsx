@@ -53,11 +53,6 @@ export function DashboardSidebar({ mobileOpen, route, navItems, navigate, notify
           <button className="mt-1.5 text-xs font-semibold text-[#d8b66a] transition-colors hover:text-[#f0d38e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c]" onClick={() => notify("Dica: compare custo por milheiro, taxas e valor real do resgate antes de decidir.")}>Ver guia rápido <span aria-hidden="true">↗</span></button>
         </div>
         <SidebarSeparator />
-        <div className="flex items-center gap-2 px-1 py-1 text-[11px] text-slate-500">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_3px_rgba(52,211,153,.10)]" />
-          <span>Ambiente de demonstração</span>
-          <span className="ml-auto text-slate-600">v0.3</span>
-        </div>
       </SidebarFooter>
     </Sidebar>
   );
