@@ -136,14 +136,14 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
     <section className="space-y-6">
       <div className="welcome-row">
         <div>
-          <button type="button" onClick={onBack} className="mb-4 inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-slate-900">
+          <button type="button" onClick={onBack} className="welcome-back">
             <ArrowLeft size={16} /> Voltar à visão geral
           </button>
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">Patrimônio de pontos</div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Programas e saldos</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Organize suas contas de fidelidade e registre movimentações para manter os saldos consistentes.</p>
+          <div className="eyebrow"><span className="eyebrow-line" /> Patrimônio de pontos</div>
+          <h1 className="page-title">Programas e saldos</h1>
+          <p className="page-subtitle">Organize suas contas de fidelidade e registre movimentações para manter os saldos consistentes.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="welcome-actions">
           <Button variant="outline" onClick={() => void loadData()} disabled={loading || saving}><RefreshCw size={15} /> Atualizar</Button>
           <Button onClick={() => { setShowCreate((value) => !value); setError(""); }} disabled={availablePrograms.length === 0}><Plus size={16} /> Adicionar programa</Button>
         </div>
