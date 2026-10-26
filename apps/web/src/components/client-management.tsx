@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ChevronDown, Copy, Search, ShieldCheck, UserPlus, Users } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const PRODUCTS = [
   { value: "GROUP_VIP", label: "Grupo VIP" },
@@ -204,6 +205,15 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
   useEffect(() => {
     if (selectedClientId) setExpandedClientId(selectedClientId);
   }, [selectedClientId]);
+
+  useEffect(() => {
+    if (!error && !notice) return;
+    const timeout = window.setTimeout(() => {
+      setError("");
+      setNotice("");
+    }, 5000);
+    return () => window.clearTimeout(timeout);
+  }, [error, notice]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -415,8 +425,8 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
         </div>
       </div>
 
-      {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
-      {notice && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{notice}</div>}
+      {error && <Alert role="alert" className="border-red-200 bg-red-50 px-4 py-3 text-red-800 shadow-sm"><AlertDescription>{error}</AlertDescription></Alert>}
+      {notice && <Alert role="status" className="border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 shadow-sm"><AlertDescription>{notice}</AlertDescription></Alert>}
 
       <div className={"grid gap-5 " + (selectedClientId ? "grid-cols-1" : "xl:grid-cols-[minmax(320px,0.8fr)_minmax(0,1.2fr)]")}>
         {!selectedClientId && <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
