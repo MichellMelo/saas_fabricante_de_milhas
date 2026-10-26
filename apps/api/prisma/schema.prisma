@@ -59,6 +59,7 @@ model User {
  flights FlightRecord[]
  productAccesses UserProductAccess[]
  payments ClientPayment[]
+ mileSales MileSale[]
  sentInvitations ClientInvitation[] @relation("InvitationSender")
  authoredGroupVipPosts GroupVipPost[]
  authoredProductContent ProductContent[]
@@ -202,4 +203,29 @@ model ProductContent {
  author User @relation(fields: [authorId], references: [id], onDelete: Restrict)
  @@index([product, isPublished, publishedAt])
  @@index([authorId, createdAt])
+}
+
+
+enum MileSaleStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+model MileSale {
+  id String @id @default(cuid())
+  userId String
+  buyerName String?
+  miles BigInt
+  acquisitionCpm Decimal @db.Decimal(12, 4)
+  grossAmount Decimal @db.Decimal(12, 2)
+  fees Decimal @default(0) @db.Decimal(12, 2)
+  soldAt DateTime
+  status MileSaleStatus @default(COMPLETED)
+  notes String? @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, soldAt])
+  @@index([userId, status])
 }
