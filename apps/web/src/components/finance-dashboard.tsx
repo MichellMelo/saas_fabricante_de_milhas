@@ -63,6 +63,13 @@ export function FinanceDashboard() {
   const [error, setError] = useState("");
   const [period, setPeriod] = useState("30");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
+  const [paymentSaving, setPaymentSaving] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentDueAt, setPaymentDueAt] = useState("");
+  const [paymentProduct, setPaymentProduct] = useState<Payment["product"]>("GROUP_VIP");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentNotes, setPaymentNotes] = useState("");
   const [sales, setSales] = useState<MileSale[]>([]);
   const [salesLoading, setSalesLoading] = useState(true);
   const [salesLoadError, setSalesLoadError] = useState("");
@@ -92,6 +99,63 @@ export function FinanceDashboard() {
       setError(cause instanceof Error ? cause.message : "Falha ao carregar os dados financeiros.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  function beginEditPayment(payment: Payment) {
+    setEditingPayment(payment);
+    setPaymentAmount(String(payment.amount));
+    setPaymentDueAt(new Date(payment.dueAt).toISOString().slice(0, 10));
+    setPaymentProduct(payment.product);
+    setPaymentMethod(payment.method ?? "");
+    setPaymentNotes(payment.notes ?? "");
+  }
+
+  async function savePaymentEdit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editingPayment) return;
+    setPaymentSaving(true);
+    try {
+      const response = await fetch(`/api/admin/payments/${encodeURIComponent(editingPayment.id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: editingPayment.userId,
+          product: paymentProduct,
+          amount: Number(paymentAmount),
+          dueAt: new Date(paymentDueAt + "T12:00:00").toISOString(),
+          method: paymentMethod || undefined,
+          notes: paymentNotes.trim() || undefined,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = Array.isArray(payload.message) ? payload.message.join(" ") : payload.message;
+        throw new Error(message || "Não foi possível atualizar o lançamento.");
+      }
+      setEditingPayment(null);
+      setToast({ type: "success", message: "Lançamento atualizado com sucesso." });
+      await load();
+    } catch (cause) {
+      setToast({ type: "error", message: cause instanceof Error ? cause.message : "Não foi possível atualizar o lançamento." });
+    } finally {
+      setPaymentSaving(false);
+    }
+  }
+
+  async function deletePayment(payment: Payment) {
+    if (!window.confirm(`Excluir o lançamento de ${payment.user?.name || payment.user?.email || "cliente"}? Esta ação não pode ser desfeita.`)) return;
+    try {
+      const response = await fetch(`/api/admin/payments/${encodeURIComponent(payment.id)}`, { method: "DELETE" });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = Array.isArray(payload.message) ? payload.message.join(" ") : payload.message;
+        throw new Error(message || "Não foi possível excluir o lançamento.");
+      }
+      setPayments((current) => current.filter((item) => item.id !== payment.id));
+      setToast({ type: "success", message: "Lançamento excluído com sucesso." });
+    } catch (cause) {
+      setToast({ type: "error", message: cause instanceof Error ? cause.message : "Não foi possível excluir o lançamento." });
     }
   }
 
@@ -285,8 +349,17 @@ export function FinanceDashboard() {
           </select>
         </label>
       </div>
+      {editingPayment && <form onSubmit={savePaymentEdit} className="mt-5 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="sm:col-span-2 xl:col-span-3"><h3 className="font-semibold text-slate-900">Editar lançamento · {editingPayment.user?.name || editingPayment.user?.email || "Cliente"}</h3></div>
+        <label className="text-xs font-medium text-slate-600">Produto<select value={paymentProduct} onChange={(e) => setPaymentProduct(e.target.value as Payment["product"])} className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"><option value="GROUP_VIP">Grupo VIP</option><option value="AULAO">Aulões</option><option value="MENTORSHIP">Mentorias</option></select></label>
+        <label className="text-xs font-medium text-slate-600">Valor (R$)<input required type="number" min="0.01" step="0.01" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm" /></label>
+        <label className="text-xs font-medium text-slate-600">Vencimento<input required type="date" value={paymentDueAt} onChange={(e) => setPaymentDueAt(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm" /></label>
+        <label className="text-xs font-medium text-slate-600">Forma de pagamento<select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"><option value="">Não definida</option><option value="PIX">Pix</option><option value="BANK_TRANSFER">Transferência</option><option value="CREDIT_CARD">Cartão de crédito</option><option value="CASH">Dinheiro</option><option value="OTHER">Outro</option></select></label>
+        <label className="text-xs font-medium text-slate-600 sm:col-span-2">Observações<textarea value={paymentNotes} onChange={(e) => setPaymentNotes(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm" rows={2} /></label>
+        <div className="flex gap-2 sm:col-span-2 xl:col-span-3"><button type="submit" disabled={paymentSaving} className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{paymentSaving ? "Salvando…" : "Salvar alterações"}</button><button type="button" onClick={() => setEditingPayment(null)} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">Cancelar</button></div>
+      </form>}
       {loading ? <p className="py-10 text-sm text-slate-500">Carregando lançamentos financeiros…</p> : filtered.length === 0 ? <p className="py-10 text-sm text-slate-500">Nenhum lançamento encontrado para os filtros selecionados.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[680px] text-left text-sm">
-        <thead><tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500"><th className="px-3 py-3 font-semibold">Cliente</th><th className="px-3 py-3 font-semibold">Produto</th><th className="px-3 py-3 font-semibold">Vencimento</th><th className="px-3 py-3 font-semibold">Valor</th><th className="px-3 py-3 font-semibold">Situação</th><th className="px-3 py-3 font-semibold">Ação</th></tr></thead>
+        <thead><tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500"><th className="px-3 py-3 font-semibold">Cliente</th><th className="px-3 py-3 font-semibold">Produto</th><th className="px-3 py-3 font-semibold">Vencimento</th><th className="px-3 py-3 font-semibold">Valor</th><th className="px-3 py-3 font-semibold">Situação</th><th className="px-3 py-3 font-semibold">Ações</th></tr></thead>
         <tbody>{filtered.map((payment) => {
           const overdueStatus = isOverdue(payment);
           const label = payment.status === "PAID" ? "Pago" : payment.status === "CANCELLED" ? "Cancelado" : overdueStatus ? "Vencido" : "Pendente";
@@ -294,7 +367,7 @@ export function FinanceDashboard() {
             <td className="px-3 py-3"><p className="font-medium text-slate-900">{payment.user?.name || "Sem nome"}</p><p className="mt-1 text-xs text-slate-500">{payment.user?.email || "—"}</p></td>
             <td className="px-3 py-3 text-slate-600">{products[payment.product]}</td><td className="px-3 py-3 text-slate-600">{dateLabel(payment.dueAt)}</td><td className="px-3 py-3 font-semibold text-slate-900">{money(Number(payment.amount))}</td>
             <td className="px-3 py-3"><span className={"inline-flex rounded-full px-2.5 py-1 text-xs font-semibold " + (label === "Pago" ? "bg-emerald-50 text-emerald-700" : label === "Vencido" ? "bg-rose-50 text-rose-700" : label === "Cancelado" ? "bg-slate-100 text-slate-500" : "bg-amber-50 text-amber-700")}>{label}</span></td>
-            <td className="px-3 py-3">{payment.status !== "CANCELLED" && <button type="button" onClick={async () => { const response = await fetch("/api/admin/payments/" + encodeURIComponent(payment.id) + "/status", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paid: payment.status !== "PAID" }) }); if (!response.ok) { setError("Não foi possível atualizar o pagamento."); return; } await load(); }} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700">{payment.status === "PAID" ? "Marcar pendente" : "Marcar pago"}</button>}</td>
+            <td className="px-3 py-3"><div className="flex flex-wrap gap-2">{payment.status !== "CANCELLED" && <button type="button" onClick={async () => { const response = await fetch("/api/admin/payments/" + encodeURIComponent(payment.id) + "/status", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paid: payment.status !== "PAID" }) }); if (!response.ok) { setToast({ type: "error", message: "Não foi possível atualizar o pagamento." }); return; } setToast({ type: "success", message: payment.status === "PAID" ? "Lançamento marcado como pendente." : "Pagamento marcado como pago." }); await load(); }} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700">{payment.status === "PAID" ? "Marcar pendente" : "Marcar pago"}</button>}<button type="button" onClick={() => beginEditPayment(payment)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700">Editar</button><button type="button" onClick={() => void deletePayment(payment)} className="rounded-lg border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700">Excluir</button></div></td>
           </tr>;
         })}</tbody>
       </table></div>}
