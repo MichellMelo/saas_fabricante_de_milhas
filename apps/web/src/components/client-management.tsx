@@ -409,11 +409,11 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
     <section className="space-y-7">
       <div className="welcome-row">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a6792d]">Administração · Clientes</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">{selectedClientId ? "Ficha do cliente" : "Clientes e produtos"}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{selectedClientId ? "Consulte e gerencie os dados, acessos e pagamentos deste cliente." : "Crie convites e controle o acesso de cada cliente ao Grupo VIP, aulões e mentorias. A API valida as permissões no servidor."}</p>
+          <div className="eyebrow"><span className="eyebrow-line" /> ADMINISTRAÇÃO · CLIENTES</div>
+          <h1 className="page-title">{selectedClientId ? "Ficha do cliente" : "Clientes e produtos"}</h1>
+          <p className="page-subtitle">{selectedClientId ? "Consulte e gerencie os dados, acessos e pagamentos deste cliente." : "Crie convites e controle o acesso de cada cliente ao Grupo VIP, aulões e mentorias. A API valida as permissões no servidor."}</p>
         </div>
-        <button onClick={() => void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 disabled:opacity-50"><RefreshCw size={15} /> Atualizar</button>
+        <button onClick={() => void load()} disabled={loading} className="button welcome-refresh disabled:opacity-50"><RefreshCw size={15} /> Atualizar</button>
       </div>
 
       {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
