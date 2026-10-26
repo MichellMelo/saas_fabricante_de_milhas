@@ -30,17 +30,13 @@ export default async function ClientDetailPage({
   if (!payload.user?.isAdmin) notFound();
 
   return (
-    <main className="min-h-screen bg-[#f7f5ef] px-4 py-8 sm:px-8">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#a6792d]">Fabricante de Milhas</p>
-            <p className="mt-1 text-sm font-medium text-slate-700">Gestão individual de cliente</p>
-          </div>
-          <a href="/#clientes-admin" className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+    <main className="min-h-screen bg-[#f7f5ef] px-4 py-6 sm:px-8 sm:py-8">
+      <div className="mx-auto w-full max-w-[1540px]">
+        <div className="mb-5">
+          <a href="/#clientes-admin" className="inline-flex min-h-10 items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
             ← Voltar à lista
           </a>
-        </header>
+        </div>
         <ClientManagement selectedClientId={id} />
       </div>
     </main>
