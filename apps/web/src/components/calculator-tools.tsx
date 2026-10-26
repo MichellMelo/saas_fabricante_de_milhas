@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { Calculator, ArrowLeftRight, Plane, RotateCcw, Info } from "lucide-react";
 
 type ToolKey = "milheiro" | "transferencia" | "resgate";
+type ProgramKey = "latam" | "smiles" | "azul";
+const MILEIRO_REFERENCES: Record<ProgramKey, { label: string; good: number }> = { latam: { label: "LATAM Pass", good: 25 }, smiles: { label: "Smiles", good: 15 }, azul: { label: "Azul Fidelidade", good: 13 } };
 
 const currency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -62,6 +64,7 @@ export function CalculatorTools() {
   const [paid, setPaid] = useState("500");
   const [fees, setFees] = useState("0");
   const [points, setPoints] = useState("25000");
+  const [program, setProgram] = useState<ProgramKey>("latam");
   const [originPoints, setOriginPoints] = useState("50000");
   const [bonus, setBonus] = useState("80");
   const [originCost, setOriginCost] = useState("700");
@@ -144,10 +147,27 @@ export function CalculatorTools() {
                 <Field label="Valor pago" value={paid} onChange={setPaid} suffix="R$" />
                 <Field label="Taxas adicionais" value={fees} onChange={setFees} suffix="R$" />
                 <Field label="Pontos ou milhas recebidos" value={points} onChange={setPoints} suffix="pts" />
+                <label className="block min-w-0 space-y-2 sm:col-span-2">
+                  <span className="block text-sm font-medium text-slate-700">Programa de fidelidade</span>
+                  <select value={program} onChange={(event) => setProgram(event.target.value as ProgramKey)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base text-slate-900 focus:border-[#b9954d] focus:outline-none focus:ring-2 focus:ring-[#c6a45c]/20">
+                    {Object.entries(MILEIRO_REFERENCES).map(([key, reference]) => <option key={key} value={key}>{reference.label}</option>)}
+                  </select>
+                </label>
               </div>
               <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Result label="Custo por milheiro" value={milheiro.qty > 0 ? currency(milheiro.cpm) : "—"} detail="Fórmula: (valor pago + taxas) ÷ quantidade × 1.000." />
                 <Result label="Desembolso total" value={currency(milheiro.total)} detail={milheiro.qty > 0 ? `Quantidade considerada: ${number(milheiro.qty)} pontos.` : "Informe uma quantidade maior que zero para calcular o milheiro."} />
+              </div>
+              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+                <div className="font-semibold text-slate-900">Referência de custo — {MILEIRO_REFERENCES[program].label}</div>
+                <p className="mt-1 text-sm leading-6 text-slate-600">Excelente: abaixo de {currency(MILEIRO_REFERENCES[program].good)} · Bom: {currency(MILEIRO_REFERENCES[program].good)} · Ruim: acima de {currency(MILEIRO_REFERENCES[program].good)} por milheiro.</p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-slate-600">Seu resultado:</span>
+                  <span className={"rounded-full px-3 py-1 text-sm font-semibold " + (milheiro.qty <= 0 ? "bg-slate-100 text-slate-600" : milheiro.cpm < MILEIRO_REFERENCES[program].good ? "bg-emerald-50 text-emerald-700" : milheiro.cpm === MILEIRO_REFERENCES[program].good ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700")}>
+                    {milheiro.qty <= 0 ? "Informe a quantidade" : milheiro.cpm < MILEIRO_REFERENCES[program].good ? "Excelente" : milheiro.cpm === MILEIRO_REFERENCES[program].good ? "Bom" : "Ruim"}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-slate-500">Referências iniciais informadas pela Fabricante de Milhas; não garantem rentabilidade. Avalie também disponibilidade e valor real de resgate.</p>
               </div>
             </>
           ) : active === "transferencia" ? (
