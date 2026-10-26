@@ -115,13 +115,13 @@ export class MileFinanceService {
       const purchase = await tx.milePurchase.create({
         data: { userId, loyaltyProgramId: program.id, miles, acquisitionCpm: purchaseCpm, grossAmount: gross, fees, purchasedAt, notes: dto.notes?.trim() || null },
       });
-      const inventory = await tx.mileInventory.upsert({
+      const inventory = await tx.mileInventory.findUnique({
         where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: program.id } },
-        create: { userId, loyaltyProgramId: program.id, miles, totalCost, averageCpm: purchaseCpm },
-        update: {},
       });
-      if (inventory.id && inventory.miles === miles && inventory.totalCost.equals(totalCost)) {
-        // A newly created inventory already contains this purchase.
+      if (!inventory) {
+        await tx.mileInventory.create({
+          data: { userId, loyaltyProgramId: program.id, miles, totalCost, averageCpm: purchaseCpm },
+        });
       } else {
         const newMiles = inventory.miles + miles;
         const newTotal = inventory.totalCost.plus(totalCost).toDecimalPlaces(2);
