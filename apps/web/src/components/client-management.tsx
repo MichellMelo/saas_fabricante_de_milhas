@@ -417,12 +417,10 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
 
   return (
     <section className="space-y-7">
-      <div className="welcome-row">
-        <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> ADMINISTRAÇÃO · CLIENTES</div>
-          <h1 className="page-title">{selectedClientId ? "Ficha do cliente" : "Clientes e produtos"}</h1>
-          <p className="page-subtitle">{selectedClientId ? "Consulte e gerencie os dados, acessos e pagamentos deste cliente." : "Crie convites e controle o acesso de cada cliente ao Grupo VIP, aulões e mentorias. A API valida as permissões no servidor."}</p>
-        </div>
+      <div className="mb-6 min-w-0">
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#9b824d]">Administração · Clientes</p>
+        <h1 className="m-0 text-2xl font-bold tracking-tight text-[#142137] sm:text-3xl">{selectedClientId ? "Ficha do cliente" : "Clientes e produtos"}<span className="text-[#c6a45c]">.</span></h1>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">{selectedClientId ? "Consulte e gerencie os dados, acessos e pagamentos deste cliente." : "Crie convites e controle o acesso de cada cliente ao Grupo VIP, aulões e mentorias."}</p>
       </div>
 
       {error && <Alert role="alert" className="border-red-200 bg-red-50 px-4 py-3 text-red-800 shadow-sm"><AlertDescription>{error}</AlertDescription></Alert>}
