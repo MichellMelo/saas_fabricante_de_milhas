@@ -1700,3 +1700,53 @@ body { font-size: 15px; }
 }
 
 
+
+
+/* Mobile: menu acessível pela barra inferior; esconder o menu duplicado do topo. */
+@media (max-width: 760px) {
+  .topbar .menu-toggle { display: none !important; }
+  .mobile-nav-more { color: #8e7139; }
+  .mobile-nav-more svg { stroke-width: 2.2; }
+}
+
+
+/* A ficha individual usa o cabeçalho compacto padrão, sem o banner amplo do dashboard. */
+.client-detail-welcome {
+  margin: 0 0 24px !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  width: 100%;
+  max-width: 100%;
+  color: inherit !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+}
+.client-detail-welcome::before {
+  content: none !important;
+  display: none !important;
+}
+.client-detail-welcome > div {
+  position: static;
+  z-index: auto;
+}
+.client-detail-welcome .eyebrow {
+  color: #9b824d !important;
+  letter-spacing: 0.16em !important;
+  margin-bottom: 10px !important;
+}
+.client-detail-welcome .eyebrow-line {
+  width: 17px !important;
+  background: #c6a45c !important;
+}
+.client-detail-welcome .page-title {
+  color: #142137 !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: clamp(28px, 2.5vw, 34px) !important;
+  line-height: 1.2 !important;
+}
+.client-detail-welcome .page-subtitle {
+  color: #7d8796 !important;
+  font-size: 12px !important;
+}

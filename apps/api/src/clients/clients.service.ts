@@ -195,8 +195,7 @@ export class ClientsService {
 
   async createInvitation(invitedByUserId: string, dto: CreateInvitationDto) {
     const email = dto.email.trim().toLowerCase();
-    const products = [...new Set(dto.products)];
-    if (!products.length) throw new BadRequestException("Selecione pelo menos um produto para o cliente.");
+    const products = [...new Set(dto.products ?? [])];
 
     const existingUser = await this.prisma.user.findUnique({ where: { email }, select: { id: true, passwordHash: true } });
     if (existingUser?.passwordHash) throw new ConflictException("Esse e-mail já possui uma conta ativa. Gerencie os acessos diretamente na ficha do cliente.");
