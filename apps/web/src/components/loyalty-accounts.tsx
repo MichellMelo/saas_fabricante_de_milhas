@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { ArrowLeft, ArrowDownLeft, ArrowUpRight, Plus, RefreshCw, WalletCards } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Plus, WalletCards } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
