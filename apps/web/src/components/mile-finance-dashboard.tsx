@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { ArrowDownLeft, Boxes, LoaderCircle, Plus, RefreshCw, ShoppingCart, TrendingUp } from "lucide-react";
+import { ArrowDownLeft, Boxes, LoaderCircle, Plus, ShoppingCart, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -118,7 +118,7 @@ export function MileFinanceDashboard() {
       {toast && <div role={toast.type === "error" ? "alert" : "status"} aria-live={toast.type === "error" ? "assertive" : "polite"} className={`fixed right-5 top-5 z-[100] max-w-[min(420px,calc(100vw-2.5rem))] rounded-xl border px-4 py-3 text-sm font-medium shadow-xl ${toast.type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-rose-200 bg-rose-50 text-rose-900"}`}>{toast.message}<button type="button" onClick={() => setToast(null)} aria-label="Fechar aviso" className="ml-4 font-bold">×</button></div>}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div><div className="eyebrow"><span className="eyebrow-line" /> GESTÃO DE OPERAÇÕES</div><h1 className="page-title">Financeiro de Milhas<span className="gold-period">.</span></h1><p className="page-subtitle">Compras, vendas, estoque e resultado por programa — separado do financeiro administrativo.</p></div>
-        <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => void load()} disabled={loading}><RefreshCw size={15} className="mr-2" />Atualizar</Button><Button variant="outline" onClick={() => openForm("purchase")}><Plus size={15} className="mr-2" />Registrar compra</Button><Button onClick={() => openForm("sale")}><Plus size={15} className="mr-2" />Registrar venda</Button></div>
+        <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => openForm("purchase")}><Plus size={15} className="mr-2" />Registrar compra</Button><Button onClick={() => openForm("sale")}><Plus size={15} className="mr-2" />Registrar venda</Button></div>
       </div>
       {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800"><span>{error}</span><Button variant="outline" onClick={() => void load()}>Tentar novamente</Button></div>}
       {formType && <Card className="panel p-5"><form onSubmit={submit} className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
