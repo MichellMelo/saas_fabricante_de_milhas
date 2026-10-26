@@ -156,26 +156,16 @@ export class ClientsService {
   }
 
   async listMileSales() {
-    const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
     return this.prisma.mileSale.findMany({
-      where: adminEmails.length ? { user: { email: { notIn: adminEmails } } } : undefined,
       orderBy: [{ soldAt: "desc" }, { createdAt: "desc" }],
       select: {
-        id: true, userId: true, buyerName: true, miles: true, acquisitionCpm: true,
+        id: true, buyerName: true, miles: true, acquisitionCpm: true,
         grossAmount: true, fees: true, soldAt: true, status: true, notes: true, createdAt: true,
-        user: { select: { id: true, name: true, email: true } },
       },
     });
   }
 
-  async createMileSale(dto: CreateMileSaleDto) {
-    const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
-    const user = await this.prisma.user.findFirst({
-      where: adminEmails.length ? { email: { notIn: adminEmails } } : {},
-      orderBy: { createdAt: "asc" },
-      select: { id: true },
-    });
-    if (!user) throw new NotFoundException("Não há usuário cliente disponível para vincular a venda.");
+  async createMileSale(adminUserId: string, dto: CreateMileSaleDto) {
     const soldAt = new Date(dto.soldAt);
     if (Number.isNaN(soldAt.getTime())) throw new BadRequestException("Informe uma data de venda válida.");
     if (dto.fees !== undefined && dto.fees > dto.grossAmount) {
@@ -183,7 +173,7 @@ export class ClientsService {
     }
     return this.prisma.mileSale.create({
       data: {
-        userId: user.id,
+        userId: adminUserId,
         buyerName: dto.buyerName?.trim() || null,
         miles: BigInt(dto.miles),
         acquisitionCpm: dto.acquisitionCpm,
