@@ -172,7 +172,8 @@ export function CalculatorTools() {
                     {milheiro.qty <= 0 ? "Informe a quantidade" : milheiro.cpm < MILEIRO_REFERENCES[program].good ? "Excelente" : milheiro.cpm === MILEIRO_REFERENCES[program].good ? "Bom" : "Ruim"}
                   </span>
                 </div>
-                <p className="mt-2 text-sm leading-6 text-slate-700">Referência para {MILEIRO_REFERENCES[program].label}: excelente abaixo de {currency(MILEIRO_REFERENCES[program].good)}, bom em {currency(MILEIRO_REFERENCES[program].good)} e ruim acima de {currency(MILEIRO_REFERENCES[program].good)} por milheiro.</p>
+                <div className="font-semibold text-slate-900">Referência de custo — {MILEIRO_REFERENCES[program].label}</div>
+                <p className="mt-1 text-sm leading-6 text-slate-600">Excelente: abaixo de {currency(MILEIRO_REFERENCES[program].good)} · Bom: {currency(MILEIRO_REFERENCES[program].good)} · Ruim: acima de {currency(MILEIRO_REFERENCES[program].good)} por milheiro.</p>
                 <p className="mt-2 text-xs leading-5 text-slate-500">Referências iniciais informadas pela Fabricante de Milhas; não garantem rentabilidade. Avalie também disponibilidade e valor real de resgate.</p>
               </div>
             </>
