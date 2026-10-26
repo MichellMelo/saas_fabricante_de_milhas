@@ -1700,3 +1700,11 @@ body { font-size: 15px; }
 }
 
 
+
+
+/* Mobile: menu acessível pela barra inferior; esconder o menu duplicado do topo. */
+@media (max-width: 760px) {
+  .topbar .menu-toggle { display: none !important; }
+  .mobile-nav-more { color: #8e7139; }
+  .mobile-nav-more svg { stroke-width: 2.2; }
+}
