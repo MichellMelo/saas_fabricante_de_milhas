@@ -1,0 +1,216 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { Calculator, ArrowLeftRight, Plane, RotateCcw, Info } from "lucide-react";
+
+type ToolKey = "milheiro" | "transferencia" | "resgate";
+
+const currency = (value: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+const number = (value: number) =>
+  new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 }).format(value);
+const parse = (value: string) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+function Field({
+  label,
+  value,
+  onChange,
+  suffix,
+  min = "0",
+  step = "any",
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  suffix?: string;
+  min?: string;
+  step?: string;
+}) {
+  return (
+    <label className="block min-w-0 space-y-2">
+      <span className="block text-sm font-medium text-slate-700">{label}</span>
+      <span className="flex min-w-0 items-center rounded-xl border border-slate-200 bg-white focus-within:border-[#b9954d] focus-within:ring-2 focus-within:ring-[#c6a45c]/20">
+        <input
+          type="number"
+          min={min}
+          step={step}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="w-full min-w-0 rounded-xl bg-transparent px-3 py-3 text-base text-slate-900 outline-none"
+        />
+        {suffix && <span className="shrink-0 pr-3 text-xs text-slate-500">{suffix}</span>}
+      </span>
+    </label>
+  );
+}
+
+function Result({ label, value, detail }: { label: string; value: string; detail?: string }) {
+  return (
+    <div className="rounded-xl border border-[#c6a45c]/25 bg-[#f8f5ed] p-4">
+      <div className="text-xs font-semibold uppercase tracking-[.12em] text-slate-500">{label}</div>
+      <div className="mt-2 break-words text-2xl font-semibold tracking-tight text-[#111b2b]">{value}</div>
+      {detail && <p className="mt-2 text-sm leading-6 text-slate-600">{detail}</p>}
+    </div>
+  );
+}
+
+export function CalculatorTools() {
+  const [active, setActive] = useState<ToolKey>("milheiro");
+  const [paid, setPaid] = useState("500");
+  const [fees, setFees] = useState("0");
+  const [points, setPoints] = useState("25000");
+  const [originPoints, setOriginPoints] = useState("50000");
+  const [bonus, setBonus] = useState("80");
+  const [originCost, setOriginCost] = useState("700");
+  const [transferFees, setTransferFees] = useState("0");
+  const [cashFare, setCashFare] = useState("1200");
+  const [awardMiles, setAwardMiles] = useState("40000");
+  const [awardFees, setAwardFees] = useState("120");
+  const [personalCpm, setPersonalCpm] = useState("20");
+
+  const milheiro = useMemo(() => {
+    const total = Math.max(0, parse(paid)) + Math.max(0, parse(fees));
+    const qty = Math.max(0, parse(points));
+    return { total, qty, cpm: qty > 0 ? (total / qty) * 1000 : 0 };
+  }, [paid, fees, points]);
+
+  const transfer = useMemo(() => {
+    const qty = Math.max(0, parse(originPoints));
+    const finalMiles = qty * (1 + Math.max(0, parse(bonus)) / 100);
+    const totalCost = Math.max(0, parse(originCost)) + Math.max(0, parse(transferFees));
+    return { finalMiles, totalCost, cpm: finalMiles > 0 ? (totalCost / finalMiles) * 1000 : 0 };
+  }, [originPoints, bonus, originCost, transferFees]);
+
+  const redemption = useMemo(() => {
+    const cash = Math.max(0, parse(cashFare));
+    const miles = Math.max(0, parse(awardMiles));
+    const taxes = Math.max(0, parse(awardFees));
+    const cpm = miles > 0 ? ((cash - taxes) / miles) * 1000 : 0;
+    const personal = Math.max(0, parse(personalCpm));
+    const netSavings = cash - taxes - (miles * personal) / 1000;
+    return { cpm, netSavings, cash, miles, taxes, personal };
+  }, [cashFare, awardMiles, awardFees, personalCpm]);
+
+  const reset = () => {
+    setPaid("500"); setFees("0"); setPoints("25000");
+    setOriginPoints("50000"); setBonus("80"); setOriginCost("700"); setTransferFees("0");
+    setCashFare("1200"); setAwardMiles("40000"); setAwardFees("120"); setPersonalCpm("20");
+  };
+
+  const tabs: { key: ToolKey; label: string; icon: typeof Calculator; description: string }[] = [
+    { key: "milheiro", label: "Custo por milheiro", icon: Calculator, description: "Calcule quanto você efetivamente paga a cada mil pontos ou milhas." },
+    { key: "transferencia", label: "Transferência bonificada", icon: ArrowLeftRight, description: "Estime o saldo final e o custo efetivo após aplicar o bônus de transferência." },
+    { key: "resgate", label: "Dinheiro ou milhas", icon: Plane, description: "Compare o valor extraído no resgate com o custo que você atribui às suas milhas." },
+  ];
+
+  return (
+    <section className="space-y-6">
+      <div className="welcome-row">
+        <div>
+          <div className="eyebrow">FERRAMENTAS DE DECISÃO</div>
+          <h1 className="page-title">Calculadoras<span className="gold-period">.</span></h1>
+          <p className="page-subtitle">Compare custos, bônus e resgates com números transparentes — antes de tomar uma decisão.</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        {tabs.map(({ key, label, icon: Icon, description }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setActive(key)}
+            aria-pressed={active === key}
+            className={`rounded-2xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c] ${active === key ? "border-[#c6a45c] bg-[#f8f5ed] shadow-sm" : "border-slate-200 bg-white hover:border-slate-300"}`}
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#111b2b] text-[#e0c47f]"><Icon size={19} /></span>
+            <span className="mt-3 block font-semibold text-slate-900">{label}</span>
+            <span className="mt-1 block text-sm leading-5 text-slate-600">{description}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,.8fr)]">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 md:p-7">
+          {active === "milheiro" ? (
+            <>
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-slate-900">Custo por milheiro</h2>
+                <p className="mt-1 text-sm leading-6 text-slate-600">Inclua o desembolso e as taxas diretamente relacionadas à aquisição.</p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Valor pago" value={paid} onChange={setPaid} suffix="R$" />
+                <Field label="Taxas adicionais" value={fees} onChange={setFees} suffix="R$" />
+                <Field label="Pontos ou milhas recebidos" value={points} onChange={setPoints} suffix="pts" />
+              </div>
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Result label="Custo por milheiro" value={milheiro.qty > 0 ? currency(milheiro.cpm) : "—"} detail="Fórmula: (valor pago + taxas) ÷ quantidade × 1.000." />
+                <Result label="Desembolso total" value={currency(milheiro.total)} detail={milheiro.qty > 0 ? `Quantidade considerada: ${number(milheiro.qty)} pontos.` : "Informe uma quantidade maior que zero para calcular o milheiro."} />
+              </div>
+            </>
+          ) : active === "transferencia" ? (
+            <>
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-slate-900">Transferência bonificada</h2>
+                <p className="mt-1 text-sm leading-6 text-slate-600">O custo informado deve representar o custo de aquisição dos pontos de origem, não o preço estimado das milhas finais.</p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Pontos transferidos" value={originPoints} onChange={setOriginPoints} suffix="pts" />
+                <Field label="Bônus de transferência" value={bonus} onChange={setBonus} suffix="%" />
+                <Field label="Custo dos pontos de origem" value={originCost} onChange={setOriginCost} suffix="R$" />
+                <Field label="Taxas da transferência" value={transferFees} onChange={setTransferFees} suffix="R$" />
+              </div>
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Result label="Milhas finais estimadas" value={number(transfer.finalMiles)} detail="Considera o bônus percentual aplicado aos pontos transferidos." />
+                <Result label="Custo por milheiro final" value={transfer.finalMiles > 0 ? currency(transfer.cpm) : "—"} detail={`Custo total considerado: ${currency(transfer.totalCost)}.`} />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-slate-900">Dinheiro ou resgate com milhas</h2>
+                <p className="mt-1 text-sm leading-6 text-slate-600">Compare o preço da passagem em dinheiro com o valor líquido coberto pelas milhas, descontando as taxas do resgate.</p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Preço em dinheiro" value={cashFare} onChange={setCashFare} suffix="R$" />
+                <Field label="Milhas exigidas" value={awardMiles} onChange={setAwardMiles} suffix="milhas" />
+                <Field label="Taxas do resgate" value={awardFees} onChange={setAwardFees} suffix="R$" />
+                <Field label="Seu custo por milheiro" value={personalCpm} onChange={setPersonalCpm} suffix="R$/1.000" />
+              </div>
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Result label="Valor por milheiro no resgate" value={redemption.miles > 0 ? currency(redemption.cpm) : "—"} detail="Fórmula: (preço em dinheiro − taxas do resgate) ÷ milhas × 1.000." />
+                <Result label="Economia líquida estimada" value={currency(redemption.netSavings)} detail={redemption.netSavings >= 0 ? "Positiva após descontar taxas e custo de oportunidade das milhas." : "Negativa: comprar a passagem em dinheiro pode ser financeiramente melhor, com estes valores."} />
+              </div>
+            </>
+          )}
+        </div>
+
+        <aside className="space-y-4">
+          <div className="rounded-2xl bg-[#111b2b] p-5 text-white md:p-6">
+            <div className="flex items-center gap-2 text-sm font-semibold text-[#e0c47f]"><Info size={17} /> Como interpretar</div>
+            {active === "milheiro" ? (
+              <p className="mt-3 text-sm leading-6 text-slate-200">Um custo menor não significa automaticamente uma boa compra. Compare o resultado com o valor realista que você consegue obter ao resgatar e inclua custos indiretos relevantes.</p>
+            ) : active === "transferencia" ? (
+              <p className="mt-3 text-sm leading-6 text-slate-200">Bônus alto não garante uma boa operação. Verifique elegibilidade, prazo, validade das milhas, regras de estorno e se há taxa ou custo de oportunidade para transferir.</p>
+            ) : (
+              <p className="mt-3 text-sm leading-6 text-slate-200">O resgate tende a ser mais interessante quando o valor por milheiro supera seu custo de aquisição ou o valor de uma alternativa viável. Considere bagagem, flexibilidade, disponibilidade e regras tarifárias.</p>
+            )}
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5">
+            <h3 className="font-semibold text-slate-900">Premissas importantes</h3>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-slate-600">
+              <li>Os cálculos usam apenas os valores informados nesta tela.</li>
+              <li>Não há consulta automática de tarifas, promoções ou saldos.</li>
+              <li>Arredondamentos são apenas de exibição; os cálculos usam os valores numéricos inseridos.</li>
+            </ul>
+          </div>
+          <button type="button" onClick={reset} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c]">
+            <RotateCcw size={15} /> Restaurar valores de exemplo
+          </button>
+        </aside>
+      </div>
+    </section>
+  );
+}
