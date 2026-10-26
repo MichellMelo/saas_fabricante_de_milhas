@@ -275,11 +275,6 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
 
   async function sendInvitation(client: Client) {
     const selectedProducts = [...new Set(client.productAccesses.filter((access) => access.active).map((access) => access.product))];
-    if (!selectedProducts.length) {
-      setError("Configure e ative pelo menos um produto na ficha do cliente antes de enviar o convite.");
-      setNotice("");
-      return;
-    }
     setSaving(true);
     setError("");
     setNotice("");
@@ -426,8 +421,8 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
         </div>
       </header>
 
-      {error && <Alert role="alert" className="border-red-200 bg-red-50 px-4 py-3 text-red-800 shadow-sm"><AlertDescription>{error}</AlertDescription></Alert>}
-      {notice && <Alert role="status" className="border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 shadow-sm"><AlertDescription>{notice}</AlertDescription></Alert>}
+      {error && <Alert role="alert" className="fixed right-4 top-4 z-[100] w-[calc(100%-2rem)] max-w-md border-red-200 bg-red-50 px-4 py-3 text-red-800 shadow-lg"><AlertDescription>{error}</AlertDescription></Alert>}
+      {notice && <Alert role="status" className="fixed right-4 top-4 z-[100] w-[calc(100%-2rem)] max-w-md border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 shadow-lg"><AlertDescription>{notice}</AlertDescription></Alert>}
 
       <div className={"grid gap-5 " + (selectedClientId ? "grid-cols-1" : "xl:grid-cols-[minmax(320px,0.8fr)_minmax(0,1.2fr)]")}>
         {!selectedClientId && <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
