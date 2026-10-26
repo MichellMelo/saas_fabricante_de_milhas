@@ -227,7 +227,7 @@ type DashboardUser = {
 
 export function Dashboard({ user }: { user: DashboardUser }) {
   const reduceMotion = useReducedMotion();
-  const [route, setRoute] = useState<RouteKey>("dashboard");
+  const [route, setRoute] = useState<RouteKey>(!user.isAdmin && !(user.productAccesses?.some((access) => access.active) ?? false) ? "calculadoras" : "dashboard");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [period, setPeriod] = useState("30");
   const [toast, setToast] = useState("");
