@@ -202,7 +202,6 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
   const [pageSize, setPageSize] = useState(10);
   const [clientPage, setClientPage] = useState(1);
   const [detailTab, setDetailTab] = useState<"overview" | "access" | "finance">("overview");
-  const pageSize = 10;
   const [expandedClientId, setExpandedClientId] = useState<string | null>(selectedClientId ?? null);
 
   useEffect(() => {
