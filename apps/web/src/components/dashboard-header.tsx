@@ -52,6 +52,7 @@ export function DashboardHeader({ title, mobileOpen, onToggleMobile, desktopSide
 
   return (
     <header className="topbar">
+      <div className="topbar-leading">
               <Button
                 variant="ghost"
                 size="icon"
@@ -78,6 +79,7 @@ export function DashboardHeader({ title, mobileOpen, onToggleMobile, desktopSide
                   {title}
                 </strong>
               </div>
+      </div>
               <div className="topbar-actions">
                 {user.isAdmin && <div className="relative">
                   <Button
