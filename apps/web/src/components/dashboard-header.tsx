@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, ChevronDown, Menu, X, PanelLeftClose, PanelLeftOpen, UserRound, LockKeyhole } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 type DashboardUser = { id: string; email: string; name: string | null; createdAt: string; isAdmin?: boolean };
 type ExpiringAccess = {
@@ -95,13 +96,17 @@ export function DashboardHeader({ title, mobileOpen, onToggleMobile, desktopSide
               >
                 {desktopSidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
               </Button>
-              <div className="breadcrumbs">
-                <span>Workspace</span>
-                <span className="text-slate-300">/</span>
-                <strong>
-                  {title}
-                </strong>
-              </div>
+              <Breadcrumb className="breadcrumbs">
+                <BreadcrumbList className="gap-2">
+                  <BreadcrumbItem>
+                    <BreadcrumbLink href="/" className="text-slate-400 hover:text-white">Workspace</BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="text-slate-500" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage className="text-white">{title}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
       </div>
               <div className="topbar-actions">
                 {user.isAdmin && <div ref={notificationRef} className="relative">
