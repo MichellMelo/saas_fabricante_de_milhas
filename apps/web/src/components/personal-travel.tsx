@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/page-header";
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -175,10 +176,7 @@ export function PersonalTravel() {
   }
 
   return <section className="space-y-5">
-    <div className="welcome-row flex flex-wrap items-start justify-between gap-4">
-      <div><div className="eyebrow"><span className="eyebrow-line" /> VIAGENS E RESGATES</div><h1 className="page-title">Passagens e resgates<span className="gold-period">.</span></h1><p className="page-subtitle">Organize suas emissões, agrupe resgates por viagem e acompanhe os custos com transparência.</p></div>
-      <div className="flex flex-wrap gap-2"><Button variant="outline" className="text-slate-900" onClick={() => void load()} disabled={loading || saving}><RefreshCw size={14}/> Atualizar</Button><Button onClick={() => { setRedemptionForm(emptyRedemption); setShowRedemptionForm(true); }}><Plus size={15}/> Novo resgate</Button></div>
-    </div>
+    <PageHeader className="items-start" eyebrow="VIAGENS E RESGATES" title={<>Passagens e resgates<span className="gold-period">.</span></>} description="Organize suas emissões, agrupe resgates por viagem e acompanhe os custos com transparência." actions={<><Button variant="outline" className="text-slate-900" onClick={() => void load()} disabled={loading || saving}><RefreshCw size={14}/> Atualizar</Button><Button onClick={() => { setRedemptionForm(emptyRedemption); setShowRedemptionForm(true); }}><Plus size={15}/> Novo resgate</Button></>} />
 
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {[{label:"Resgates ativos",value:String(redemptions.length),icon:Plane,foot:"Emissões fora da lixeira"},{label:"Milhas utilizadas",value:numberText(totalMiles),icon:Coins,foot:"Emitidos ou com viagem concluída; cancelados e reembolsados ficam fora"},{label:"Taxas registradas",value:moneyText(totalFees),icon:Wallet,foot:"Valores informados pelo usuário"},{label:"Economia estimada",value:withReference.length?moneyText(totalEstimatedSavings):"—",icon:CalendarDays,foot:withReference.length?"Comparação com preços de referência informados":"Informe preço e data de referência para calcular"}].map(k => <Card key={k.label} className="p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-xs text-slate-500">{k.label}</p><p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{k.value}</p></div><span className="rounded-xl bg-amber-50 p-2.5 text-amber-700"><k.icon size={19}/></span></div><p className="mt-2 text-xs text-slate-500">{k.foot}</p></Card>)}
