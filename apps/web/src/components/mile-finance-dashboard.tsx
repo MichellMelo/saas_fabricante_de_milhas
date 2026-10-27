@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 type Program = { id: string; name: string; code: string; type: string };
 type Inventory = { id: string; miles: number; totalCost: string | number; averageCpm: string | number; loyaltyProgram: Program };
 type Purchase = { id: string; miles: number; grossAmount: string | number; fees: string | number; acquisitionCpm: string | number; purchasedAt: string; loyaltyProgram: Program; notes?: string | null };
-type Sale = { id: string; miles: number; buyerName?: string | null; grossAmount: string | number; fees: string | number; costOfGoodsSold: string | number | null; acquisitionCpm: string | number; soldAt: string; loyaltyProgram: Program };
+type Sale = { id: string; miles: number; buyerName?: string | null; grossAmount: string | number; fees: string | number; costOfGoodsSold: string | number | null; acquisitionCpm: string | number; soldAt: string; loyaltyProgram: Program; notes?: string | null };
 type DashboardData = { walletBalances: Array<{ loyaltyProgramId: string; miles: number }>; hasSalesWithUnknownCost?: boolean; purchases: { count: number; grossAmount: string | number; fees: string | number; miles: number }; sales: { count: number; grossAmount: string | number; fees: string | number; miles: number }; estimatedProfit: string | number; inventory: Inventory[]; inventoryTotalCost: string | number; inventoryMiles: number };
 
 const money = (value: string | number | null | undefined) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(value ?? 0));
