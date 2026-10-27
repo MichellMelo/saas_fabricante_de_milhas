@@ -93,6 +93,19 @@ export class PersonalTravelService {
     const trip = await this.prisma.personalTrip.findFirst({ where: { id, userId }, include: { redemptions: true } });
     if (!trip) throw new NotFoundException("Viagem não encontrada.");
     await this.prisma.$transaction(async (tx) => {
+      if (trip.redemptions.length) {
+        await tx.personalRedemptionAudit.createMany({
+          data: trip.redemptions.map((redemption) => ({
+            redemptionId: redemption.id,
+            redemptionLabel: `${redemption.origin}-${redemption.destination} · ${redemption.program}`,
+            actorUserId: userId,
+            action: "UNLINK_TRIP",
+            fieldName: "tripId",
+            oldValue: id,
+            newValue: null,
+          })),
+        });
+      }
       await tx.personalRedemption.updateMany({ where: { tripId: id, userId }, data: { tripId: null } });
       await tx.personalTrip.delete({ where: { id } });
     });
