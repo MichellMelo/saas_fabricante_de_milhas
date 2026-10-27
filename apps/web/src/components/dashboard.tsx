@@ -562,7 +562,6 @@ export function Dashboard({ user }: { user: DashboardUser }) {
         <nav className="mobile-bottom-nav" aria-label="Navegação principal">
           {([
             { key: "dashboard", label: "Início", icon: LayoutDashboard },
-            { key: "oportunidades", label: "Oportunidades", icon: Sparkles },
             { key: "programas", label: "Meus Pontos", icon: CreditCard },
             { key: "grupo-vip", label: "Comunidade", icon: MessageCircle },
             { key: "menu", label: "Mais", icon: Plus },
