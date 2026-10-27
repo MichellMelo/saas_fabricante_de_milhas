@@ -60,6 +60,9 @@ model User {
  productAccesses UserProductAccess[]
  payments ClientPayment[]
  mileSales MileSale[]
+ milePurchases MilePurchase[]
+ mileInventories MileInventory[]
+ mileInventoryMovements MileInventoryMovement[]
  sentInvitations ClientInvitation[] @relation("InvitationSender")
  authoredGroupVipPosts GroupVipPost[]
  authoredProductContent ProductContent[]
@@ -74,6 +77,10 @@ model LoyaltyProgram {
  createdAt DateTime @default(now())
  owner User? @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
  accounts LoyaltyAccount[]
+ milePurchases MilePurchase[]
+ mileInventories MileInventory[]
+ mileInventoryMovements MileInventoryMovement[]
+ mileSales MileSale[]
  @@index([ownerUserId])
 }
 model LoyaltyAccount {
@@ -223,9 +230,79 @@ model MileSale {
   soldAt DateTime
   status MileSaleStatus @default(COMPLETED)
   notes String? @db.Text
+  loyaltyProgramId String?
+  costOfGoodsSold Decimal? @db.Decimal(14, 2)
+  inventoryManaged Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loyaltyProgram LoyaltyProgram? @relation(fields: [loyaltyProgramId], references: [id], onDelete: Restrict)
+  inventoryMovements MileInventoryMovement[]
   @@index([userId, soldAt])
+  @@index([userId, loyaltyProgramId, soldAt])
   @@index([userId, status])
+}
+
+
+enum MileInventoryMovementType {
+  PURCHASE
+  SALE
+  ADJUSTMENT_IN
+  ADJUSTMENT_OUT
+}
+
+model MilePurchase {
+  id String @id @default(cuid())
+  userId String
+  loyaltyProgramId String
+  miles Int
+  acquisitionCpm Decimal @db.Decimal(12, 4)
+  grossAmount Decimal @db.Decimal(14, 2)
+  fees Decimal @default(0) @db.Decimal(14, 2)
+  purchasedAt DateTime
+  notes String? @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loyaltyProgram LoyaltyProgram @relation(fields: [loyaltyProgramId], references: [id], onDelete: Restrict)
+  movements MileInventoryMovement[]
+  @@index([userId, purchasedAt])
+  @@index([userId, loyaltyProgramId, purchasedAt])
+}
+
+model MileInventory {
+  id String @id @default(cuid())
+  userId String
+  loyaltyProgramId String
+  miles Int @default(0)
+  totalCost Decimal @default(0) @db.Decimal(14, 2)
+  averageCpm Decimal @default(0) @db.Decimal(12, 4)
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loyaltyProgram LoyaltyProgram @relation(fields: [loyaltyProgramId], references: [id], onDelete: Restrict)
+  @@unique([userId, loyaltyProgramId])
+  @@index([userId])
+}
+
+model MileInventoryMovement {
+  id String @id @default(cuid())
+  userId String
+  loyaltyProgramId String
+  type MileInventoryMovementType
+  miles Int
+  unitCostCpm Decimal @db.Decimal(12, 4)
+  totalCost Decimal @db.Decimal(14, 2)
+  purchaseId String?
+  saleId String?
+  reason String? @db.Text
+  occurredAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loyaltyProgram LoyaltyProgram @relation(fields: [loyaltyProgramId], references: [id], onDelete: Restrict)
+  purchase MilePurchase? @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
+  sale MileSale? @relation(fields: [saleId], references: [id], onDelete: SetNull)
+  @@index([userId, occurredAt])
+  @@index([userId, loyaltyProgramId, occurredAt])
+  @@index([purchaseId])
+  @@index([saleId])
 }
