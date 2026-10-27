@@ -14,7 +14,7 @@ function BrandLockup() {
         alt="Fabricante de Milhas"
         width={120}
         height={120}
-        className="h-auto w-[72px] object-contain sm:w-[88px] lg:w-[104px]"
+        className="h-auto w-[112px] object-contain sm:w-[128px] lg:w-[104px]"
         fetchPriority="high"
       />
     </Link>
@@ -71,7 +71,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       <header className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center justify-center px-5 py-3 sm:px-8 sm:py-4 lg:justify-end lg:px-10 lg:py-2">
         <BrandLockup />
-        <div className="hidden items-center gap-2 text-[10px] tracking-[0.12em] text-slate-400 lg:flex">
+        <div className="hidden">
           <span className="h-1.5 w-1.5 rounded-full bg-[#d6b66f]" />
           SEU ESPAÇO DE ESTRATÉGIA
         </div>
