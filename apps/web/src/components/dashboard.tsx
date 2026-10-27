@@ -563,6 +563,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           {([
             { key: "dashboard", label: "Início", icon: LayoutDashboard },
             { key: "programas", label: "Meus Pontos", icon: CreditCard },
+            { key: "passagens", label: "Viagens", icon: Plane },
             { key: "grupo-vip", label: "Comunidade", icon: MessageCircle },
             { key: "menu", label: "Mais", icon: Plus },
           ] as const).map(({ key, label, icon: Icon }) => (
