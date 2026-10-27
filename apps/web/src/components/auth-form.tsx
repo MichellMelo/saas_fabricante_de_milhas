@@ -8,7 +8,7 @@ type AuthFormProps = { mode: "login" | "register" };
 
 function BrandLockup() {
   return (
-    <Link href="/" className="inline-flex items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6b66f]" aria-label="Fabricante de Milhas — página inicial">
+    <Link href="/" className="mx-auto inline-flex items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6b66f] lg:hidden" aria-label="Fabricante de Milhas — página inicial">
       <img
         src="/logo-sem-background.png"
         alt="Fabricante de Milhas"
@@ -62,23 +62,23 @@ export function AuthForm({ mode }: AuthFormProps) {
   const inputClass = "mt-2 block w-full rounded-xl border border-[#dfe3e8] bg-[#fbfcfd] px-4 py-[11px] text-[14px] sm:mt-2.5 sm:py-[12px] text-[#152033] outline-none transition placeholder:text-[#a1a9b5] hover:border-[#c4cbd4] focus:border-[#b58a37] focus:bg-white focus:ring-4 focus:ring-[#d6b66f]/15 disabled:cursor-wait disabled:opacity-60";
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0b1220] text-[#111b2b]">
+    <main className="relative min-h-screen overflow-x-hidden bg-[#0b1220] text-[#111b2b] lg:h-dvh lg:min-h-0 lg:overflow-hidden">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute -left-40 -top-48 h-[560px] w-[560px] rounded-full bg-[#b68b3c]/10 blur-[100px]" />
         <div className="absolute -bottom-64 right-[18%] h-[520px] w-[520px] rounded-full bg-[#315174]/20 blur-[120px]" />
         <div className="absolute inset-0 opacity-[0.045]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.22) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px)", backgroundSize: "56px 56px" }} />
       </div>
 
-      <header className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center justify-between px-5 py-3 sm:px-8 sm:py-4 lg:px-10 lg:py-4">
+      <header className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center justify-center px-5 py-3 sm:px-8 sm:py-4 lg:justify-end lg:px-10 lg:py-2">
         <BrandLockup />
-        <div className="hidden items-center gap-2 text-[10px] tracking-[0.12em] text-slate-400 sm:flex">
+        <div className="hidden items-center gap-2 text-[10px] tracking-[0.12em] text-slate-400 lg:flex">
           <span className="h-1.5 w-1.5 rounded-full bg-[#d6b66f]" />
           SEU ESPAÇO DE ESTRATÉGIA
         </div>
       </header>
 
-      <div className="relative z-10 mx-auto grid w-full min-h-[calc(100vh-88px)] max-w-[1280px] items-center gap-6 px-5 pb-6 pt-2 sm:gap-10 sm:px-8 sm:pb-10 sm:pt-4 lg:grid-cols-[minmax(0,1fr)_minmax(380px,440px)] lg:gap-16 lg:px-10 lg:pb-12 lg:pt-4 xl:gap-20">
-        <section className="relative hidden min-h-[500px] flex-col justify-center lg:flex">
+      <div className="relative z-10 mx-auto grid w-full min-h-[calc(100vh-104px)] max-w-[1280px] items-center gap-6 px-5 pb-6 pt-2 sm:gap-10 sm:px-8 sm:pb-10 sm:pt-4 lg:min-h-0 lg:h-[calc(100dvh-48px)] lg:grid-cols-[minmax(0,1fr)_minmax(380px,440px)] lg:gap-12 lg:px-10 lg:pb-4 lg:pt-0 xl:gap-16">
+        <section className="relative hidden min-h-0 flex-col justify-center lg:flex">
           <div aria-hidden="true" className="absolute left-[-90px] top-1/2 h-[430px] w-[430px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
           <div aria-hidden="true" className="absolute left-[-28px] top-1/2 h-[320px] w-[320px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
           <div aria-hidden="true" className="absolute left-[40px] top-1/2 h-[210px] w-[210px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
@@ -94,7 +94,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             <p className="mt-4 max-w-[430px] text-[14px] leading-6 sm:mt-6 sm:leading-7 text-slate-300/80">
               Compare custos, entenda o valor real dos seus pontos e transforme cada decisão em uma viagem melhor planejada.
             </p>
-            <div className="mt-8 flex max-w-[440px] items-center gap-5 border-t border-white/10 pt-6">
+            <div className="mt-6 flex max-w-[440px] items-center gap-5 border-t border-white/10 pt-5">
               <div className="flex -space-x-2">
                 <span className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#0b1220] bg-[#26364a] text-[10px] font-bold text-white">CP</span>
                 <span className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#0b1220] bg-[#39465a] text-[10px] font-bold text-white">R$</span>
@@ -109,8 +109,8 @@ export function AuthForm({ mode }: AuthFormProps) {
           <p className="absolute bottom-0 left-0 text-[11px] text-slate-500">© 2026 Fabricante de Milhas</p>
         </section>
 
-        <section className="mx-auto w-full max-w-[440px]">
-          <div className="relative overflow-hidden rounded-[22px] border border-white/80 bg-[#fffefd] p-5 shadow-[0_20px_55px_rgba(0,0,0,0.2)] sm:rounded-[24px] sm:p-8 lg:p-9">
+        <section className="mx-auto w-full max-w-[440px] lg:my-auto">
+          <div className="relative overflow-hidden rounded-[22px] border border-white/80 bg-[#fffefd] p-5 shadow-[0_20px_55px_rgba(0,0,0,0.2)] sm:rounded-[24px] sm:p-8 lg:p-7 xl:p-8">
             <div aria-hidden="true" className="absolute right-0 top-0 h-1 w-full bg-gradient-to-r from-[#d6b66f] via-[#f1dfad] to-transparent" />
             <div className="mb-5 flex items-start justify-between gap-4 sm:mb-6">
               <div>
