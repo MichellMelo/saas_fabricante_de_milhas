@@ -129,24 +129,24 @@ export function ProgramManagement({ onBack }: { onBack: () => void }) {
       {success && <div role="status" className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</div>}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <Card className="border-slate-200 bg-white p-5 shadow-none">
+        <Card className="panel program-summary-card">
           <div className="flex items-center gap-3 text-slate-500"><Building2 size={18} /><span className="text-sm">Catálogo compartilhado</span></div>
           <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{catalogPrograms.length}</div>
           <p className="mt-1 text-xs text-slate-500">Programas gerais listados</p>
         </Card>
-        <Card className="border-slate-200 bg-white p-5 shadow-none">
+        <Card className="panel program-summary-card">
           <div className="flex items-center gap-3 text-slate-500"><UserRound size={18} /><span className="text-sm">Personalizados</span></div>
           <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{personalPrograms.length}</div>
           <p className="mt-1 text-xs text-slate-500">Programas exclusivos do seu usuário</p>
         </Card>
-        <Card className="border-slate-200 bg-white p-5 shadow-none">
+        <Card className="panel program-summary-card">
           <div className="flex items-center gap-3 text-slate-500"><ShieldCheck size={18} /><span className="text-sm">Permissão de catálogo</span></div>
           <div className="mt-4 text-lg font-semibold tracking-tight text-slate-900">{canManageCatalog ? "Administrador" : "Somente leitura"}</div>
           <p className="mt-1 text-xs text-slate-500">{canManageCatalog ? "Pode editar e ativar programas gerais" : "Catálogo geral protegido contra alterações"}</p>
         </Card>
       </div>
 
-      <Card className="border-slate-200 bg-white p-5 shadow-none">
+      <Card className="panel program-summary-card">
         <h2 className="text-lg font-semibold text-slate-900">{editing ? "Editar programa do catálogo" : "Adicionar programa"}</h2>
         <p className="mt-1 text-sm text-slate-500">Programas personalizados ficam disponíveis apenas para você. Alterações no catálogo compartilhado exigem permissão administrativa.</p>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -171,7 +171,7 @@ export function ProgramManagement({ onBack }: { onBack: () => void }) {
       </Card>
 
       <div className="space-y-3">
-        <Card className="overflow-hidden border-slate-200 bg-white p-0 shadow-none">
+        <Card className="panel program-list-card">
           <button type="button" aria-expanded={catalogExpanded} aria-controls="catalog-programs-panel" onClick={() => setCatalogExpanded((expanded) => !expanded)} className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-500">
             <span className="flex min-w-0 items-center gap-3"><Building2 size={18} className="shrink-0 text-slate-500" /><span className="text-lg font-semibold text-slate-900">Catálogo geral</span></span>
             <span className="flex shrink-0 items-center gap-3"><span className="text-sm text-slate-500">{catalogPrograms.length} programas</span><ChevronDown size={18} className={`text-slate-500 transition-transform ${catalogExpanded ? "rotate-180" : ""}`} /></span>
