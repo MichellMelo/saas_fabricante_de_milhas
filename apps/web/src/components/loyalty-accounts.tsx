@@ -3,7 +3,7 @@
 import { PageHeader } from "@/components/page-header";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { ArrowDownLeft, ArrowUpRight, Plus, WalletCards } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Building2, Plane, Plus, WalletCards } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -36,6 +36,28 @@ const typeLabel: Record<Program["type"], string> = {
   HOTEL: "Hotel",
   OTHER: "Outro",
 };
+
+const programBrand: Record<string, { label: string; className: string }> = {
+  ESFERA: { label: "E", className: "bg-[#fff4dc] text-[#a85b00] ring-[#f3d18a]" },
+  LIVELO: { label: "L", className: "bg-[#fce7f3] text-[#a21caf] ring-[#f5b4df]" },
+  SMILES: { label: "S", className: "bg-[#fff0e5] text-[#e66a13] ring-[#ffc99f]" },
+  LATAM_PASS: { label: "LATAM", className: "bg-[#fce8e8] text-[#c51e32] ring-[#f4b8be]" },
+  AZUL_FIDELIDADE: { label: "AZUL", className: "bg-[#e5f3ff] text-[#0067a8] ring-[#a8d8ff]" },
+  ALL_ACCOR: { label: "ALL", className: "bg-[#f0eaff] text-[#5636a8] ring-[#d0c2fa]" },
+  MARRIOTT_BONVOY: { label: "M", className: "bg-[#f8e9e7] text-[#8d2525] ring-[#e5b7b0]" },
+};
+
+function ProgramMark({ program }: { program: Program }) {
+  const brand = programBrand[program.code.toUpperCase()];
+  return (
+    <div aria-label={program.name} title={program.name} className={`flex size-14 shrink-0 items-center justify-center rounded-2xl ring-1 ring-inset ${brand?.className ?? "bg-slate-100 text-slate-700 ring-slate-200"}`}>
+      {brand ? <span className={brand.label.length > 2 ? "text-[10px] font-extrabold tracking-tight" : "text-2xl font-extrabold"}>{brand.label}</span> :
+        program.type === "AIRLINE" ? <Plane size={25} strokeWidth={1.8} /> :
+        program.type === "HOTEL" ? <Building2 size={25} strokeWidth={1.8} /> :
+        <WalletCards size={25} strokeWidth={1.8} />}
+    </div>
+  );
+}
 
 function formatPoints(value: string | number) {
   return numberFormat.format(Number(value));
@@ -225,7 +247,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
             <div className="grid gap-4 lg:grid-cols-2">
               {accounts.map((account) => <Card key={account.id} className="border-slate-200 bg-white p-5 shadow-none transition hover:border-amber-300">
                 <div className="flex items-start justify-between gap-3">
-                  <div><div className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">{typeLabel[account.loyaltyProgram.type]}</div><h3 className="mt-2 text-xl font-semibold text-slate-900">{account.loyaltyProgram.name}</h3>{account.memberReference && <p className="mt-1 text-xs text-slate-500">Identificação: {account.memberReference}</p>}</div>
+                  <div className="flex min-w-0 items-center gap-4"><ProgramMark program={account.loyaltyProgram} /><div className="min-w-0"><div className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">{typeLabel[account.loyaltyProgram.type]}</div><h3 className="mt-2 text-xl font-semibold text-slate-900">{account.loyaltyProgram.name}</h3>{account.memberReference && <p className="mt-1 text-xs text-slate-500">Identificação: {account.memberReference}</p>}</div></div>
                   <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">{account._count?.transactions ?? 0} mov.</span>
                 </div>
                 <div className="mt-6 border-t border-slate-100 pt-4"><div className="text-sm text-slate-500">Saldo disponível</div><div className="mt-1 text-3xl font-semibold tracking-tight text-slate-900">{formatPoints(account.balance)} <span className="text-sm font-normal text-slate-500">{account.currency === "POINTS" ? "pontos/milhas" : account.currency}</span></div><p className="mt-2 text-xs text-slate-400">Atualizado em {new Date(account.updatedAt).toLocaleDateString("pt-BR")}</p></div>
