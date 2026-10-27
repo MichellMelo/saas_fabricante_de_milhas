@@ -1,5 +1,6 @@
-import { PageHeader } from "@/components/page-header";
 "use client";
+
+import { PageHeader } from "@/components/page-header";
 
 import { useMemo, useState } from "react";
 import { Calculator, ArrowLeftRight, Plane, RotateCcw, Info, Wallet } from "lucide-react";
