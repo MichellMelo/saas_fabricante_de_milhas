@@ -2454,3 +2454,57 @@ article[class~="border-slate-200"][class~="bg-white"]:hover {
   border-color:#cbd6e4!important;
   box-shadow:0 9px 24px rgba(23,35,55,.09)!important;
 }
+
+
+/* Selects do sistema — acabamento consistente com o padrão shadcn/ui */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  align-items: center;
+  border: 1px solid #dce3ec !important;
+  border-radius: 10px !important;
+  background-color: #fff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7a90' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding: 9px 38px 9px 12px !important;
+  color: #172337 !important;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 1px 2px rgba(23,35,55,.025);
+  transition: border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+  cursor: pointer;
+}
+select:hover:not(:disabled) {
+  border-color: #b8c5d6 !important;
+}
+select:focus,
+select:focus-visible {
+  border-color: #c6a45c !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(198,164,92,.16) !important;
+}
+select:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+  background-color: #f4f6f9 !important;
+}
+select option {
+  color: #172337;
+  background: #fff;
+}
+select optgroup {
+  color: #64748b;
+  font-weight: 600;
+}
+/* Preserve compact controls in dense filter toolbars without changing their behavior. */
+label select { margin-top: 4px; }
+@media (prefers-reduced-motion: reduce) {
+  select { transition: none; }
+}
