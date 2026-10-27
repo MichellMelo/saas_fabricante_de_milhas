@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, CheckCircle2, Clock3, Wallet, Plus, TrendingUp, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock3 } from "lucide-react";
 
 type Payment = {
   id: string;
@@ -17,17 +17,7 @@ type Payment = {
   user?: { id: string; name: string | null; email: string };
 };
 
-type MileSale = {
-  id: string;
-  buyerName: string | null;
-  miles: string | number | bigint;
-  acquisitionCpm: string | number;
-  grossAmount: string | number;
-  fees: string | number;
-  soldAt: string;
-  status: "PENDING" | "COMPLETED" | "CANCELLED";
-  notes: string | null;
-};
+
 
 const products: Record<Payment["product"], string> = {
   GROUP_VIP: "Grupo VIP",
@@ -70,21 +60,7 @@ export function FinanceDashboard() {
   const [paymentProduct, setPaymentProduct] = useState<Payment["product"]>("GROUP_VIP");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [paymentNotes, setPaymentNotes] = useState("");
-  const [sales, setSales] = useState<MileSale[]>([]);
-  const [salesLoading, setSalesLoading] = useState(true);
-  const [salesLoadError, setSalesLoadError] = useState("");
-  const [showSaleForm, setShowSaleForm] = useState(false);
-  const [saleSaving, setSaleSaving] = useState(false);
-  const [saleError, setSaleError] = useState("");
-  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
-  const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
-  const [buyerName, setBuyerName] = useState("");
-  const [saleMiles, setSaleMiles] = useState("");
-  const [saleAcquisitionCpm, setSaleAcquisitionCpm] = useState("");
-  const [saleGrossAmount, setSaleGrossAmount] = useState("");
-  const [saleFees, setSaleFees] = useState("0");
-  const [saleDate, setSaleDate] = useState(new Date().toISOString().slice(0, 10));
-  const [saleNotes, setSaleNotes] = useState("");
+
 
   async function load() {
     setLoading(true);
@@ -159,28 +135,10 @@ export function FinanceDashboard() {
     }
   }
 
-  async function loadSales() {
-    setSalesLoading(true);
-    setSalesLoadError("");
-    try {
-      const response = await fetch("/api/admin/mile-sales", { cache: "no-store" });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        const message = Array.isArray(payload.message) ? payload.message.join(" ") : payload.message;
-        throw new Error(message || "A venda foi salva, mas não foi possível atualizar a listagem.");
-      }
-      if (!Array.isArray(payload)) throw new Error("A resposta de vendas veio em um formato inesperado.");
-      setSales(payload as MileSale[]);
-    } catch (cause) {
-      setSalesLoadError(cause instanceof Error ? cause.message : "Não foi possível carregar as vendas de milhas.");
-    } finally {
-      setSalesLoading(false);
-    }
-  }
+
 
   useEffect(() => {
     void load();
-    void loadSales();
   }, []);
 
   useEffect(() => {
@@ -189,77 +147,7 @@ export function FinanceDashboard() {
     return () => window.clearTimeout(timeout);
   }, [toast]);
 
-  async function createSale(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaleSaving(true);
-    setSaleError("");
-    try {
-      const response = await fetch(editingSaleId ? `/api/admin/mile-sales/${encodeURIComponent(editingSaleId)}` : "/api/admin/mile-sales", {
-        method: editingSaleId ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          buyerName: buyerName.trim() || undefined,
-          miles: Number(saleMiles),
-          acquisitionCpm: Number(saleAcquisitionCpm),
-          grossAmount: Number(saleGrossAmount),
-          fees: Number(saleFees || 0),
-          soldAt: new Date(saleDate + "T12:00:00").toISOString(),
-          notes: saleNotes.trim() || undefined,
-          status: "COMPLETED",
-        }),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.message || "Não foi possível registrar a venda.");
-      const successMessage = editingSaleId ? "Venda atualizada com sucesso." : "Venda registrada com sucesso.";
-      setBuyerName(""); setSaleMiles(""); setSaleAcquisitionCpm(""); setSaleGrossAmount(""); setSaleFees("0"); setSaleDate(new Date().toISOString().slice(0, 10)); setSaleNotes("");
-      setEditingSaleId(null);
-      setShowSaleForm(false);
-        setToast({ type: "success", message: successMessage });
-      await loadSales();
-    } catch (cause) {
-      const message = cause instanceof Error ? cause.message : "Não foi possível registrar a venda.";
-      setSaleError(message);
-      setToast({ type: "error", message });
-    } finally {
-      setSaleSaving(false);
-    }
-  }
 
-  function beginEditSale(sale: MileSale) {
-    setEditingSaleId(sale.id);
-    setBuyerName(sale.buyerName ?? "");
-    setSaleMiles(String(sale.miles));
-    setSaleAcquisitionCpm(String(sale.acquisitionCpm));
-    setSaleGrossAmount(String(sale.grossAmount));
-    setSaleFees(String(sale.fees));
-    setSaleDate(new Date(sale.soldAt).toISOString().slice(0, 10));
-    setSaleNotes(sale.notes ?? "");
-    setSaleError("");
-    setShowSaleForm(true);
-  }
-
-  async function deleteSale(sale: MileSale) {
-    if (!window.confirm(`Excluir a venda de ${sale.buyerName || "comprador não identificado"}? Esta ação não pode ser desfeita.`)) return;
-    try {
-      const response = await fetch(`/api/admin/mile-sales/${encodeURIComponent(sale.id)}`, { method: "DELETE" });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        const message = Array.isArray(payload.message) ? payload.message.join(" ") : payload.message;
-        throw new Error(message || "Não foi possível excluir a venda.");
-      }
-      setSales((current) => current.filter((item) => item.id !== sale.id));
-      setToast({ type: "success", message: "Venda excluída com sucesso." });
-    } catch (cause) {
-      setToast({ type: "error", message: cause instanceof Error ? cause.message : "Não foi possível excluir a venda." });
-    }
-  }
-
-  const completedSales = sales.filter((sale) => sale.status === "COMPLETED");
-  const salesGross = completedSales.reduce((sum, sale) => sum + Number(sale.grossAmount), 0);
-  const salesFeesTotal = completedSales.reduce((sum, sale) => sum + Number(sale.fees), 0);
-  const salesCost = completedSales.reduce((sum, sale) => sum + (Number(sale.acquisitionCpm) * Number(sale.miles) / 1000), 0);
-  const salesProfit = salesGross - salesFeesTotal - salesCost;
-  const saleMoney = (value: number) => money(value);
 
   const filtered = useMemo(() => payments.filter((payment) => {
     const dateForPeriod = payment.status === "PAID" ? payment.paidAt : payment.dueAt;
@@ -289,42 +177,6 @@ export function FinanceDashboard() {
           <option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option><option value="month">Este mês</option><option value="all">Todo o período</option>
         </select>
       </label>
-    </div>
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2"><TrendingUp size={18} className="text-emerald-700" /><h2 className="font-semibold text-slate-900">Venda de milhas</h2></div>
-          <p className="mt-1 text-sm text-slate-500">Registre vendas concluídas e acompanhe receita líquida, custo e lucro estimado.</p>
-        </div>
-        <button type="button" onClick={() => { setShowSaleForm((value) => !value); setEditingSaleId(null); setSaleError(""); }} className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-700">
-          {showSaleForm ? <X size={16}/> : <Plus size={16}/>} {showSaleForm ? "Cancelar" : "Registrar venda"}
-        </button>
-      </div>
-      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Receita bruta</p><p className="mt-2 text-xl font-semibold text-slate-900">{saleMoney(salesGross)}</p></div>
-        <div className="rounded-xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Taxas</p><p className="mt-2 text-xl font-semibold text-slate-900">{saleMoney(salesFeesTotal)}</p></div>
-        <div className="rounded-xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Custo de aquisição</p><p className="mt-2 text-xl font-semibold text-slate-900">{saleMoney(salesCost)}</p></div>
-        <div className="rounded-xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Lucro estimado</p><p className={"mt-2 text-xl font-semibold " + (salesProfit >= 0 ? "text-emerald-700" : "text-rose-700")}>{saleMoney(salesProfit)}</p></div>
-      </div>
-      {showSaleForm && <form onSubmit={createSale} className="mt-5 grid gap-4 rounded-xl border border-slate-200 p-4 sm:grid-cols-2 xl:grid-cols-3">
-        <label className="grid gap-1.5 text-sm font-medium text-slate-700">Comprador (opcional)<input value={buyerName} onChange={(e) => setBuyerName(e.target.value)} maxLength={180} className="rounded-lg border border-slate-200 px-3 py-2.5 font-normal" placeholder="Nome do comprador"/></label>
-        <label className="grid gap-1.5 text-sm font-medium text-slate-700">Quantidade de milhas<input required type="number" min="1" step="1" value={saleMiles} onChange={(e) => setSaleMiles(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2.5 font-normal" placeholder="Ex.: 41896"/></label>
-        <label className="grid gap-1.5 text-sm font-medium text-slate-700">Custo por milheiro (R$)<input required type="number" min="0" step="0.0001" value={saleAcquisitionCpm} onChange={(e) => setSaleAcquisitionCpm(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2.5 font-normal" placeholder="Ex.: 25,16"/></label>
-        <label className="grid gap-1.5 text-sm font-medium text-slate-700">Valor bruto da venda (R$)<input required type="number" min="0.01" step="0.01" value={saleGrossAmount} onChange={(e) => setSaleGrossAmount(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2.5 font-normal" placeholder="Ex.: 1300,00"/></label>
-        <label className="grid gap-1.5 text-sm font-medium text-slate-700">Taxas e comissões (R$)<input required type="number" min="0" step="0.01" value={saleFees} onChange={(e) => setSaleFees(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2.5 font-normal"/></label>
-        <label className="grid gap-1.5 text-sm font-medium text-slate-700">Data da venda<input required type="date" value={saleDate} onChange={(e) => setSaleDate(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2.5 font-normal"/></label>
-        <label className="grid gap-1.5 text-sm font-medium text-slate-700 sm:col-span-2 xl:col-span-3">Observações<textarea value={saleNotes} onChange={(e) => setSaleNotes(e.target.value)} maxLength={5000} rows={2} className="rounded-lg border border-slate-200 px-3 py-2.5 font-normal" placeholder="Referência, programa de origem ou detalhes da operação"/></label>
-        {saleError && <p role="alert" className="text-sm text-rose-700 sm:col-span-2 xl:col-span-3">{saleError}</p>}
-        <div className="flex flex-wrap items-center justify-between gap-3 sm:col-span-2 xl:col-span-3"><p className="text-xs text-slate-500">Lucro estimado = venda bruta − taxas − custo de aquisição calculado pelo milheiro informado.</p><button disabled={saleSaving} type="submit" className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{saleSaving ? "Salvando…" : editingSaleId ? "Salvar alterações" : "Salvar venda"}</button></div>
-      </form>}
-      
-      {salesLoadError && <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"><span>{salesLoadError}</span><button type="button" onClick={() => void loadSales()} className="rounded-md border border-amber-300 px-3 py-1.5 font-semibold hover:bg-amber-100">Tentar atualizar</button></div>}
-      <div className="mt-5 overflow-x-auto">
-        {salesLoading ? <p className="py-8 text-center text-sm text-slate-500">Carregando vendas de milhas…</p> : sales.length === 0 ? <p className="py-8 text-center text-sm text-slate-500">Nenhuma venda de milhas registrada.</p> : <table className="w-full min-w-[760px] text-left text-sm">
-          <thead><tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500"><th className="px-3 py-3">Data</th><th className="px-3 py-3">Comprador</th><th className="px-3 py-3">Milhas</th><th className="px-3 py-3">Valor bruto</th><th className="px-3 py-3">Lucro estimado</th><th className="px-3 py-3">Situação</th><th className="px-3 py-3">Ações</th></tr></thead>
-          <tbody>{sales.map((sale) => { const profit = Number(sale.grossAmount) - Number(sale.fees) - Number(sale.acquisitionCpm) * Number(sale.miles) / 1000; return <tr key={sale.id} className="border-b border-slate-100 last:border-0"><td className="px-3 py-3 text-slate-600">{dateLabel(sale.soldAt)}</td><td className="px-3 py-3 text-slate-700">{sale.buyerName || "—"}</td><td className="px-3 py-3 text-slate-700">{new Intl.NumberFormat("pt-BR").format(Number(sale.miles))}</td><td className="px-3 py-3 font-medium text-slate-900">{money(Number(sale.grossAmount))}</td><td className={"px-3 py-3 font-semibold " + (profit >= 0 ? "text-emerald-700" : "text-rose-700")}>{sale.status === "CANCELLED" ? "—" : money(profit)}</td><td className="px-3 py-3"><span className={"rounded-full px-2.5 py-1 text-xs font-semibold " + (sale.status === "COMPLETED" ? "bg-emerald-50 text-emerald-700" : sale.status === "CANCELLED" ? "bg-slate-100 text-slate-500" : "bg-amber-50 text-amber-700")}>{sale.status === "COMPLETED" ? "Concluída" : sale.status === "CANCELLED" ? "Cancelada" : "Pendente"}</span></td><td className="px-3 py-3"><div className="flex gap-2"><button type="button" onClick={() => beginEditSale(sale)} className="rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">Editar</button><button type="button" onClick={() => void deleteSale(sale)} className="rounded-md border border-rose-200 px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50">Excluir</button></div></td></tr>; })}</tbody>
-        </table>}
-      </div>
     </div>
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
