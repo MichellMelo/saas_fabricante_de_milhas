@@ -37,6 +37,7 @@ import { ProductContent } from "@/components/product-content";
 import { FinanceDashboard } from "@/components/finance-dashboard";
 import { MileFinanceDashboard } from "@/components/mile-finance-dashboard";
 import { CalculatorTools } from "@/components/calculator-tools";
+import { FlightHistory } from "@/components/flight-history";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -54,7 +55,7 @@ const navItems: SidebarNavItem[] = [
   { key: "mile-finance", label: "Financeiro de Milhas", icon: TrendingUp },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator },
   { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
-  { key: "historico", label: "Histórico", icon: Clock3, soon: true },
+  { key: "historico", label: "Histórico de passagens", icon: Clock3 },
 ];
 const routeCopy: Record<
   Exclude<RouteKey, "dashboard">,
@@ -136,10 +137,9 @@ const routeCopy: Record<
     icon: Plane,
   },
   historico: {
-    title: "Histórico",
-    eyebrow: "ACOMPANHAMENTO",
-    description:
-      "Tenha visibilidade das movimentações e decisões ao longo do tempo. Nenhuma movimentação é persistida nesta fase.",
+    title: "Histórico de emissões",
+    eyebrow: "DISPONIBILIDADES PESQUISADAS",
+    description: "Consulte os registros de emissões da sua planilha por programa, rota, classe e datas disponíveis.",
     icon: Clock3,
   },
 };
@@ -542,6 +542,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <ProgramManagement onBack={() => navigate("dashboard")} />
           ) : route === "clientes-admin" ? (
             <ClientManagement onBack={() => navigate("dashboard")} />
+          ) : route === "historico" ? (
+            <FlightHistory />
           ) : route === "calculadoras" ? (
             <CalculatorTools />
           ) : route === "mile-finance" ? (
