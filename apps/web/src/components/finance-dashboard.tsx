@@ -191,20 +191,20 @@ export function FinanceDashboard() {
       </label>
     </div>
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <article className="finance-summary-card">
         <div className="flex items-center justify-between"><p className="text-sm font-medium text-slate-600">Recebido</p><span className="rounded-xl bg-emerald-50 p-2 text-emerald-700"><CheckCircle2 size={19} /></span></div>
         <p className="mt-4 text-2xl font-semibold tracking-tight text-slate-900">{money(received)}</p><p className="mt-1 text-xs text-slate-500">Pagamentos marcados como pagos</p>
       </article>
-      <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <article className="finance-summary-card">
         <div className="flex items-center justify-between"><p className="text-sm font-medium text-slate-600">A receber</p><span className="rounded-xl bg-amber-50 p-2 text-amber-700"><Clock3 size={19} /></span></div>
         <p className="mt-4 text-2xl font-semibold tracking-tight text-slate-900">{money(pending)}</p><p className="mt-1 text-xs text-slate-500">Cobranças pendentes ainda no prazo</p>
       </article>
-      <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <article className="finance-summary-card">
         <div className="flex items-center justify-between"><p className="text-sm font-medium text-slate-600">Em atraso</p><span className="rounded-xl bg-rose-50 p-2 text-rose-700"><AlertCircle size={19} /></span></div>
         <p className="mt-4 text-2xl font-semibold tracking-tight text-slate-900">{money(overdue)}</p><p className="mt-1 text-xs text-slate-500">Cobranças pendentes após o vencimento</p>
       </article>
     </div>
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <div className="finance-list-card">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><h2 className="font-semibold text-slate-900">Lançamentos financeiros</h2><p className="mt-1 text-xs text-slate-500">{loading ? "Atualizando dados…" : `${filtered.length} lançamento(s) no filtro`}</p></div>
         <div className="flex flex-wrap items-center gap-3">
