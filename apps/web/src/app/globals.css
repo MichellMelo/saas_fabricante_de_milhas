@@ -2153,3 +2153,77 @@ article[class~="border-slate-200"][class~="bg-white"]:hover {
 .finance-list-card input:focus,.finance-list-card select:focus { border-color:#c6a45c; outline:none; box-shadow:0 0 0 3px rgba(198,164,92,.14); }
 @media (max-width:640px) { .finance-summary-card { min-height:145px; padding:18px!important; } .finance-list-card { padding:18px!important; } }
 @media (prefers-reduced-motion:reduce) { .finance-summary-card,.finance-summary-card:hover { transition:none; transform:none; } }
+
+
+/* Financeiro de Milhas: indicadores de operação e filtros */
+.mile-finance-summary-card {
+  display:flex;
+  min-height:168px;
+  flex-direction:column;
+  justify-content:flex-start;
+  padding:22px 24px!important;
+  border:1px solid #e1e7ef!important;
+  border-radius:15px!important;
+  background:#fffdf9!important;
+  box-shadow:0 3px 12px rgba(23,35,55,.04)!important;
+  transition:transform 160ms ease,box-shadow 160ms ease,border-color 160ms ease;
+}
+.mile-finance-summary-card:hover {
+  transform:translateY(-2px);
+  border-color:#d2dbe7!important;
+  box-shadow:0 8px 22px rgba(23,35,55,.07)!important;
+}
+.mile-finance-summary-card > div:first-child {
+  min-height:24px;
+  color:#66758a;
+  font-size:13px;
+  font-weight:550;
+}
+.mile-finance-summary-card > div:nth-child(2) {
+  margin-top:14px!important;
+  color:#172337;
+  font-size:28px!important;
+  font-weight:750!important;
+  line-height:1.15!important;
+  letter-spacing:-.025em;
+}
+.mile-finance-summary-card > div:nth-child(3) {
+  margin-top:auto!important;
+  padding-top:10px;
+  color:#78869a;
+  font-size:12px!important;
+  line-height:1.45;
+}
+.mile-finance-summary-card:last-child > div:nth-child(2) { color:#087f65; }
+.mile-finance-filter-card {
+  padding:22px 24px!important;
+  border:1px solid #e1e7ef!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  box-shadow:0 3px 12px rgba(23,35,55,.035)!important;
+}
+.mile-finance-filter-card label {
+  color:#58677d;
+  font-size:12px;
+  font-weight:600;
+}
+.mile-finance-filter-card input,
+.mile-finance-filter-card select {
+  min-height:42px;
+  border-color:#dce3ec;
+  border-radius:10px;
+  color:#172337;
+}
+.mile-finance-filter-card input:focus,
+.mile-finance-filter-card select:focus {
+  border-color:#c6a45c;
+  outline:none;
+  box-shadow:0 0 0 3px rgba(198,164,92,.14);
+}
+@media(max-width:640px) {
+  .mile-finance-summary-card { min-height:145px; padding:18px!important; }
+  .mile-finance-filter-card { padding:17px!important; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .mile-finance-summary-card,.mile-finance-summary-card:hover { transition:none; transform:none; }
+}
