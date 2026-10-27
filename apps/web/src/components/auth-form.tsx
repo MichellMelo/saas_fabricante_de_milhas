@@ -106,7 +106,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               </div>
             </div>
           </div>
-          <p className="absolute bottom-0 left-0 text-[11px] text-slate-500">© 2026 Fabricante de Milhas</p>
+          <p className="relative mt-6 text-[11px] text-slate-500">© 2026 Fabricante de Milhas</p>
         </section>
 
         <section className="mx-auto w-full max-w-[440px] lg:my-auto">
