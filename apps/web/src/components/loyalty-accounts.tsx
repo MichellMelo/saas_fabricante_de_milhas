@@ -37,24 +37,22 @@ const typeLabel: Record<Program["type"], string> = {
   OTHER: "Outro",
 };
 
-const programBrand: Record<string, { label: string; className: string }> = {
-  ESFERA: { label: "E", className: "bg-[#fff4dc] text-[#a85b00] ring-[#f3d18a]" },
-  LIVELO: { label: "L", className: "bg-[#fce7f3] text-[#a21caf] ring-[#f5b4df]" },
-  SMILES: { label: "S", className: "bg-[#fff0e5] text-[#e66a13] ring-[#ffc99f]" },
-  LATAM_PASS: { label: "LATAM", className: "bg-[#fce8e8] text-[#c51e32] ring-[#f4b8be]" },
-  AZUL_FIDELIDADE: { label: "AZUL", className: "bg-[#e5f3ff] text-[#0067a8] ring-[#a8d8ff]" },
-  ALL_ACCOR: { label: "ALL", className: "bg-[#f0eaff] text-[#5636a8] ring-[#d0c2fa]" },
-  MARRIOTT_BONVOY: { label: "M", className: "bg-[#f8e9e7] text-[#8d2525] ring-[#e5b7b0]" },
+const programIcon: Record<string, string> = {
+  ESFERA: "/program-icons/esfera.png",
+  LIVELO: "/program-icons/livelo.png",
+  SMILES: "/program-icons/smiles.png",
+  LATAM_PASS: "/program-icons/latam.png",
+  AZUL_FIDELIDADE: "/program-icons/azul.png",
 };
 
 function ProgramMark({ program }: { program: Program }) {
-  const brand = programBrand[program.code.toUpperCase()];
+  const icon = programIcon[program.code.toUpperCase()];
   return (
-    <div aria-label={program.name} title={program.name} className={`flex size-14 shrink-0 items-center justify-center rounded-2xl ring-1 ring-inset ${brand?.className ?? "bg-slate-100 text-slate-700 ring-slate-200"}`}>
-      {brand ? <span className={brand.label.length > 2 ? "text-[10px] font-extrabold tracking-tight" : "text-2xl font-extrabold"}>{brand.label}</span> :
-        program.type === "AIRLINE" ? <Plane size={25} strokeWidth={1.8} /> :
-        program.type === "HOTEL" ? <Building2 size={25} strokeWidth={1.8} /> :
-        <WalletCards size={25} strokeWidth={1.8} />}
+    <div aria-label={program.name} title={program.name} className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-100 bg-white p-1.5">
+      {icon ? <img src={icon} alt={program.name} className="size-full object-contain" /> :
+        program.type === "AIRLINE" ? <Plane size={25} strokeWidth={1.8} className="text-slate-600" /> :
+        program.type === "HOTEL" ? <Building2 size={25} strokeWidth={1.8} className="text-slate-600" /> :
+        <WalletCards size={25} strokeWidth={1.8} className="text-slate-600" />}
     </div>
   );
 }
