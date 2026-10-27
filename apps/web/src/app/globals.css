@@ -2286,3 +2286,25 @@ article[class~="border-slate-200"][class~="bg-white"]:hover {
 @media(prefers-reduced-motion:reduce) {
   .travel-summary-card,.travel-summary-card:hover { transition:none; transform:none; }
 }
+
+
+/* Histórico de disponibilidades: hover consistente em indicadores e destaques */
+.flight-history-stat-card {
+  border:1px solid #e1e7ef!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  box-shadow:0 3px 12px rgba(23,35,55,.04)!important;
+  transition:transform 160ms ease,border-color 160ms ease,box-shadow 160ms ease;
+}
+.flight-history-stat-card:hover {
+  transform:translateY(-3px);
+  border-color:#cbd6e4!important;
+  box-shadow:0 9px 24px rgba(23,35,55,.09)!important;
+}
+.flight-history-stat-card:focus-within {
+  border-color:#c6a45c!important;
+  box-shadow:0 0 0 3px rgba(198,164,92,.13),0 8px 22px rgba(23,35,55,.06)!important;
+}
+@media(prefers-reduced-motion:reduce) {
+  .flight-history-stat-card,.flight-history-stat-card:hover { transition:none; transform:none; }
+}
