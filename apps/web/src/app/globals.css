@@ -1926,6 +1926,19 @@ article[class~="border-slate-200"][class~="bg-white"]:hover {
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
   align-items: stretch;
 }
+.page-content .content-grid > .panel {
+  min-height: 100%;
+}
+.page-content .content-grid > .opportunity-preview {
+  height: 100%;
+}
+.page-content .content-grid > .panel:first-child {
+  display: flex;
+  flex-direction: column;
+}
+.page-content .content-grid > .panel:first-child > .flex.min-h-64 {
+  flex: 1;
+}
 .opportunity-preview {
   display: flex;
   flex-direction: column;
