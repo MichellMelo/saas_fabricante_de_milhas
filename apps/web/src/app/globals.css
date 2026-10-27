@@ -2288,6 +2288,53 @@ article[class~="border-slate-200"][class~="bg-white"]:hover {
 }
 
 
+/* Padrão compartilhado de cards: borda neutra, elevação curta e sombra suave. */
+.kpi-card,
+.loyalty-summary-card,
+.program-summary-card,
+.finance-summary-card,
+.mile-finance-summary-card,
+.travel-summary-card,
+.flight-history-stat-card {
+  border: 1px solid #e1e7ef !important;
+  border-radius: 15px !important;
+  box-shadow: 0 3px 12px rgba(23,35,55,.04) !important;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+.kpi-card:hover,
+.loyalty-summary-card:hover,
+.program-summary-card:hover,
+.finance-summary-card:hover,
+.mile-finance-summary-card:hover,
+.travel-summary-card:hover,
+.flight-history-stat-card:hover {
+  transform: translateY(-3px);
+  border-color: #cbd6e4 !important;
+  box-shadow: 0 9px 24px rgba(23,35,55,.09) !important;
+}
+.kpi-card:focus-within,
+.loyalty-summary-card:focus-within,
+.program-summary-card:focus-within,
+.finance-summary-card:focus-within,
+.mile-finance-summary-card:focus-within,
+.travel-summary-card:focus-within,
+.flight-history-stat-card:focus-within {
+  border-color: #c6a45c !important;
+  box-shadow: 0 0 0 3px rgba(198,164,92,.13), 0 8px 22px rgba(23,35,55,.06) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kpi-card, .kpi-card:hover,
+  .loyalty-summary-card, .loyalty-summary-card:hover,
+  .program-summary-card, .program-summary-card:hover,
+  .finance-summary-card, .finance-summary-card:hover,
+  .mile-finance-summary-card, .mile-finance-summary-card:hover,
+  .travel-summary-card, .travel-summary-card:hover,
+  .flight-history-stat-card, .flight-history-stat-card:hover {
+    transition: none;
+    transform: none;
+  }
+}
+
 /* Histórico de disponibilidades: hover consistente em indicadores e destaques */
 .flight-history-stat-card {
   border:1px solid #e1e7ef!important;
