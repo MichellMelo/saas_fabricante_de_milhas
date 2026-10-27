@@ -89,6 +89,33 @@ export function MileFinanceDashboard() {
     setError("");
   }
 
+  function openEdit(type: "purchase" | "sale", item: Purchase | Sale) {
+    setFormType(type);
+    setEditingId(item.id);
+    setProgramId(item.loyaltyProgram?.id ?? "");
+    setMiles(String(item.miles));
+    setGrossAmount(String(Number(item.grossAmount)));
+    setFees(String(Number(item.fees)));
+    setOccurredAt(new Date(type === "purchase" ? (item as Purchase).purchasedAt : (item as Sale).soldAt).toISOString().slice(0, 10));
+    setBuyerName(type === "sale" ? (item as Sale).buyerName ?? "" : "");
+    setNotes(item.notes ?? "");
+    setError("");
+  }
+
+  async function removeOperation(type: "purchase" | "sale", item: Purchase | Sale) {
+    if (!window.confirm("Confirma excluir esta operação? O sistema tentará reverter estoque e saldo.")) return;
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/mile-finance/${type === "purchase" ? "purchases" : "sales"}/${item.id}`, { method: "DELETE" });
+      const result = await response.json().catch(() => ({})) as { message?: string | string[] };
+      if (!response.ok) throw new Error(Array.isArray(result.message) ? result.message.join(" ") : result.message || "Não foi possível excluir a operação.");
+      setToast({ type: "success", message: "Operação excluída e saldos atualizados." });
+      await load();
+    } catch (cause) {
+      setToast({ type: "error", message: cause instanceof Error ? cause.message : "Não foi possível excluir a operação." });
+    } finally { setSaving(false); }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!formType) return;
@@ -102,13 +129,14 @@ export function MileFinanceDashboard() {
         ...(formType === "purchase" ? { purchasedAt: new Date(occurredAt + "T12:00:00").toISOString() } : { soldAt: new Date(occurredAt + "T12:00:00").toISOString(), buyerName }),
         notes: notes.trim() || undefined,
       };
-      const response = await fetch(`/api/mile-finance/${formType === "purchase" ? "purchases" : "sales"}`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+      const response = await fetch(`/api/mile-finance/${formType === "purchase" ? "purchases" : "sales"}${editingId ? `/${editingId}` : ""}`, {
+        method: editingId ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       });
       const result = await response.json().catch(() => ({})) as { message?: string | string[] };
       if (!response.ok) throw new Error(Array.isArray(result.message) ? result.message.join(" ") : result.message || "Não foi possível registrar a operação.");
       setFormType(null);
-      setToast({ type: "success", message: formType === "purchase" ? "Compra registrada e estoque atualizado." : "Venda registrada e estoque atualizado." });
+      setEditingId(null);
+      setToast({ type: "success", message: editingId ? "Operação atualizada com sucesso." : formType === "purchase" ? "Compra registrada e estoque atualizado." : "Venda registrada e estoque atualizado." });
       await load();
     } catch (cause) {
       setToast({ type: "error", message: cause instanceof Error ? cause.message : "Não foi possível registrar a operação." });
@@ -133,15 +161,15 @@ export function MileFinanceDashboard() {
       </div>
       {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800"><span>{error}</span><Button variant="outline" onClick={() => void load()}>Tentar novamente</Button></div>}
       {formType && <Card className="panel p-5"><form onSubmit={submit} className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <div className="md:col-span-2 xl:col-span-3"><h2 className="text-lg font-semibold">{formType === "purchase" ? "Registrar compra de milhas" : "Registrar venda de milhas"}</h2><p className="text-sm text-slate-500">{formType === "sale" ? `Saldo disponível neste programa: ${integer(availableForSale)} milhas${!selectedInventory?.miles && selectedWalletBalance > 0 ? " (custo de aquisição não apurado)" : ""}` : "O custo médio será atualizado automaticamente após a compra."}</p></div>
-        <label className="text-sm font-medium">Programa<select required value={programId} onChange={(e) => setProgramId(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2"><option value="">Selecione um programa</option>{programs.map((program) => <option key={program.id} value={program.id}>{program.name}</option>)}</select></label>
-        <label className="text-sm font-medium">Quantidade de milhas<input required type="number" min="1" step="1" value={miles} onChange={(e) => setMiles(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2" /></label>
+        <div className="md:col-span-2 xl:col-span-3"><h2 className="text-lg font-semibold">{editingId ? "Editar operação" : formType === "purchase" ? "Registrar compra de milhas" : "Registrar venda de milhas"}</h2><p className="text-sm text-slate-500">{formType === "sale" ? `Saldo disponível neste programa: ${integer(availableForSale)} milhas${!selectedInventory?.miles && selectedWalletBalance > 0 ? " (custo de aquisição não apurado)" : ""}` : "O custo médio será atualizado automaticamente após a compra."}</p></div>
+        <label className="text-sm font-medium">Programa<select required disabled={!!editingId} value={programId} onChange={(e) => setProgramId(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2"><option value="">Selecione um programa</option>{programs.map((program) => <option key={program.id} value={program.id}>{program.name}</option>)}</select></label>
+        <label className="text-sm font-medium">Quantidade de milhas<input required disabled={!!editingId} type="number" min="1" step="1" value={miles} onChange={(e) => setMiles(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2" /></label>
         <label className="text-sm font-medium">Valor bruto (R$)<input required type="number" min="0.01" step="0.01" value={grossAmount} onChange={(e) => setGrossAmount(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2" /></label>
         <label className="text-sm font-medium">Taxas (R$)<input required type="number" min="0" step="0.01" value={fees} onChange={(e) => setFees(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2" /></label>
         {formType === "sale" && <label className="text-sm font-medium">Comprador (opcional)<input value={buyerName} onChange={(e) => setBuyerName(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2" /></label>}
         <label className="text-sm font-medium">Data<input required type="date" value={occurredAt} onChange={(e) => setOccurredAt(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2" /></label>
         <label className="text-sm font-medium md:col-span-2">Observações<textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2" /></label>
-        <div className="flex gap-2 md:col-span-2 xl:col-span-3"><Button type="submit" disabled={saving || !programId}>{saving ? <><LoaderCircle className="mr-2 animate-spin" size={15} />Salvando…</> : "Salvar operação"}</Button><Button type="button" variant="outline" onClick={() => setFormType(null)} disabled={saving}>Cancelar</Button></div>
+        <div className="flex gap-2 md:col-span-2 xl:col-span-3"><Button type="submit" disabled={saving || !programId}>{saving ? <><LoaderCircle className="mr-2 animate-spin" size={15} />Salvando…</> : editingId ? "Salvar alterações" : "Salvar operação"}</Button><Button type="button" variant="outline" onClick={() => { setFormType(null); setEditingId(null); }} disabled={saving}>Cancelar</Button></div>
       </form></Card>}
       {loading && !dashboard ? <Card className="p-10 text-center text-slate-500"><LoaderCircle className="mx-auto mb-2 animate-spin" />Carregando financeiro de milhas…</Card> : dashboard && <>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
