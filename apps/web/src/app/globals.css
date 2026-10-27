@@ -246,6 +246,17 @@ select:focus-visible {
   border-bottom: 1px solid #e9ecf1;
   background: rgba(255, 255, 255, 0.9);
 }
+.topbar-leading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+}
+.topbar-leading .breadcrumbs {
+  justify-content: flex-start;
+  margin-left: 0;
+  text-align: left;
+}
 .breadcrumbs {
   display: flex;
   align-items: center;
