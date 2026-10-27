@@ -334,6 +334,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
       )}
       <DashboardSidebar
         mobileOpen={mobileOpen}
+        collapsed={desktopSidebarCollapsed}
         route={route}
         navItems={allowedNavItems}
         navigate={navigate}
