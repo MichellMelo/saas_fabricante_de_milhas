@@ -2227,3 +2227,62 @@ article[class~="border-slate-200"][class~="bg-white"]:hover {
 @media(prefers-reduced-motion:reduce) {
   .mile-finance-summary-card,.mile-finance-summary-card:hover { transition:none; transform:none; }
 }
+
+
+/* Passagens e resgates: cards de resumo com alturas e hierarquia consistentes */
+.travel-summary-card {
+  display:flex;
+  min-height:154px;
+  flex-direction:column;
+  padding:20px!important;
+  border:1px solid #e1e7ef!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  box-shadow:0 3px 12px rgba(23,35,55,.04)!important;
+  transition:transform 160ms ease,border-color 160ms ease,box-shadow 160ms ease;
+}
+.travel-summary-card:hover {
+  transform:translateY(-2px);
+  border-color:#d2dbe7!important;
+  box-shadow:0 8px 22px rgba(23,35,55,.07)!important;
+}
+.travel-summary-card > div:first-child {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  flex:1;
+}
+.travel-summary-card > div:first-child > div > p:first-child {
+  color:#66758a;
+  font-size:12px;
+  font-weight:600;
+  line-height:1.4;
+}
+.travel-summary-card > div:first-child > div > p:nth-child(2) {
+  margin-top:12px!important;
+  color:#172337!important;
+  font-size:27px!important;
+  font-weight:750!important;
+  line-height:1.15!important;
+  letter-spacing:-.025em;
+}
+.travel-summary-card > div:first-child > span {
+  flex-shrink:0;
+  border:1px solid #f0e5c9;
+  border-radius:12px!important;
+  background:#fbf5e7!important;
+  color:#a87532!important;
+}
+.travel-summary-card > p {
+  margin-top:12px!important;
+  color:#78869a!important;
+  font-size:12px!important;
+  line-height:1.45!important;
+}
+@media(max-width:640px) {
+  .travel-summary-card { min-height:145px; padding:18px!important; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .travel-summary-card,.travel-summary-card:hover { transition:none; transform:none; }
+}
