@@ -99,7 +99,7 @@ export function DashboardHeader({ title, mobileOpen, onToggleMobile, desktopSide
               <Breadcrumb className="breadcrumbs">
                 <BreadcrumbList className="gap-2">
                   <BreadcrumbItem>
-                    <BreadcrumbLink href="/" className="text-slate-400 hover:text-white">Workspace</BreadcrumbLink>
+                    <BreadcrumbLink href="/" className="text-slate-400 hover:text-white">Espaço de trabalho</BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="text-slate-500" />
                   <BreadcrumbItem>
