@@ -2508,3 +2508,11 @@ label select { margin-top: 4px; }
 @media (prefers-reduced-motion: reduce) {
   select { transition: none; }
 }
+
+
+/* Em telas móveis, priorize o espaço útil do cabeçalho e oculte o breadcrumb. */
+@media (max-width: 760px) {
+  .topbar .breadcrumbs {
+    display: none !important;
+  }
+}
