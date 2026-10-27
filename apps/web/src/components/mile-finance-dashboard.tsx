@@ -1,5 +1,6 @@
-import { PageHeader } from "@/components/page-header";
 "use client";
+
+import { PageHeader } from "@/components/page-header";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { ArrowDownLeft, Boxes, LoaderCircle, Plus, ShoppingCart, TrendingUp, Pencil, Trash2 } from "lucide-react";
