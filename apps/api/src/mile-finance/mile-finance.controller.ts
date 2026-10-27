@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from "@nestjs/common";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CreateInventoryAdjustmentDto } from "./dto/create-inventory-adjustment.dto";
 import { CreateMilePurchaseDto } from "./dto/create-mile-purchase.dto";
@@ -25,6 +25,16 @@ export class MileFinanceController {
     return this.finance.listPurchases(request.user.id, from, to);
   }
 
+  @Patch("purchases/:id")
+  updatePurchase(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() dto: CreateMilePurchaseDto) {
+    return this.finance.updatePurchase(request.user.id, id, dto);
+  }
+
+  @Delete("purchases/:id")
+  deletePurchase(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
+    return this.finance.deletePurchase(request.user.id, id);
+  }
+
   @Post("purchases")
   createPurchase(@Req() request: AuthenticatedRequest, @Body() dto: CreateMilePurchaseDto) {
     return this.finance.createPurchase(request.user.id, dto);
@@ -33,6 +43,16 @@ export class MileFinanceController {
   @Get("sales")
   sales(@Req() request: AuthenticatedRequest, @Query("from") from?: string, @Query("to") to?: string) {
     return this.finance.listSales(request.user.id, from, to);
+  }
+
+  @Patch("sales/:id")
+  updateSale(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() dto: CreatePersonalMileSaleDto) {
+    return this.finance.updateSale(request.user.id, id, dto);
+  }
+
+  @Delete("sales/:id")
+  deleteSale(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
+    return this.finance.deleteSale(request.user.id, id);
   }
 
   @Post("sales")
