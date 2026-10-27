@@ -106,7 +106,7 @@ export function FlightHistory() {
     { label: "Rotas identificadas", value: numberFormat.format(new Set(filtered.map(r => r.origin + "-" + r.destination)).size), note: "origem e destino", icon: Route, tone: "violet" },
     { label: "Menor piso encontrado", value: filtered.length ? numberFormat.format(Math.min(...filtered.map(r => r.milesFloor))) : "—", note: "milhas, conforme os filtros", icon: Sparkles, tone: "green" },
   ];  return <section className="space-y-5">
-    <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="welcome-row">
       <div><div className="eyebrow"><span className="eyebrow-line" /> BASE PARA FUTURAS EMISSÕES</div><h1 className="page-title">Histórico de disponibilidades<span className="gold-period">.</span></h1><p className="page-subtitle">Compare rotas, programas e pisos de milhas registrados ao longo do tempo.</p></div>
       <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={exportCsv} disabled={!filtered.length}><Download size={15}/> Exportar CSV</Button><Button onClick={() => fileRef.current?.click()}><Upload size={15}/> Importar CSV</Button><input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={e => void chooseFile(e.target.files?.[0])}/></div>
     </div>
