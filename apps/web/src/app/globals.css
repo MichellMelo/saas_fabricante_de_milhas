@@ -2066,3 +2066,14 @@ article[class~="border-slate-200"][class~="bg-white"]:hover {
     gap: 8px;
   }
 }
+
+
+/* Programas e saldos: hierarquia visual dos cards. */
+.loyalty-summary-card { min-height: 160px; display: flex; flex-direction: column; padding: 21px 22px !important; border-radius: 15px !important; box-shadow: 0 3px 12px rgba(23,35,55,.04) !important; transition: transform 160ms ease, box-shadow 160ms ease; }
+.loyalty-summary-card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(23,35,55,.07) !important; }
+.loyalty-summary-card > div:nth-child(2) { margin-top: 17px !important; color: #172337 !important; font-size: 32px !important; font-weight: 750 !important; line-height: 1 !important; }
+.loyalty-summary-card > p { margin-top: auto !important; padding-top: 12px; color: #78869a !important; font-size: 12px !important; }
+.loyalty-create-card { padding: 25px 24px !important; border-radius: 15px !important; box-shadow: 0 4px 16px rgba(23,35,55,.04) !important; }
+.loyalty-create-card h2 { color: #172337 !important; font-size: 18px !important; }
+@media (max-width: 640px) { .loyalty-summary-card { min-height: 145px; padding: 18px !important; } .loyalty-create-card { padding: 20px 17px !important; } }
+@media (prefers-reduced-motion: reduce) { .loyalty-summary-card, .loyalty-summary-card:hover { transition: none; transform: none; } }
