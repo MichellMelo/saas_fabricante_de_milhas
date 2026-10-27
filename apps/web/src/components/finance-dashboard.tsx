@@ -53,6 +53,10 @@ export function FinanceDashboard() {
   const [error, setError] = useState("");
   const [period, setPeriod] = useState("30");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [productFilter, setProductFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState("10");
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
   const [paymentSaving, setPaymentSaving] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState("");
@@ -154,8 +158,19 @@ export function FinanceDashboard() {
     const dateForPeriod = payment.status === "PAID" ? payment.paidAt : payment.dueAt;
     const matchesPeriod = withinPeriod(dateForPeriod, period);
     const status = payment.status === "CANCELLED" ? "cancelled" : payment.status === "PAID" ? "paid" : isOverdue(payment) ? "overdue" : "pending";
-    return matchesPeriod && (statusFilter === "all" || statusFilter === status);
-  }), [payments, period, statusFilter]);
+    const term = searchTerm.trim().toLocaleLowerCase("pt-BR");
+    const matchesSearch = !term || [payment.user?.name, payment.user?.email, products[payment.product], String(payment.amount)].some((value) => String(value ?? "").toLocaleLowerCase("pt-BR").includes(term));
+    const matchesProduct = productFilter === "all" || payment.product === productFilter;
+    return matchesPeriod && (statusFilter === "all" || statusFilter === status) && matchesProduct && matchesSearch;
+  }), [payments, period, statusFilter, productFilter, searchTerm]);
+
+  const pageSizeNumber = Number(pageSize);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSizeNumber));
+  const paginatedPayments = filtered.slice((page - 1) * pageSizeNumber, page * pageSizeNumber);
+
+  useEffect(() => { setPage(1); }, [period, statusFilter, productFilter, searchTerm, pageSize]);
+
+  useEffect(() => { if (page > pageCount) setPage(pageCount); }, [page, pageCount]);
 
   const received = filtered.reduce((sum, payment) => sum + (payment.status === "PAID" ? Number(payment.amount) : 0), 0);
   const pending = filtered.reduce((sum, payment) => sum + (payment.status === "PENDING" && !isOverdue(payment) ? Number(payment.amount) : 0), 0);
@@ -196,11 +211,19 @@ export function FinanceDashboard() {
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><h2 className="font-semibold text-slate-900">Lançamentos financeiros</h2><p className="mt-1 text-xs text-slate-500">{loading ? "Atualizando dados…" : `${filtered.length} lançamento(s) no filtro`}</p></div>
-        <label className="text-sm text-slate-600">Situação{" "}
-          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="ml-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
-            <option value="all">Todas</option><option value="paid">Pagos</option><option value="pending">Pendentes</option><option value="overdue">Vencidos</option><option value="cancelled">Cancelados</option>
-          </select>
-        </label>
+        <div className="flex flex-wrap items-center gap-3">
+          <input aria-label="Buscar lançamentos" placeholder="Buscar cliente, e-mail ou valor" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm sm:w-56" />
+          <label className="text-sm text-slate-600">Produto{" "}
+            <select value={productFilter} onChange={(event) => setProductFilter(event.target.value)} className="ml-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
+              <option value="all">Todos</option><option value="GROUP_VIP">Grupo VIP</option><option value="AULAO">Aulões</option><option value="MENTORSHIP">Mentorias</option>
+            </select>
+          </label>
+          <label className="text-sm text-slate-600">Situação{" "}
+            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="ml-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
+              <option value="all">Todas</option><option value="paid">Pagos</option><option value="pending">Pendentes</option><option value="overdue">Vencidos</option><option value="cancelled">Cancelados</option>
+            </select>
+          </label>
+        </div>
       </div>
       {editingPayment && <form onSubmit={savePaymentEdit} className="mt-5 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2 xl:grid-cols-3">
         <div className="sm:col-span-2 xl:col-span-3"><h3 className="font-semibold text-slate-900">Editar lançamento · {editingPayment.user?.name || editingPayment.user?.email || "Cliente"}</h3></div>
@@ -213,7 +236,7 @@ export function FinanceDashboard() {
       </form>}
       {loading ? <p className="py-10 text-sm text-slate-500">Carregando lançamentos financeiros…</p> : filtered.length === 0 ? <p className="py-10 text-sm text-slate-500">Nenhum lançamento encontrado para os filtros selecionados.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[680px] text-left text-sm">
         <thead><tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500"><th className="px-3 py-3 font-semibold">Cliente</th><th className="px-3 py-3 font-semibold">Produto</th><th className="px-3 py-3 font-semibold">Vencimento</th><th className="px-3 py-3 font-semibold">Valor</th><th className="px-3 py-3 font-semibold">Situação</th><th className="px-3 py-3 font-semibold">Ações</th></tr></thead>
-        <tbody>{filtered.map((payment) => {
+        <tbody>{paginatedPayments.map((payment) => {
           const overdueStatus = isOverdue(payment);
           const label = payment.status === "PAID" ? "Pago" : payment.status === "CANCELLED" ? "Cancelado" : overdueStatus ? "Vencido" : "Pendente";
           return <tr key={payment.id} className="border-b border-slate-100 last:border-0">
@@ -224,6 +247,21 @@ export function FinanceDashboard() {
           </tr>;
         })}</tbody>
       </table></div>}
+      {!loading && filtered.length > 0 && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+        <div className="flex items-center gap-2 text-sm text-slate-500">
+          <span>Exibindo {Math.min((page - 1) * pageSizeNumber + 1, filtered.length)}–{Math.min(page * pageSizeNumber, filtered.length)} de {filtered.length}</span>
+          <label className="ml-2">Por página{" "}
+            <select value={pageSize} onChange={(event) => setPageSize(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-2 py-1.5">
+              <option value="10">10</option><option value="25">25</option><option value="50">50</option>
+            </select>
+          </label>
+        </div>
+        <div className="flex items-center gap-2">
+          <button type="button" disabled={page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">Anterior</button>
+          <span className="text-sm text-slate-600">Página {page} de {pageCount}</span>
+          <button type="button" disabled={page >= pageCount} onClick={() => setPage((current) => Math.min(pageCount, current + 1))} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">Próxima</button>
+        </div>
+      </div>}
     </div>
   </section>;
 }
