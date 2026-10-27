@@ -9,6 +9,7 @@ type Program = { id: string; name: string; code: string; type: string };
 type Inventory = { id: string; miles: number; totalCost: string | number; averageCpm: string | number; loyaltyProgram: Program };
 type Purchase = { id: string; miles: number; grossAmount: string | number; fees: string | number; acquisitionCpm: string | number; purchasedAt: string; loyaltyProgram: Program; notes?: string | null };
 type Sale = { id: string; miles: number; buyerName?: string | null; grossAmount: string | number; fees: string | number; costOfGoodsSold: string | number | null; acquisitionCpm: string | number; soldAt: string; loyaltyProgram: Program; notes?: string | null };
+type PageResult<T> = { items: T[]; total: number; page: number; pageSize: number; totalPages: number };
 type DashboardData = { walletBalances: Array<{ loyaltyProgramId: string; miles: number }>; hasSalesWithUnknownCost?: boolean; purchases: { count: number; grossAmount: string | number; fees: string | number; miles: number }; sales: { count: number; grossAmount: string | number; fees: string | number; miles: number }; estimatedProfit: string | number; inventory: Inventory[]; inventoryTotalCost: string | number; inventoryMiles: number };
 
 const money = (value: string | number | null | undefined) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(value ?? 0));
@@ -27,6 +28,17 @@ export function MileFinanceDashboard() {
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [formType, setFormType] = useState<"purchase" | "sale" | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [purchasePage, setPurchasePage] = useState(1);
+  const [salePage, setSalePage] = useState(1);
+  const [movementPage, setMovementPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [filterProgramId, setFilterProgramId] = useState("");
+  const [filterFrom, setFilterFrom] = useState("");
+  const [filterTo, setFilterTo] = useState("");
+  const [movementType, setMovementType] = useState("");
+  const [purchaseMeta, setPurchaseMeta] = useState({ total: 0, totalPages: 0 });
+  const [saleMeta, setSaleMeta] = useState({ total: 0, totalPages: 0 });
+  const [movementMeta, setMovementMeta] = useState({ total: 0, totalPages: 0 });
   const [programId, setProgramId] = useState("");
   const [miles, setMiles] = useState("");
   const [grossAmount, setGrossAmount] = useState("");
@@ -42,9 +54,9 @@ export function MileFinanceDashboard() {
       const [dashboardResponse, programResponse, purchaseResponse, saleResponse, movementResponse] = await Promise.all([
         fetch("/api/mile-finance/dashboard", { cache: "no-store" }),
         fetch("/api/loyalty-programs", { cache: "no-store" }),
-        fetch("/api/mile-finance/purchases", { cache: "no-store" }),
-        fetch("/api/mile-finance/sales", { cache: "no-store" }),
-        fetch("/api/mile-finance/movements", { cache: "no-store" }),
+        fetch(`/api/mile-finance/purchases?page=${purchasePage}&pageSize=${pageSize}${filterProgramId ? `&loyaltyProgramId=${filterProgramId}` : ""}${filterFrom ? `&from=${filterFrom}` : ""}${filterTo ? `&to=${filterTo}` : ""}`, { cache: "no-store" }),
+        fetch(`/api/mile-finance/sales?page=${salePage}&pageSize=${pageSize}${filterProgramId ? `&loyaltyProgramId=${filterProgramId}` : ""}${filterFrom ? `&from=${filterFrom}` : ""}${filterTo ? `&to=${filterTo}` : ""}`, { cache: "no-store" }),
+        fetch(`/api/mile-finance/movements?page=${movementPage}&pageSize=${Math.max(20, pageSize)}${filterProgramId ? `&loyaltyProgramId=${filterProgramId}` : ""}${filterFrom ? `&from=${filterFrom}` : ""}${filterTo ? `&to=${filterTo}` : ""}${movementType ? `&type=${movementType}` : ""}`, { cache: "no-store" }),
       ]);
       const responses = [dashboardResponse, programResponse, purchaseResponse, saleResponse, movementResponse];
       const payloads = await Promise.all(responses.map((response) => response.json().catch(() => ({}))));
@@ -55,15 +67,21 @@ export function MileFinanceDashboard() {
       }
       setDashboard(payloads[0] as DashboardData);
       setPrograms(payloads[1] as Program[]);
-      setPurchases(payloads[2] as Purchase[]);
-      setSales(payloads[3] as Sale[]);
-      setMovements(payloads[4] as typeof movements);
+      const purchaseResult = payloads[2] as PageResult<Purchase>;
+      const saleResult = payloads[3] as PageResult<Sale>;
+      const movementResult = payloads[4] as PageResult<(typeof movements)[number]>;
+      setPurchases(purchaseResult.items);
+      setSales(saleResult.items);
+      setMovements(movementResult.items);
+      setPurchaseMeta({ total: purchaseResult.total, totalPages: purchaseResult.totalPages });
+      setSaleMeta({ total: saleResult.total, totalPages: saleResult.totalPages });
+      setMovementMeta({ total: movementResult.total, totalPages: movementResult.totalPages });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Não foi possível carregar o financeiro de milhas.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [purchasePage, salePage, movementPage, pageSize, filterProgramId, filterFrom, filterTo, movementType]);
 
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
@@ -136,6 +154,7 @@ export function MileFinanceDashboard() {
       if (!response.ok) throw new Error(Array.isArray(result.message) ? result.message.join(" ") : result.message || "Não foi possível registrar a operação.");
       setFormType(null);
       setEditingId(null);
+      setPurchasePage(1); setSalePage(1); setMovementPage(1);
       setToast({ type: "success", message: editingId ? "Operação atualizada com sucesso." : formType === "purchase" ? "Compra registrada e estoque atualizado." : "Venda registrada e estoque atualizado." });
       await load();
     } catch (cause) {
