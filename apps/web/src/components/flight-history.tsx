@@ -48,6 +48,27 @@ function parseRecords(text: string): Availability[] {
     return { dateRegistered: parseDate(get("Data_Registro")), program: get("Programa"), cabinClass: get("Classe"), origin, destination, milesFloor: Math.round(miles), monthsAvailable: get("Meses_Disponiveis"), outboundDates: get("Datas_Ida"), returnDates: get("Datas_Volta") };
   });
 }
+const PROGRAM_LOGOS: { match: RegExp; src: string; label: string }[] = [
+  { match: /azul|tudoazul/i, src: "/program-icons/logo-azul-256.png", label: "Azul" },
+  { match: /latam|latampass/i, src: "/program-icons/logo-latam-256.png", label: "LATAM Pass" },
+  { match: /smiles/i, src: "/program-icons/logo-smiles-1024.png", label: "Smiles" },
+  { match: /tap|miles.?go/i, src: "/program-icons/tap.png", label: "TAP Miles&Go" },
+  { match: /air.?canada|aeroplan/i, src: "/program-icons/aircanada.png", label: "Aeroplan" },
+  { match: /air.?france|flying.?blue/i, src: "/program-icons/airfrance.png", label: "Flying Blue" },
+  { match: /delta|skymiles/i, src: "/program-icons/delta.png", label: "Delta SkyMiles" },
+  { match: /american|aadvantage/i, src: "/program-icons/AA.png", label: "AAdvantage" },
+  { match: /qatar/i, src: "/program-icons/qatar.png", label: "Qatar Airways" },
+  { match: /turkish|miles.?&.?smiles/i, src: "/program-icons/turkish.png", label: "Turkish Airlines" },
+];
+function ProgramIdentity({ program }: { program: string }) {
+  const logo = PROGRAM_LOGOS.find(item => item.match.test(program));
+  return <div className="flex min-w-[150px] items-center gap-3">
+    <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-white p-1.5 shadow-sm">
+      {logo ? <img src={logo.src} alt={logo.label} className="h-full w-full object-contain" loading="lazy" /> : <span className="text-sm font-bold text-slate-500">{program.trim().slice(0, 2).toUpperCase()}</span>}
+    </span>
+    <span className="font-medium text-slate-800">{program}</span>
+  </div>;
+}
 const numberFormat = new Intl.NumberFormat("pt-BR");
 const dateFormat = (value: string) => new Date(value.slice(0, 10) + "T12:00:00").toLocaleDateString("pt-BR");
 const PAGE_SIZE = 10;
