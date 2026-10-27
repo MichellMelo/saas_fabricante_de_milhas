@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/page-header";
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -121,13 +122,7 @@ export function ProgramManagement({ onBack }: { onBack: () => void }) {
 
   return (
     <section className="space-y-6">
-      <div className="welcome-row">
-        <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> CATÁLOGO E PERSONALIZAÇÃO</div>
-          <h1 className="page-title">Cadastro de programas</h1>
-          <p className="page-subtitle">Consulte o catálogo compartilhado e crie programas personalizados sem alterar a lista dos demais usuários.</p>
-        </div>
-      </div>
+      <PageHeader eyebrow="CATÁLOGO E PERSONALIZAÇÃO" title="Cadastro de programas" description="Consulte o catálogo compartilhado e crie programas personalizados sem alterar a lista dos demais usuários." />
 
       {error && <div role="alert" className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
       {success && <div role="status" className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</div>}
