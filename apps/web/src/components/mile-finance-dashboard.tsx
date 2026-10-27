@@ -184,12 +184,12 @@ export function MileFinanceDashboard() {
       </form></Card></div>}
       {loading && !dashboard ? <Card className="p-10 text-center text-slate-500"><LoaderCircle className="mx-auto mb-2 animate-spin" />Carregando financeiro de milhas…</Card> : dashboard && <>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Card className="panel p-5"><div className="text-sm text-slate-500">Compras no período</div><div className="mt-2 text-2xl font-semibold">{money(dashboard.purchases.grossAmount)} </div><div className="mt-1 text-xs text-slate-500">{integer(dashboard.purchases.miles)} milhas adquiridas</div></Card>
+          <Card className="panel mile-finance-summary-card"><div className="text-sm text-slate-500">Compras no período</div><div className="mt-2 text-2xl font-semibold">{money(dashboard.purchases.grossAmount)} </div><div className="mt-1 text-xs text-slate-500">{integer(dashboard.purchases.miles)} milhas adquiridas</div></Card>
           <Card className="panel p-5"><div className="text-sm text-slate-500">Vendas concluídas</div><div className="mt-2 text-2xl font-semibold">{money(dashboard.sales.grossAmount)}</div><div className="mt-1 text-xs text-slate-500">{integer(dashboard.sales.miles)} milhas vendidas</div></Card>
           <Card className="panel p-5"><div className="text-sm text-slate-500">Custo do estoque</div><div className="mt-2 text-2xl font-semibold">{money(dashboard.inventoryTotalCost)}</div><div className="mt-1 text-xs text-slate-500">{integer(dashboard.inventoryMiles)} milhas disponíveis</div></Card>
           <Card className="panel p-5"><div className="text-sm text-slate-500">Lucro estimado das vendas</div><div className="mt-2 text-2xl font-semibold text-emerald-700">{money(dashboard.estimatedProfit)}</div><div className="mt-1 text-xs text-slate-500">{dashboard.hasSalesWithUnknownCost ? "Lucro considera apenas vendas com custo conhecido" : "Após taxas e custo das milhas vendidas"}</div></Card>
         </div>
-        <Card className="panel p-4">
+        <Card className="panel mile-finance-filter-card">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <label className="text-sm text-slate-600">Programa<select value={filterProgramId} onChange={(e) => { setFilterProgramId(e.target.value); setPurchasePage(1); setSalePage(1); setMovementPage(1); }} className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2"><option value="">Todos os programas</option>{programs.map((program) => <option key={program.id} value={program.id}>{program.name}</option>)}</select></label>
             <label className="text-sm text-slate-600">De<input type="date" value={filterFrom} onChange={(e) => { setFilterFrom(e.target.value); setPurchasePage(1); setSalePage(1); setMovementPage(1); }} className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2" /></label>
