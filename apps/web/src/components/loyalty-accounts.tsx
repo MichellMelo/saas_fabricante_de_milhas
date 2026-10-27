@@ -162,17 +162,17 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
       {success && <div role="status" className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</div>}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <Card className="border-slate-200 bg-white p-5 shadow-none">
+        <Card className="panel loyalty-summary-card">
           <div className="flex items-center gap-3 text-slate-500"><WalletCards size={18} /><span className="text-sm">Contas cadastradas</span></div>
           <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{accounts.length}</div>
           <p className="mt-1 text-xs text-slate-500">Programas vinculados ao seu perfil</p>
         </Card>
-        <Card className="border-slate-200 bg-white p-5 shadow-none">
+        <Card className="panel loyalty-summary-card">
           <div className="flex items-center gap-3 text-slate-500"><ArrowDownLeft size={18} /><span className="text-sm">Programas disponíveis</span></div>
           <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{availablePrograms.length}</div>
           <p className="mt-1 text-xs text-slate-500">Ainda não vinculados à sua carteira</p>
         </Card>
-        <Card className="border-slate-200 bg-white p-5 shadow-none">
+        <Card className="panel loyalty-summary-card">
           <div className="flex items-center gap-3 text-slate-500"><ArrowUpRight size={18} /><span className="text-sm">Movimentações</span></div>
           <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{accounts.reduce((total, account) => total + (account._count?.transactions ?? 0), 0)}</div>
           <p className="mt-1 text-xs text-slate-500">Lançamentos registrados nas contas</p>
@@ -180,7 +180,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
       </div>
 
       {showCreate && (
-        <Card className="border-amber-200 bg-[#fffdf8] p-5 shadow-none">
+        <Card className="panel loyalty-create-card">
           <h2 className="text-lg font-semibold text-slate-900">Adicionar conta de fidelidade</h2>
           <p className="mt-1 text-sm text-slate-500">Informe o programa e, se souber, o saldo atual. O saldo inicial fica registrado como ajuste.</p>
           <form onSubmit={createAccount} className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -202,7 +202,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
       )}
 
       {accounts.length > 0 && (
-        <Card className="border-slate-200 bg-white p-5 shadow-none">
+        <Card className="panel loyalty-summary-card">
           <h2 className="text-lg font-semibold text-slate-900">Registrar movimentação</h2>
           <p className="mt-1 text-sm text-slate-500">As saídas reduzem o saldo; o sistema impede lançamentos que deixem o saldo negativo.</p>
           <form onSubmit={createTransaction} className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
