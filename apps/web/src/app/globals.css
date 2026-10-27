@@ -1837,6 +1837,74 @@ body { font-size: 15px; }
   }
 }
 
+/* Sistema visual consistente para cards e painéis do workspace. */
+:root {
+  --fm-navy: #172337;
+  --fm-gold: #c6a45c;
+  --fm-card-border: #e1e7ef;
+  --fm-card-shadow: 0 2px 8px rgba(23, 35, 55, .035), 0 10px 28px rgba(23, 35, 55, .025);
+  --fm-card-shadow-hover: 0 5px 16px rgba(23, 35, 55, .07), 0 14px 34px rgba(23, 35, 55, .045);
+}
+.panel,
+.kpi-card,
+.module-placeholder,
+.quick-insight,
+div[class~="border-slate-200"][class~="bg-white"],
+article[class~="border-slate-200"][class~="bg-white"] {
+  border-color: var(--fm-card-border);
+  border-radius: 14px;
+  box-shadow: var(--fm-card-shadow);
+}
+.panel,
+div[class~="border-slate-200"][class~="bg-white"],
+article[class~="border-slate-200"][class~="bg-white"] {
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.panel:hover,
+div[class~="border-slate-200"][class~="bg-white"]:hover,
+article[class~="border-slate-200"][class~="bg-white"]:hover {
+  border-color: #d2dbe7;
+  box-shadow: var(--fm-card-shadow-hover);
+}
+.kpi-card {
+  background: #fff;
+}
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: 14px 0 0 14px;
+  background: var(--fm-gold);
+  opacity: .75;
+}
+.panel-heading h2,
+.module-placeholder h1 {
+  color: var(--fm-navy);
+}
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select) {
+  border-color: #dce3ec;
+  border-radius: 10px;
+  background-color: #fff;
+  color: var(--fm-navy);
+}
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select):focus {
+  border-color: var(--fm-gold);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(198, 164, 92, .14);
+}
+:where(input, textarea, select):disabled {
+  cursor: not-allowed;
+  opacity: .72;
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  div[class~="border-slate-200"][class~="bg-white"],
+  article[class~="border-slate-200"][class~="bg-white"] {
+    transition: none;
+  }
+}
+
 /* Interação consistente: hover sutil em todos os botões da aplicação. */
 :where(button:not(:disabled), [role="button"]:not([aria-disabled="true"]), input[type="button"]:not(:disabled), input[type="submit"]:not(:disabled), input[type="reset"]:not(:disabled)) {
   transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease;
