@@ -245,6 +245,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
   const reduceMotion = useReducedMotion();
   const [route, setRoute] = useState<RouteKey>(!user.isAdmin && !(user.productAccesses?.some((access) => access.active) ?? false) ? "calculadoras" : "dashboard");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [desktopSidebarHidden, setDesktopSidebarHidden] = useState(false);
   const [toast, setToast] = useState("");
   const [loyaltyAccounts, setLoyaltyAccounts] = useState<DashboardLoyaltyAccount[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
@@ -323,7 +324,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
   const pointFormat = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
 
   return (
-    <div className="dashboard-shell">
+    <div className={`dashboard-shell${desktopSidebarHidden ? " sidebar-hidden" : ""}`}>
       {mobileOpen && (
         <button
           className="fixed inset-0 z-20 bg-navy/40 md:hidden"
@@ -343,6 +344,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           title={route === "dashboard" ? "Visão geral" : routeCopy[route].title}
           mobileOpen={mobileOpen}
           onToggleMobile={() => setMobileOpen(!mobileOpen)}
+          desktopSidebarHidden={desktopSidebarHidden}
+          onToggleDesktopSidebar={() => setDesktopSidebarHidden((hidden) => !hidden)}
           notify={notify}
           user={user}
           onLogout={handleLogout}
