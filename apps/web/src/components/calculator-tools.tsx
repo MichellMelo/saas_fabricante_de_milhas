@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/page-header";
 "use client";
 
 import { useMemo, useState } from "react";
@@ -147,13 +148,7 @@ export function CalculatorTools() {
 
   return (
     <section className="space-y-6">
-      <div className="welcome-row">
-        <div>
-          <div className="eyebrow">FERRAMENTAS DE DECISÃO</div>
-          <h1 className="page-title">Calculadoras<span className="gold-period">.</span></h1>
-          <p className="page-subtitle">Compare custos, bônus e resgates com números transparentes — antes de tomar uma decisão.</p>
-        </div>
-      </div>
+      <PageHeader eyebrow="FERRAMENTAS DE DECISÃO" title={<>Calculadoras<span className="gold-period">.</span></>} description="Compare custos, bônus e resgates com números transparentes — antes de tomar uma decisão." showEyebrowLine={false} />
 
       <div role="tablist" aria-label="Ferramentas de cálculo" className="grid min-w-0 grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm sm:flex sm:gap-1 sm:p-1.5">
         {tabs.map(({ key, label, icon: Icon }) => (
