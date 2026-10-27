@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Bell, ChevronDown, Menu, X } from "lucide-react";
+import { Bell, ChevronDown, Menu, X, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type DashboardUser = { id: string; email: string; name: string | null; createdAt: string; isAdmin?: boolean };
@@ -21,6 +21,8 @@ export function DashboardHeader({ title, mobileOpen, onToggleMobile, user, onLog
   title: string;
   mobileOpen: boolean;
   onToggleMobile: () => void;
+  desktopSidebarHidden: boolean;
+  onToggleDesktopSidebar: () => void;
   notify: (message: string) => void;
   user: DashboardUser;
   onLogout: () => void;
@@ -58,6 +60,16 @@ export function DashboardHeader({ title, mobileOpen, onToggleMobile, user, onLog
                 aria-label={mobileOpen ? "Fechar navegação" : "Abrir navegação"}
               >
                 {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden md:inline-flex"
+                onClick={onToggleDesktopSidebar}
+                aria-label={desktopSidebarHidden ? "Mostrar barra lateral" : "Ocultar barra lateral"}
+                title={desktopSidebarHidden ? "Mostrar barra lateral" : "Ocultar barra lateral"}
+              >
+                {desktopSidebarHidden ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
               </Button>
               <div className="breadcrumbs">
                 <span>Workspace</span>
