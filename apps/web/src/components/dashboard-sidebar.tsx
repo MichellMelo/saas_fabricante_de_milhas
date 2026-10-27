@@ -4,11 +4,11 @@ import { ChevronRight, LayoutDashboard, CreditCard, Calculator, Plane, Clock3, S
 import type { LucideIcon } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 
-export type DashboardRoute = "dashboard" | "oportunidades" | "programas" | "calculadoras" | "passagens" | "historico" | "programas-admin" | "clientes-admin" | "grupo-vip" | "auloes" | "mentorias" | "financeiro" | "mile-finance";
+export type DashboardRoute = "dashboard" | "programas" | "calculadoras" | "passagens" | "historico" | "programas-admin" | "clientes-admin" | "grupo-vip" | "auloes" | "mentorias" | "financeiro" | "mile-finance";
 export type SidebarNavItem = { key: DashboardRoute; label: string; icon: LucideIcon; soon?: boolean };
 
 const iconByRoute: Partial<Record<DashboardRoute, LucideIcon>> = {
-  dashboard: LayoutDashboard, oportunidades: Sparkles, programas: CreditCard, "programas-admin": Settings2,
+  dashboard: LayoutDashboard, programas: CreditCard, "programas-admin": Settings2,
   "clientes-admin": Users, financeiro: Wallet, calculadoras: Calculator, passagens: Plane, historico: Clock3,
 };
 
