@@ -333,7 +333,7 @@ export function CalculatorTools() {
             </ul>
           </div>
           <button type="button" onClick={reset} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c]">
-            <RotateCcw size={15} /> Restaurar valores de exemplo
+            <RotateCcw size={15} /> Limpar formulário
           </button>
         </aside>
       </div>
