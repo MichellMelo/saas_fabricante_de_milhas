@@ -2077,3 +2077,64 @@ article[class~="border-slate-200"][class~="bg-white"]:hover {
 .loyalty-create-card h2 { color: #172337 !important; font-size: 18px !important; }
 @media (max-width: 640px) { .loyalty-summary-card { min-height: 145px; padding: 18px !important; } .loyalty-create-card { padding: 20px 17px !important; } }
 @media (prefers-reduced-motion: reduce) { .loyalty-summary-card, .loyalty-summary-card:hover { transition: none; transform: none; } }
+
+
+/* Cadastro de programas: cards informativos, formulário e listas. */
+.program-summary-card {
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  padding: 21px 22px !important;
+  border: 1px solid #e1e7ef !important;
+  border-radius: 15px !important;
+  background: #fff !important;
+  box-shadow: 0 3px 12px rgba(23,35,55,.04) !important;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.program-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(23,35,55,.07) !important;
+}
+.program-summary-card > div:first-child {
+  min-height: 24px;
+  color: #66758a;
+}
+.program-summary-card > div:first-child svg { color: #a98a4b; }
+.program-summary-card > div:nth-child(2) {
+  margin-top: 17px !important;
+  color: #172337 !important;
+  font-size: 32px !important;
+  font-weight: 750 !important;
+  line-height: 1.1 !important;
+}
+.program-summary-card > p {
+  margin-top: auto !important;
+  padding-top: 12px;
+  color: #78869a !important;
+  font-size: 12px !important;
+  line-height: 1.45;
+}
+.program-summary-card > div:nth-child(2):not(:has(+ p)) {
+  font-size: 19px !important;
+  line-height: 1.35 !important;
+}
+.program-list-card {
+  overflow: hidden;
+  border-radius: 15px !important;
+  background: #fff !important;
+  box-shadow: 0 3px 12px rgba(23,35,55,.035) !important;
+}
+.program-list-card > button {
+  min-height: 66px;
+  padding: 18px 22px !important;
+}
+.program-list-card > button:hover { background: #f8f9fb !important; }
+.program-list-card > div { border-top-color: #e8edf3 !important; }
+.program-list-card > div > div > div { border-color: #edf0f5 !important; }
+@media (max-width: 640px) {
+  .program-summary-card { min-height: 145px; padding: 18px !important; }
+  .program-list-card > button { padding: 16px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .program-summary-card, .program-summary-card:hover { transition: none; transform: none; }
+}
