@@ -1921,6 +1921,110 @@ article[class~="border-slate-200"][class~="bg-white"]:hover {
   }
 }
 
+/* Dashboard: history and recommendation preview share the same two-column rhythm. */
+.page-content .content-grid {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  align-items: stretch;
+}
+.opportunity-preview {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(145deg, #fff 0%, #faf7ef 100%);
+}
+.preview-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #9b824d;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .13em;
+}
+.preview-ticket {
+  padding: 16px;
+  border: 1px solid #e8dfcb;
+  border-radius: 12px;
+  background: rgba(255,255,255,.88);
+}
+.preview-plane {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 10px;
+  color: #9b824d;
+  background: #f8f2e5;
+}
+.preview-ticket > div:first-child strong,
+.preview-ticket > div:first-child span {
+  display: block;
+}
+.preview-ticket > div:first-child strong {
+  color: #172337;
+  font-size: 12px;
+}
+.preview-ticket > div:first-child span {
+  margin-top: 3px;
+  color: #8791a0;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.preview-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 17px;
+}
+.preview-metrics > div {
+  min-width: 0;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f7f8fa;
+}
+.preview-metrics span {
+  display: block;
+  color: #7d8796;
+  font-size: 9px;
+  line-height: 1.4;
+}
+.preview-metrics strong {
+  display: block;
+  margin-top: 7px;
+  color: #172337;
+  font-size: 17px;
+}
+.preview-disclaimer {
+  margin-top: 12px;
+  color: #8993a1;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.preview-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding: 17px 0 0;
+  border: 0;
+  color: #927844;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+@media (max-width: 1080px) {
+  .page-content .content-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 520px) {
+  .preview-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* Interação consistente: hover sutil em todos os botões da aplicação. */
 :where(button:not(:disabled), [role="button"]:not([aria-disabled="true"]), input[type="button"]:not(:disabled), input[type="submit"]:not(:disabled), input[type="reset"]:not(:disabled)) {
   transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease;
