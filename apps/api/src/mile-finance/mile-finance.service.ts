@@ -289,7 +289,7 @@ export class MileFinanceService {
       if (purchase.miles !== dto.miles || purchase.loyaltyProgramId !== dto.loyaltyProgramId) {
         throw new BadRequestException("Para preservar o custo médio, edição de compra permite alterar valor, taxas, data e observações, mas não programa ou quantidade. Exclua e registre novamente se precisar mudar esses dados.");
       }
-      const laterMovement = await tx.mileInventoryMovement.findFirst({ where: { userId, loyaltyProgramId: purchase.loyaltyProgramId, occurredAt: { gt: purchase.purchasedAt }, id: { not: undefined } } });
+      const laterMovement = await tx.mileInventoryMovement.findFirst({ where: { userId, loyaltyProgramId: purchase.loyaltyProgramId, occurredAt: { gt: purchase.purchasedAt } } });
       if (laterMovement) throw new BadRequestException("Esta compra possui movimentações posteriores. Não pode ser editada sem reconstruir o histórico do estoque.");
       const oldTotal = purchase.grossAmount.plus(purchase.fees);
       const newTotal = gross.plus(fees).toDecimalPlaces(2);
@@ -325,7 +325,7 @@ export class MileFinanceService {
         await tx.loyaltyAccount.update({ where: { id: account.id }, data: { balance: { decrement: purchase.miles }, lastBalanceAt: new Date() } });
         await tx.pointTransaction.create({ data: { userId, loyaltyAccountId: account.id, type: "ADJUSTMENT", points: new Prisma.Decimal(-purchase.miles), occurredAt: new Date(), notes: "Estorno auditável de compra excluída do Financeiro de Milhas." } });
       }
-      await tx.mileInventoryMovement.deleteMany({ where: { purchaseId: id } });
+      await tx.mileInventoryMovement.updateMany({ where: { purchaseId: id }, data: { purchaseId: null, reason: "Compra excluída; movimento original preservado para auditoria." } });
       await tx.milePurchase.delete({ where: { id } });
       return { success: true };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
@@ -369,7 +369,7 @@ export class MileFinanceService {
           await tx.pointTransaction.create({ data: { userId, loyaltyAccountId: account.id, type: "ADJUSTMENT", points: new Prisma.Decimal(sale.miles), occurredAt: new Date(), notes: "Estorno auditável de venda excluída do Financeiro de Milhas." } });
         }
       }
-      await tx.mileInventoryMovement.deleteMany({ where: { saleId: id } });
+      await tx.mileInventoryMovement.updateMany({ where: { saleId: id }, data: { saleId: null, reason: "Venda excluída; movimento original preservado para auditoria." } });
       await tx.mileSale.delete({ where: { id } });
       return { success: true };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
