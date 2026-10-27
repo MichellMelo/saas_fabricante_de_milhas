@@ -202,6 +202,13 @@ select:focus-visible {
 .main-area {
   min-height: 100vh;
   margin-left: 252px;
+  transition: margin-left 200ms ease-out;
+}
+.dashboard-shell.sidebar-hidden [data-sidebar="sidebar"] {
+  transform: translateX(-100%);
+}
+.dashboard-shell.sidebar-hidden .main-area {
+  margin-left: 0;
 }
 .topbar {
   display: flex;
