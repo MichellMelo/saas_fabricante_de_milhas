@@ -55,8 +55,8 @@ const navItems: SidebarNavItem[] = [
   { key: "financeiro", label: "Financeiro", icon: Wallet },
   { key: "mile-finance", label: "Financeiro de Milhas", icon: TrendingUp },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator },
-  { key: "passagens", label: "Passagens e resgates", icon: Plane },
-  { key: "historico", label: "Disponibilidade de emissões", icon: Clock3 },
+  { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
+  { key: "historico", label: "Histórico de passagens", icon: Clock3 },
 ];
 const routeCopy: Record<
   Exclude<RouteKey, "dashboard">,
@@ -134,13 +134,13 @@ const routeCopy: Record<
     title: "Passagens e resgates",
     eyebrow: "VIAGENS E RESGATES",
     description:
-      "Registre e acompanhe emissões feitas com milhas, dinheiro ou ambos. A sincronização com o banco será ativada após a publicação da API.",
+      "Organize informações de viagens e resgates. Este módulo ainda está planejado para uma próxima fase.",
     icon: Plane,
   },
   historico: {
-    title: "Disponibilidade de emissões",
-    eyebrow: "RADAR DE DISPONIBILIDADE",
-    description: "Consulte os registros de disponibilidade de emissões por programa, rota, classe e datas pesquisadas. Esta área é diferente do seu histórico pessoal de passagens.",
+    title: "Histórico de passagens",
+    eyebrow: "VIAGENS E RESGATES",
+    description: "Registre e acompanhe as passagens emitidas com milhas ou dinheiro, com filtros, custos e detalhes de cada emissão.",
     icon: Clock3,
   },
 };
@@ -543,10 +543,10 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <ProgramManagement onBack={() => navigate("dashboard")} />
           ) : route === "clientes-admin" ? (
             <ClientManagement onBack={() => navigate("dashboard")} />
-          ) : route === "passagens" ? (
-            <FlightRecords />
+           ) : route === "passagens" ? (
+            <ModulePlaceholder route="passagens" onBack={() => navigate("dashboard")} />
           ) : route === "historico" ? (
-            <FlightHistory />
+            <FlightRecords />
           ) : route === "calculadoras" ? (
             <CalculatorTools />
           ) : route === "mile-finance" ? (
