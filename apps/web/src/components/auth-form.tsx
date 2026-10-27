@@ -6,22 +6,17 @@ import Link from "next/link";
 
 type AuthFormProps = { mode: "login" | "register" };
 
-function BrandMark({ large = false }: { large?: boolean }) {
+function BrandLockup() {
   return (
-    <span className={`relative grid shrink-0 place-items-center overflow-hidden rounded-2xl border border-[#d5b56c]/35 bg-[#0c1422] ${large ? "h-[62px] w-[62px]" : "h-11 w-11"}`}>
-      <img src="/logo-fabricante-de-milhas.svg" alt="" width={large ? 48 : 32} height={large ? 48 : 32} className="h-auto w-auto object-contain" />
-    </span>
-  );
-}
-
-function BrandLockup({ light = false }: { light?: boolean }) {
-  return (
-    <Link href="/" className="inline-flex items-center gap-3" aria-label="Fabricante de Milhas">
-      <img src="/logo-fabricante-de-milhas.svg" alt="Fabricante de Milhas" width={44} height={44} className="h-11 w-11 shrink-0 object-contain" />
-      <span className="leading-none">
-        <strong className={`block text-[17px] font-bold tracking-[-0.045em] ${light ? "text-white" : "text-[#111b2b]"}`}>Fabricante</strong>
-        <span className="mt-1.5 block text-[9px] font-bold tracking-[0.31em] text-[#b58a37]">DE MILHAS</span>
-      </span>
+    <Link href="/" className="inline-flex items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6b66f]" aria-label="Fabricante de Milhas — página inicial">
+      <img
+        src="/logo-fabricante-de-milhas.svg"
+        alt="Fabricante de Milhas"
+        width={220}
+        height={66}
+        className="h-auto w-[168px] object-contain sm:w-[200px]"
+        fetchPriority="high"
+      />
     </Link>
   );
 }
@@ -75,7 +70,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       </div>
 
       <header className="relative z-10 mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-6 sm:px-10 lg:px-14 lg:py-8">
-        <BrandLockup light />
+        <BrandLockup />
         <div className="hidden items-center gap-2 text-[11px] tracking-wide text-slate-400 sm:flex">
           <span className="h-1.5 w-1.5 rounded-full bg-[#d6b66f]" />
           SEU ESPAÇO DE ESTRATÉGIA
