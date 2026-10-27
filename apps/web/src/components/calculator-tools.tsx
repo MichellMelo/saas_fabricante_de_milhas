@@ -4,8 +4,17 @@ import { useMemo, useState } from "react";
 import { Calculator, ArrowLeftRight, Plane, RotateCcw, Info, Wallet } from "lucide-react";
 
 type ToolKey = "milheiro" | "transferencia" | "resgate" | "venda";
-type ProgramKey = "latam" | "smiles" | "azul";
-const MILEIRO_REFERENCES: Record<ProgramKey, { label: string; good: number }> = { latam: { label: "LATAM Pass", good: 25 }, smiles: { label: "Smiles", good: 15 }, azul: { label: "Azul Fidelidade", good: 13 } };
+type ProgramKey = "latam" | "smiles" | "azul" | "tap" | "iberia" | "qatar" | "aeroplan" | "american";
+const MILEIRO_REFERENCES: Record<ProgramKey, { label: string; good: number }> = {
+  latam: { label: "LATAM Pass", good: 25 },
+  smiles: { label: "Smiles", good: 15 },
+  azul: { label: "Azul Fidelidade", good: 13 },
+  tap: { label: "TAP Miles&Go", good: 50 },
+  iberia: { label: "Iberia Plus", good: 80 },
+  qatar: { label: "Qatar Privilege Club", good: 60 },
+  aeroplan: { label: "Aeroplan", good: 80 },
+  american: { label: "American Airlines (AAdvantage)", good: 100 },
+};
 
 const currency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
