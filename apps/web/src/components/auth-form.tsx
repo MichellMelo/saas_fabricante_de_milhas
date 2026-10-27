@@ -12,9 +12,9 @@ function BrandLockup() {
       <img
         src="/logo-sem-background.png"
         alt="Fabricante de Milhas"
-        width={220}
-        height={66}
-        className="h-auto w-[168px] object-contain sm:w-[200px]"
+        width={120}
+        height={120}
+        className="h-auto w-[88px] object-contain sm:w-[104px]"
         fetchPriority="high"
       />
     </Link>
@@ -59,7 +59,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   }
 
-  const inputClass = "mt-2.5 block w-full rounded-xl border border-[#dfe3e8] bg-[#fbfcfd] px-4 py-[14px] text-[14px] text-[#152033] outline-none transition placeholder:text-[#a1a9b5] hover:border-[#c4cbd4] focus:border-[#b58a37] focus:bg-white focus:ring-4 focus:ring-[#d6b66f]/15 disabled:cursor-wait disabled:opacity-60";
+  const inputClass = "mt-2.5 block w-full rounded-xl border border-[#dfe3e8] bg-[#fbfcfd] px-4 py-[12px] text-[14px] text-[#152033] outline-none transition placeholder:text-[#a1a9b5] hover:border-[#c4cbd4] focus:border-[#b58a37] focus:bg-white focus:ring-4 focus:ring-[#d6b66f]/15 disabled:cursor-wait disabled:opacity-60";
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#0b1220] text-[#111b2b]">
@@ -69,32 +69,32 @@ export function AuthForm({ mode }: AuthFormProps) {
         <div className="absolute inset-0 opacity-[0.045]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.22) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px)", backgroundSize: "56px 56px" }} />
       </div>
 
-      <header className="relative z-10 mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-6 sm:px-10 lg:px-14 lg:py-8">
+      <header className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center justify-between px-6 py-4 sm:px-8 lg:px-10 lg:py-4">
         <BrandLockup />
-        <div className="hidden items-center gap-2 text-[11px] tracking-wide text-slate-400 sm:flex">
+        <div className="hidden items-center gap-2 text-[10px] tracking-[0.12em] text-slate-400 sm:flex">
           <span className="h-1.5 w-1.5 rounded-full bg-[#d6b66f]" />
           SEU ESPAÇO DE ESTRATÉGIA
         </div>
       </header>
 
-      <div className="relative z-10 mx-auto grid w-full max-w-[1440px] items-center gap-12 px-6 pb-10 pt-5 sm:px-10 md:pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(390px,480px)] lg:gap-20 lg:px-14 lg:pb-20 lg:pt-12 xl:gap-28">
-        <section className="relative hidden min-h-[570px] flex-col justify-center lg:flex">
-          <div aria-hidden="true" className="absolute left-[-90px] top-1/2 h-[500px] w-[500px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
-          <div aria-hidden="true" className="absolute left-[-28px] top-1/2 h-[375px] w-[375px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
-          <div aria-hidden="true" className="absolute left-[40px] top-1/2 h-[245px] w-[245px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
+      <div className="relative z-10 mx-auto grid w-full min-h-[calc(100vh-112px)] max-w-[1280px] items-center gap-10 px-6 pb-10 pt-4 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(380px,440px)] lg:gap-16 lg:px-10 lg:pb-12 lg:pt-4 xl:gap-20">
+        <section className="relative hidden min-h-[500px] flex-col justify-center lg:flex">
+          <div aria-hidden="true" className="absolute left-[-90px] top-1/2 h-[430px] w-[430px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
+          <div aria-hidden="true" className="absolute left-[-28px] top-1/2 h-[320px] w-[320px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
+          <div aria-hidden="true" className="absolute left-[40px] top-1/2 h-[210px] w-[210px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
           <div className="relative max-w-[650px]">
-            <div className="mb-8 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#e0c47f]">
+            <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#e0c47f]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#d6b66f]" />
               Inteligência para suas milhas
             </div>
-            <h1 className="max-w-[660px] text-[58px] font-medium leading-[1.03] tracking-[-0.065em] text-white xl:text-[72px]">
+            <h1 className="max-w-[620px] text-[48px] font-medium leading-[1.06] tracking-[-0.055em] text-white xl:text-[60px]">
               Milhas não são sorte.
               <span className="mt-2 block text-[#d6b66f]">São estratégia.</span>
             </h1>
-            <p className="mt-7 max-w-[450px] text-[15px] leading-7 text-slate-300/80">
+            <p className="mt-6 max-w-[430px] text-[14px] leading-7 text-slate-300/80">
               Compare custos, entenda o valor real dos seus pontos e transforme cada decisão em uma viagem melhor planejada.
             </p>
-            <div className="mt-10 flex max-w-[470px] items-center gap-5 border-t border-white/10 pt-6">
+            <div className="mt-8 flex max-w-[440px] items-center gap-5 border-t border-white/10 pt-6">
               <div className="flex -space-x-2">
                 <span className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#0b1220] bg-[#26364a] text-[10px] font-bold text-white">CP</span>
                 <span className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#0b1220] bg-[#39465a] text-[10px] font-bold text-white">R$</span>
@@ -109,15 +109,15 @@ export function AuthForm({ mode }: AuthFormProps) {
           <p className="absolute bottom-0 left-0 text-[11px] text-slate-500">© 2026 Fabricante de Milhas</p>
         </section>
 
-        <section className="mx-auto w-full max-w-[480px]">
-          <div className="relative overflow-hidden rounded-[26px] border border-white/70 bg-[#fffefd] p-6 shadow-[0_28px_100px_rgba(0,0,0,0.28)] sm:p-9 lg:p-10">
+        <section className="mx-auto w-full max-w-[440px]">
+          <div className="relative overflow-hidden rounded-[24px] border border-white/80 bg-[#fffefd] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-8 lg:p-9">
             <div aria-hidden="true" className="absolute right-0 top-0 h-1 w-full bg-gradient-to-r from-[#d6b66f] via-[#f1dfad] to-transparent" />
-            <div className="mb-8 flex items-start justify-between gap-4">
+            <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.23em] text-[#a6792d]">
                   {isRegister ? "Sua próxima decisão começa aqui" : "Acesse sua estratégia"}
                 </p>
-                <h2 className="text-[32px] font-semibold leading-tight tracking-[-0.055em] text-[#101a2b]">
+                <h2 className="text-[29px] font-semibold leading-[1.12] tracking-[-0.05em] text-[#101a2b]">
                   {isRegister ? "Abra seu espaço." : "Continue de onde parou."}
                 </h2>
                 <p className="mt-3 max-w-[340px] text-[13px] leading-6 text-[#6f7886]">
@@ -126,7 +126,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {isRegister && (
                 <label className="block text-[12px] font-semibold text-[#344054]">
                   Como devemos chamar você? <span className="font-normal text-[#9aa2ae]">Opcional</span>
