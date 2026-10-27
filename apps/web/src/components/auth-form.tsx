@@ -59,7 +59,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   }
 
-  const inputClass = "mt-2 block w-full rounded-xl border border-[#dfe3e8] bg-[#fbfcfd] px-4 py-[11px] text-[14px] sm:mt-2.5 sm:py-[12px] text-[#152033] outline-none transition placeholder:text-[#a1a9b5] hover:border-[#c4cbd4] focus:border-[#b58a37] focus:bg-white focus:ring-4 focus:ring-[#d6b66f]/15 disabled:cursor-wait disabled:opacity-60";
+  const inputClass = "mt-2 block w-full rounded-xl border border-[#dfe3e8] bg-[#fbfcfd] px-4 py-[11px] text-[14px] sm:mt-2.5 sm:py-[12px] text-[#152033] outline-none transition placeholder:text-[#a1a9b5] hover:border-[#c4cbd4] focus:border-[#b58a37] focus:bg-white focus:ring-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d6b66f] focus-visible:outline-offset-1 disabled:cursor-wait disabled:opacity-60";
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#0b1220] text-[#111b2b] lg:h-dvh lg:min-h-0 lg:overflow-hidden">
