@@ -141,7 +141,7 @@ export function CalculatorTools() {
   const tabs: { key: ToolKey; label: string; icon: typeof Calculator; description: string }[] = [
     { key: "milheiro", label: "Custo por milheiro", icon: Calculator, description: "Calcule quanto você efetivamente paga a cada mil pontos ou milhas." },
     { key: "transferencia", label: "Transferência bonificada", icon: ArrowLeftRight, description: "Estime o saldo final e o custo efetivo após aplicar o bônus de transferência." },
-    { key: "resgate", label: "Dinheiro ou milhas", icon: Plane, description: "Compare o valor extraído no resgate com o custo que você atribui às suas milhas." },
+    { key: "resgate", label: "Resgate com Dinheiro ou Milhas", icon: Plane, description: "Compare o valor extraído no resgate com o custo que você atribui às suas milhas." },
     { key: "venda", label: "Venda de milhas", icon: Wallet, description: "Calcule custo final e percentual de ganho na venda de milhas." },
   ];
 
@@ -250,7 +250,7 @@ export function CalculatorTools() {
           ) : active === "resgate" ? (
             <>
               <div className="mb-6">
-                <h2 className="text-xl font-semibold text-slate-900">Dinheiro ou resgate com milhas</h2>
+                <h2 className="text-xl font-semibold text-slate-900">Resgate com Dinheiro ou Milhas</h2>
                 <p className="mt-1 text-sm leading-6 text-slate-600">Compare o preço da passagem em dinheiro com o valor líquido coberto pelas milhas, descontando as taxas do resgate.</p>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
