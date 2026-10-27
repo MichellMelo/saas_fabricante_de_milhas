@@ -187,8 +187,23 @@ export class PersonalTravelService {
 
   private async purgeExpiredTrash(userId: string) {
     const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    await this.prisma.personalRedemption.deleteMany({
+    const expired = await this.prisma.personalRedemption.findMany({
       where: { userId, deletedAt: { lte: cutoff } },
+      select: { id: true, origin: true, destination: true, program: true },
+    });
+    if (!expired.length) return;
+    await this.prisma.$transaction(async (tx) => {
+      await tx.personalRedemptionAudit.createMany({
+        data: expired.map((item) => ({
+          redemptionId: item.id,
+          redemptionLabel: `${item.origin}-${item.destination} · ${item.program}`,
+          actorUserId: userId,
+          action: "AUTO_PURGE",
+        })),
+      });
+      await tx.personalRedemption.deleteMany({
+        where: { userId, id: { in: expired.map((item) => item.id) } },
+      });
     });
   }
 
