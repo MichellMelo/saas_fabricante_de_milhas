@@ -44,7 +44,6 @@ type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
   { key: "dashboard", label: "Visão geral", icon: LayoutDashboard },
   { key: "oportunidades", label: "Oportunidades", icon: Sparkles },
-  { key: "aprender", label: "Aprender", icon: GraduationCap },
   {
     key: "programas",
     label: "Programas e saldos",
@@ -67,12 +66,6 @@ const routeCopy: Record<
     eyebrow: "OFERTAS ESTRATÉGICAS",
     description: "Consulte oportunidades publicadas, avalie as regras e acesse a fonte original antes de tomar uma decisão.",
     icon: Sparkles,
-  },
-  aprender: {
-    title: "Aprender",
-    eyebrow: "CONTEÚDO EDUCACIONAL",
-    description: "Acesse Aulões, Mentorias e materiais liberados para seus produtos.",
-    icon: GraduationCap,
   },
   programas: {
     title: "Programas e saldos",
@@ -535,8 +528,6 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             </>
           ) : route === "oportunidades" ? (
             <OpportunityCenter />
-          ) : route === "aprender" ? (
-            <LearningHub navigate={navigate} user={user} />
           ) : route === "programas" ? (
             <LoyaltyAccounts onBack={() => navigate("dashboard")} />
           ) : route === "programas-admin" ? (
@@ -630,41 +621,6 @@ function OpportunityCenter() {
         <p>Quando houver ofertas cadastradas, você poderá abrir os detalhes, consultar regras e restrições, conferir a validade e acessar a fonte original.</p>
         <Badge variant="gold">Aguardando publicação</Badge>
       </Card>
-    </section>
-  );
-}
-
-function LearningHub({ navigate, user }: { navigate: (route: DashboardRoute) => void; user: DashboardUser }) {
-  const hasAccess = (product: "GROUP_VIP" | "AULAO" | "MENTORSHIP") =>
-    Boolean(user.isAdmin || user.productAccesses?.some((access) => access.product === product && access.active));
-  const cards = [
-    { product: "GROUP_VIP" as const, title: "Grupo VIP", description: "Publicações, materiais e conteúdos exclusivos da comunidade.", icon: MessageCircle, route: "grupo-vip" as const, action: "Acessar Grupo VIP" },
-    { product: "AULAO" as const, title: "Aulões", description: "Gravações, materiais e orientações dos aulões disponíveis para você.", icon: Video, route: "auloes" as const, action: "Acessar Aulões" },
-    { product: "MENTORSHIP" as const, title: "Mentorias", description: "Materiais, orientações e links liberados para sua mentoria.", icon: GraduationCap, route: "mentorias" as const, action: "Acessar Mentorias" },
-  ].filter((card) => hasAccess(card.product));
-  return (
-    <section className="space-y-6">
-      <div className="welcome-row">
-        <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> CONTEÚDO EDUCACIONAL</div>
-          <h1 className="page-title">Aprender<span className="gold-period">.</span></h1>
-          <p className="page-subtitle">Grupo VIP, Aulões e Mentorias em um só lugar. Os conteúdos exibidos respeitam os acessos liberados para sua conta.</p>
-        </div>
-      </div>
-      {cards.length ? <div className="learning-hub-grid">
-        {cards.map(({ title, description, icon: Icon, route, action }) => (
-          <Card key={route} className="panel learning-hub-card">
-            <div className="placeholder-mark"><Icon size={24} /></div>
-            <h2>{title}</h2>
-            <p>{description}</p>
-            <Button onClick={() => navigate(route)}>{action} <ArrowRight size={14} /></Button>
-          </Card>
-        ))}
-      </div> : <Card className="panel opportunity-empty-state">
-        <div className="placeholder-mark"><GraduationCap size={25} /></div>
-        <h2>Nenhum conteúdo liberado</h2>
-        <p>Quando um produto for associado à sua conta, ele aparecerá aqui.</p>
-      </Card>}
     </section>
   );
 }
