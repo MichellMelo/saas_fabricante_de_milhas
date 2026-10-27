@@ -1765,47 +1765,77 @@ body { font-size: 15px; }
 }
 
 
-/* A ficha individual usa o cabeçalho compacto padrão, sem o banner amplo do dashboard. */
+/* Cabeçalho azul da ficha individual, alinhado à identidade visual do workspace. */
 .client-detail-welcome {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
   margin: 0 0 24px !important;
-  padding: 0 !important;
+  padding: 28px 32px !important;
   min-height: 0 !important;
   width: 100%;
   max-width: 100%;
-  color: inherit !important;
-  background: transparent !important;
-  border-radius: 0 !important;
-  overflow: visible !important;
-  box-shadow: none !important;
+  color: #fff !important;
+  background: #142b49 !important;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  box-shadow: 0 8px 24px rgba(16, 26, 43, .12) !important;
 }
 .client-detail-welcome::before {
-  content: none !important;
-  display: none !important;
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: #c6a45c;
 }
 .client-detail-welcome > div {
-  position: static;
-  z-index: auto;
+  position: relative;
+  z-index: 1;
 }
 .client-detail-welcome .eyebrow {
-  color: #9b824d !important;
+  color: #d9c18a !important;
   letter-spacing: 0.16em !important;
   margin-bottom: 10px !important;
 }
 .client-detail-welcome .eyebrow-line {
   width: 17px !important;
-  background: #c6a45c !important;
+  background: #d9c18a !important;
 }
 .client-detail-welcome .page-title {
-  color: #142137 !important;
+  color: #fffdf8 !important;
   font-family: Arial, Helvetica, sans-serif !important;
   font-size: clamp(28px, 2.5vw, 34px) !important;
   line-height: 1.2 !important;
 }
 .client-detail-welcome .page-subtitle {
-  color: #7d8796 !important;
+  color: #c3cede !important;
   font-size: 12px !important;
 }
-
+.client-detail-welcome .gold-period {
+  color: #d9b96f !important;
+}
+.client-detail-welcome a {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  border-color: rgba(255,255,255,.22) !important;
+  color: #fffdf8 !important;
+  background: rgba(255,255,255,.07) !important;
+}
+.client-detail-welcome a:hover {
+  background: rgba(255,255,255,.14) !important;
+}
+@media (max-width: 640px) {
+  .client-detail-welcome {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 18px;
+    padding: 24px 20px !important;
+  }
+}
 
 /* Interação consistente: hover sutil em todos os botões da aplicação. */
 :where(button:not(:disabled), [role="button"]:not([aria-disabled="true"]), input[type="button"]:not(:disabled), input[type="submit"]:not(:disabled), input[type="reset"]:not(:disabled)) {
