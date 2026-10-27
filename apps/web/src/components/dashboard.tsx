@@ -43,7 +43,6 @@ import { PersonalTravel } from "@/components/personal-travel";
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
   { key: "dashboard", label: "Visão geral", icon: LayoutDashboard },
-  { key: "oportunidades", label: "Oportunidades", icon: Sparkles },
   {
     key: "programas",
     label: "Programas e saldos",
@@ -61,12 +60,6 @@ const routeCopy: Record<
   Exclude<RouteKey, "dashboard">,
   { title: string; eyebrow: string; description: string; icon: LucideIcon }
 > = {
-  oportunidades: {
-    title: "Oportunidades",
-    eyebrow: "OFERTAS ESTRATÉGICAS",
-    description: "Consulte oportunidades publicadas, avalie as regras e acesse a fonte original antes de tomar uma decisão.",
-    icon: Sparkles,
-  },
   programas: {
     title: "Programas e saldos",
     eyebrow: "PATRIMÔNIO DE PONTOS",
@@ -452,23 +445,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                     )}
                   </div>
                 </Card>
-                <Card className="panel">
-                  <div className="panel-heading">
-                    <div>
-                      <h2>Oportunidades em destaque</h2>
-                      <p>Somente oportunidades reais e publicadas serão exibidas aqui.</p>
-                    </div>
-                    <Button variant="ghost" size="icon" aria-label="Ver oportunidades" onClick={() => navigate("oportunidades")}>
-                      ···
-                    </Button>
-                  </div>
-                  <div className="flex min-h-64 flex-col items-center justify-center gap-3 px-5 py-8 text-center">
-                    <div className="placeholder-mark"><Sparkles size={24} /></div>
-                    <h3 className="font-semibold text-slate-800">Nenhuma oportunidade publicada</h3>
-                    <p className="max-w-md text-sm text-slate-500">A área de oportunidades ainda não possui um catálogo persistido conectado. Nenhuma oferta fictícia será apresentada como ativa.</p>
-                    <Button variant="outline" onClick={() => navigate("oportunidades")}>Consultar oportunidades <ArrowRight size={14} /></Button>
-                  </div>
-                </Card>
+
               </motion.section>
               <motion.section
                 className="bottom-grid"
@@ -526,8 +503,6 @@ export function Dashboard({ user }: { user: DashboardUser }) {
               </motion.section>
               <DashboardFooter reduceMotion={reduceMotion} notify={notify} />
             </>
-          ) : route === "oportunidades" ? (
-            <OpportunityCenter />
           ) : route === "programas" ? (
             <LoyaltyAccounts onBack={() => navigate("dashboard")} />
           ) : route === "programas-admin" ? (
@@ -599,32 +574,6 @@ export function Dashboard({ user }: { user: DashboardUser }) {
     </div>
   );
 }
-function OpportunityCenter() {
-  return (
-    <section className="space-y-6">
-      <div className="welcome-row">
-        <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> OFERTAS ESTRATÉGICAS</div>
-          <h1 className="page-title">Oportunidades<span className="gold-period">.</span></h1>
-          <p className="page-subtitle">Avalie regras, restrições, validade e fonte original antes de agir.</p>
-        </div>
-      </div>
-      <Alert className="demo-notice">
-        <ShieldCheck size={16} className="shrink-0" />
-        <AlertDescription>
-          <strong>Somente ofertas verificadas.</strong> Esta área ainda não está conectada a um catálogo de oportunidades; nenhuma oferta fictícia será apresentada como vigente.
-        </AlertDescription>
-      </Alert>
-      <Card className="panel opportunity-empty-state">
-        <div className="placeholder-mark"><Sparkles size={25} /></div>
-        <h2>Nenhuma oportunidade publicada</h2>
-        <p>Quando houver ofertas cadastradas, você poderá abrir os detalhes, consultar regras e restrições, conferir a validade e acessar a fonte original.</p>
-        <Badge variant="gold">Aguardando publicação</Badge>
-      </Card>
-    </section>
-  );
-}
-
 function ModulePlaceholder({
   route,
   onBack,
