@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, ChevronDown, Menu, X, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -28,6 +28,7 @@ export function DashboardHeader({ title, mobileOpen, onToggleMobile, desktopSide
   onLogout: () => void;
 }) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notificationRef = useRef<HTMLDivElement>(null);
   const [expiringAccesses, setExpiringAccesses] = useState<ExpiringAccess[]>([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsError, setNotificationsError] = useState("");
@@ -49,6 +50,17 @@ export function DashboardHeader({ title, mobileOpen, onToggleMobile, desktopSide
   }, [user.isAdmin]);
 
   useEffect(() => { void loadExpiringAccesses(); }, [loadExpiringAccesses]);
+
+  useEffect(() => {
+    if (!notificationsOpen) return;
+    const handleOutsideClick = (event: PointerEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setNotificationsOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", handleOutsideClick);
+    return () => document.removeEventListener("pointerdown", handleOutsideClick);
+  }, [notificationsOpen]);
 
   return (
     <header className="topbar">
@@ -81,7 +93,7 @@ export function DashboardHeader({ title, mobileOpen, onToggleMobile, desktopSide
               </div>
       </div>
               <div className="topbar-actions">
-                {user.isAdmin && <div className="relative">
+                {user.isAdmin && <div ref={notificationRef} className="relative">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -95,7 +107,7 @@ export function DashboardHeader({ title, mobileOpen, onToggleMobile, desktopSide
                     }}
                   >
                     <Bell size={18} />
-                    {expiringAccesses.length > 0 && <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">{expiringAccesses.length > 9 ? "9+" : expiringAccesses.length}</span>}
+                    {expiringAccesses.length > 0 && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-none text-white">{expiringAccesses.length > 9 ? "9+" : expiringAccesses.length}</span>}
                   </Button>
                   {notificationsOpen && <div className="absolute right-0 z-50 mt-2 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
                     <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
