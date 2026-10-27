@@ -56,7 +56,7 @@ const navItems: SidebarNavItem[] = [
   { key: "mile-finance", label: "Financeiro de Milhas", icon: TrendingUp },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator },
   { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
-  { key: "historico", label: "Histórico de passagens", icon: Clock3 },
+  { key: "historico", label: "Histórico de disponibilidades", icon: Clock3 },
 ];
 const routeCopy: Record<
   Exclude<RouteKey, "dashboard">,
@@ -138,9 +138,9 @@ const routeCopy: Record<
     icon: Plane,
   },
   historico: {
-    title: "Histórico de passagens",
-    eyebrow: "VIAGENS E RESGATES",
-    description: "Registre e acompanhe as passagens emitidas com milhas ou dinheiro, com filtros, custos e detalhes de cada emissão.",
+    title: "Histórico de disponibilidades",
+    eyebrow: "DISPONIBILIDADES PESQUISADAS",
+    description: "Mantenha um histórico das disponibilidades encontradas por programa, rota, classe, piso de milhas e datas, como base para futuras emissões.",
     icon: Clock3,
   },
 };
@@ -545,8 +545,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <ClientManagement onBack={() => navigate("dashboard")} />
            ) : route === "passagens" ? (
             <ModulePlaceholder route="passagens" onBack={() => navigate("dashboard")} />
-          ) : route === "historico" ? (
-            <FlightRecords />
+           ) : route === "historico" ? (
+            <FlightHistory />
           ) : route === "calculadoras" ? (
             <CalculatorTools />
           ) : route === "mile-finance" ? (
