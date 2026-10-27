@@ -7,7 +7,7 @@ import { CalendarDays, Coins, Plane, Plus, RefreshCw, Search, Trash2, Undo2, Wal
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/components/ui/toast";
 
 type Passenger = { id: string; name: string };
 type Trip = {
@@ -52,16 +52,9 @@ export function PersonalTravel() {
   const [trash, setTrash] = useState<Redemption[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  useEffect(() => {
-    if (!error && !notice) return;
-    const timeout = window.setTimeout(() => {
-      setError("");
-      setNotice("");
-    }, 5000);
-    return () => window.clearTimeout(timeout);
-  }, [error, notice]);
+  const { toast } = useToast();
+  const setError = (message: string) => { if (message) toast.error(message); };
+  const setNotice = (message: string) => { if (message) toast.success(message); };
   const [query, setQuery] = useState("");
   const [showRedemptionForm, setShowRedemptionForm] = useState(false);
   const [showTripForm, setShowTripForm] = useState(false);
@@ -197,12 +190,7 @@ export function PersonalTravel() {
       {([{ id: "redemptions", label: "Meus resgates" }, { id: "trips", label: "Minhas viagens" }, { id: "trash", label: "Lixeira" }, { id: "explore", label: "Explorar oportunidades" }] as const).map(item => <button key={item.id} type="button" onClick={() => setTab(item.id)} className={"rounded-lg px-3 py-2 text-sm font-medium transition " + (tab === item.id ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100")}>{item.label}{item.id === "trash" && trash.length ? " (" + trash.length + ")" : ""}</button>)}
     </div>
 
-    {(error || notice) && <div className="fixed right-5 top-20 z-[100] w-[calc(100%-2.5rem)] max-w-md animate-in fade-in slide-in-from-top-2 duration-200">
-      <Alert role={error ? "alert" : "status"} className={"flex items-start justify-between gap-3 shadow-lg " + (error ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-800")}>
-        <AlertDescription>{error || notice}</AlertDescription>
-        <button onClick={() => { setError(""); setNotice(""); }} aria-label="Fechar aviso" className="shrink-0"><X size={16} /></button>
-      </Alert>
-    </div>}
+
     {loading ? <Card className="p-12 text-center text-sm text-slate-500">Carregando seus resgates e viagens…</Card> : tab === "explore" ? <Card className="p-8 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-700"><Search size={23} /></div><h2 className="mt-4 font-semibold text-slate-900">Explorar oportunidades</h2><p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">O feed comunitário com publicações da administração será implementado na próxima etapa. Nenhuma oportunidade fictícia será exibida como real.</p></Card>
       : tab === "trips" ? <div className="space-y-3"><div className="flex justify-end"><Button variant="outline" onClick={() => setShowTripForm(v => !v)}><Plus size={14} /> Nova viagem</Button></div>
         {showTripForm && <Card className="p-4"><h2 className="font-semibold text-slate-900">Cadastrar viagem</h2><form onSubmit={saveTrip} className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
