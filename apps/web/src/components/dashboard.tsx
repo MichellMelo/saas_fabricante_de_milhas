@@ -543,9 +543,9 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <ProgramManagement onBack={() => navigate("dashboard")} />
           ) : route === "clientes-admin" ? (
             <ClientManagement onBack={() => navigate("dashboard")} />
-           ) : route === "passagens" ? (
+          ) : route === "passagens" ? (
             <PersonalTravel />
-           ) : route === "historico" ? (
+          ) : route === "historico" ? (
             <FlightHistory />
           ) : route === "calculadoras" ? (
             <CalculatorTools />

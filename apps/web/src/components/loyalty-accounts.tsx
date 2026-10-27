@@ -222,15 +222,15 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
             <div className="mt-5"><Button onClick={() => setShowCreate(true)} disabled={availablePrograms.length === 0}><Plus size={15} /> Adicionar programa</Button></div>
             {programs.length === 0 && <p className="mt-4 text-xs text-slate-500">O catálogo ainda não tem programas. Execute a carga inicial indicada nas instruções de configuração.</p>}
           </Card> :
-          <div className="grid gap-4 lg:grid-cols-2">
-            {accounts.map((account) => <Card key={account.id} className="border-slate-200 bg-white p-5 shadow-none transition hover:border-amber-300">
-              <div className="flex items-start justify-between gap-3">
-                <div><div className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">{typeLabel[account.loyaltyProgram.type]}</div><h3 className="mt-2 text-xl font-semibold text-slate-900">{account.loyaltyProgram.name}</h3>{account.memberReference && <p className="mt-1 text-xs text-slate-500">Identificação: {account.memberReference}</p>}</div>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">{account._count?.transactions ?? 0} mov.</span>
-              </div>
-              <div className="mt-6 border-t border-slate-100 pt-4"><div className="text-sm text-slate-500">Saldo disponível</div><div className="mt-1 text-3xl font-semibold tracking-tight text-slate-900">{formatPoints(account.balance)} <span className="text-sm font-normal text-slate-500">{account.currency === "POINTS" ? "pontos/milhas" : account.currency}</span></div><p className="mt-2 text-xs text-slate-400">Atualizado em {new Date(account.updatedAt).toLocaleDateString("pt-BR")}</p></div>
-            </Card>)}
-          </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              {accounts.map((account) => <Card key={account.id} className="border-slate-200 bg-white p-5 shadow-none transition hover:border-amber-300">
+                <div className="flex items-start justify-between gap-3">
+                  <div><div className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">{typeLabel[account.loyaltyProgram.type]}</div><h3 className="mt-2 text-xl font-semibold text-slate-900">{account.loyaltyProgram.name}</h3>{account.memberReference && <p className="mt-1 text-xs text-slate-500">Identificação: {account.memberReference}</p>}</div>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">{account._count?.transactions ?? 0} mov.</span>
+                </div>
+                <div className="mt-6 border-t border-slate-100 pt-4"><div className="text-sm text-slate-500">Saldo disponível</div><div className="mt-1 text-3xl font-semibold tracking-tight text-slate-900">{formatPoints(account.balance)} <span className="text-sm font-normal text-slate-500">{account.currency === "POINTS" ? "pontos/milhas" : account.currency}</span></div><p className="mt-2 text-xs text-slate-400">Atualizado em {new Date(account.updatedAt).toLocaleDateString("pt-BR")}</p></div>
+              </Card>)}
+            </div>
         }
       </div>
     </section>
