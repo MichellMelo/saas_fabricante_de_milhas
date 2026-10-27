@@ -7,6 +7,7 @@ import { CreateClientPaymentDto } from "./dto/create-client-payment.dto";
 import { SetProductAccessDto } from "./dto/set-product-access.dto";
 import { CreateClientDto } from "./dto/create-client.dto";
 import { UpdateClientDto } from "./dto/update-client.dto";
+import { CreateMileSaleDto } from "./dto/create-mile-sale.dto";
 
 @Injectable()
 export class ClientsService {
@@ -140,6 +141,37 @@ export class ClientsService {
     });
   }
 
+  async updatePayment(id: string, dto: CreateClientPaymentDto) {
+    const payment = await this.prisma.clientPayment.findUnique({ where: { id }, select: { id: true, status: true } });
+    if (!payment) throw new NotFoundException("Lançamento financeiro não encontrado.");
+    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, select: { id: true, email: true } });
+    if (!user) throw new NotFoundException("Cliente não encontrado.");
+    const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
+    if (adminEmails.includes(user.email.trim().toLowerCase())) throw new BadRequestException("Não é permitido registrar cobranças para uma conta administrativa.");
+    const amount = Number(dto.amount);
+    if (!Number.isFinite(amount) || amount <= 0) throw new BadRequestException("O valor deve ser maior que zero.");
+    const dueAt = new Date(dto.dueAt);
+    if (Number.isNaN(dueAt.getTime())) throw new BadRequestException("Informe uma data de vencimento válida.");
+    return this.prisma.clientPayment.update({
+      where: { id },
+      data: {
+        userId: user.id, product: dto.product, amount, dueAt, method: dto.method ?? null,
+        notes: dto.notes?.trim() || null,
+      },
+      select: {
+        id: true, userId: true, product: true, amount: true, dueAt: true, status: true,
+        method: true, paidAt: true, notes: true, createdAt: true,
+      },
+    });
+  }
+
+  async deletePayment(id: string) {
+    const payment = await this.prisma.clientPayment.findUnique({ where: { id }, select: { id: true } });
+    if (!payment) throw new NotFoundException("Lançamento financeiro não encontrado.");
+    await this.prisma.clientPayment.delete({ where: { id } });
+    return { id, deleted: true };
+  }
+
   async setPaymentPaid(id: string, paid: boolean) {
     const payment = await this.prisma.clientPayment.findUnique({ where: { id }, select: { id: true, user: { select: { email: true } } } });
     if (!payment) throw new NotFoundException("Lançamento financeiro não encontrado.");
@@ -151,6 +183,85 @@ export class ClientsService {
       where: { id },
       data: { status: paid ? PaymentStatus.PAID : PaymentStatus.PENDING, paidAt: paid ? new Date() : null },
       select: { id: true, status: true, paidAt: true },
+    });
+  }
+
+  async listMileSales() {
+    return this.prisma.mileSale.findMany({
+      orderBy: [{ soldAt: "desc" }, { createdAt: "desc" }],
+      select: {
+        id: true, buyerName: true, miles: true, acquisitionCpm: true,
+        grossAmount: true, fees: true, soldAt: true, status: true, notes: true, createdAt: true,
+      },
+    });
+  }
+
+  async createMileSale(adminUserId: string, dto: CreateMileSaleDto) {
+    const soldAt = new Date(dto.soldAt);
+    if (Number.isNaN(soldAt.getTime())) throw new BadRequestException("Informe uma data de venda válida.");
+    if (dto.fees !== undefined && dto.fees > dto.grossAmount) {
+      throw new BadRequestException("As taxas não podem superar o valor bruto da venda.");
+    }
+    return this.prisma.mileSale.create({
+      data: {
+        userId: adminUserId,
+        buyerName: dto.buyerName?.trim() || null,
+        miles: dto.miles,
+        acquisitionCpm: dto.acquisitionCpm,
+        grossAmount: dto.grossAmount,
+        fees: dto.fees ?? 0,
+        soldAt,
+        status: dto.status ?? "COMPLETED",
+        notes: dto.notes?.trim() || null,
+      },
+      select: {
+        id: true, buyerName: true, miles: true, acquisitionCpm: true, grossAmount: true,
+        fees: true, soldAt: true, status: true, notes: true, createdAt: true,
+      },
+    });
+  }
+
+  async updateMileSale(id: string, dto: CreateMileSaleDto) {
+    const existing = await this.prisma.mileSale.findUnique({ where: { id }, select: { id: true } });
+    if (!existing) throw new NotFoundException("Venda de milhas não encontrada.");
+    const soldAt = new Date(dto.soldAt);
+    if (Number.isNaN(soldAt.getTime())) throw new BadRequestException("Informe uma data de venda válida.");
+    if (dto.fees !== undefined && dto.fees > dto.grossAmount) {
+      throw new BadRequestException("As taxas não podem superar o valor bruto da venda.");
+    }
+    return this.prisma.mileSale.update({
+      where: { id },
+      data: {
+        buyerName: dto.buyerName?.trim() || null,
+        miles: dto.miles,
+        acquisitionCpm: dto.acquisitionCpm,
+        grossAmount: dto.grossAmount,
+        fees: dto.fees ?? 0,
+        soldAt,
+        status: dto.status ?? "COMPLETED",
+        notes: dto.notes?.trim() || null,
+      },
+      select: {
+        id: true, buyerName: true, miles: true, acquisitionCpm: true, grossAmount: true,
+        fees: true, soldAt: true, status: true, notes: true, createdAt: true,
+      },
+    });
+  }
+
+  async deleteMileSale(id: string) {
+    const existing = await this.prisma.mileSale.findUnique({ where: { id }, select: { id: true } });
+    if (!existing) throw new NotFoundException("Venda de milhas não encontrada.");
+    await this.prisma.mileSale.delete({ where: { id } });
+    return { id, deleted: true };
+  }
+
+  async setMileSaleStatus(id: string, status: "PENDING" | "COMPLETED" | "CANCELLED") {
+    const sale = await this.prisma.mileSale.findUnique({ where: { id }, select: { id: true } });
+    if (!sale) throw new NotFoundException("Venda de milhas não encontrada.");
+    return this.prisma.mileSale.update({
+      where: { id },
+      data: { status },
+      select: { id: true, status: true },
     });
   }
 

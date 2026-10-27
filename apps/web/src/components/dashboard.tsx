@@ -22,6 +22,7 @@ import {
   Video,
   GraduationCap,
   Wallet,
+  TrendingUp,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ import { ClientManagement } from "@/components/client-management";
 import { GroupVipContent } from "@/components/group-vip-content";
 import { ProductContent } from "@/components/product-content";
 import { FinanceDashboard } from "@/components/finance-dashboard";
+import { MileFinanceDashboard } from "@/components/mile-finance-dashboard";
 import { CalculatorTools } from "@/components/calculator-tools";
 
 type RouteKey = DashboardRoute;
@@ -49,6 +51,7 @@ const navItems: SidebarNavItem[] = [
   { key: "programas-admin", label: "Cadastro de programas", icon: Settings2 },
   { key: "clientes-admin", label: "Clientes e produtos", icon: Users },
   { key: "financeiro", label: "Financeiro", icon: Wallet },
+  { key: "mile-finance", label: "Financeiro de Milhas", icon: TrendingUp },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator },
   { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
   { key: "historico", label: "Histórico", icon: Clock3, soon: true },
@@ -87,6 +90,12 @@ const routeCopy: Record<
     eyebrow: "GESTÃO DE ACESSOS",
     description: "Convide clientes e gerencie o acesso ao Grupo VIP, aulões e mentorias.",
     icon: Users,
+  },
+  "mile-finance": {
+    title: "Financeiro de Milhas",
+    eyebrow: "COMPRAS, VENDAS E ESTOQUE",
+    description: "Controle seu estoque de milhas, custo médio ponderado e resultado das operações.",
+    icon: TrendingUp,
   },
   financeiro: {
     title: "Financeiro",
@@ -244,7 +253,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
   const hasAnyProduct = Boolean(user.productAccesses?.some((access) => access.active));
   const allowedNavItems = useMemo(() => user.isAdmin ? navItems : navItems.filter((item) => {
     if (item.key === "clientes-admin" || item.key === "financeiro" || item.key === "programas-admin") return false;
-    if (!hasAnyProduct) return item.key === "calculadoras" || item.key === "programas";
+    if (!hasAnyProduct) return item.key === "calculadoras" || item.key === "programas" || item.key === "mile-finance";
     if (item.key === "grupo-vip") return user.productAccesses?.some((access) => access.product === "GROUP_VIP") ?? false;
     if (item.key === "auloes") return user.productAccesses?.some((access) => access.product === "AULAO") ?? false;
     if (item.key === "mentorias") return user.productAccesses?.some((access) => access.product === "MENTORSHIP") ?? false;
@@ -531,6 +540,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <ClientManagement onBack={() => navigate("dashboard")} />
           ) : route === "calculadoras" ? (
             <CalculatorTools />
+          ) : route === "mile-finance" ? (
+            <MileFinanceDashboard />
           ) : route === "financeiro" ? (
             user.isAdmin ? <FinanceDashboard /> : <ModulePlaceholder route="historico" onBack={() => navigate("dashboard")} />
           ) : route === "grupo-vip" ? (

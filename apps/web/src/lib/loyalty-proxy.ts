@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 const API_BASE_URL = process.env.API_BASE_URL ?? "http://127.0.0.1:4000";
 
 export async function proxyLoyalty(
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "PUT" | "DELETE",
   endpoint: string,
   request?: Request,
 ) {
@@ -14,7 +14,7 @@ export async function proxyLoyalty(
   }
 
   let body: string | undefined;
-  if (method === "POST" && request) {
+  if ((method === "POST" || method === "PUT") && request) {
     try {
       body = JSON.stringify(await request.json());
     } catch {
