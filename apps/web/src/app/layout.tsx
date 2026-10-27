@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 import "./globals.css";
+import { ToastProvider } from "@/components/ui/toast";
 
 export const metadata: Metadata = {
   title: "Fabricante de Milhas | Visão geral",
@@ -24,7 +25,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${inter.variable} ${inter.className}`}>{children}</body>
+      <body className={`${inter.variable} ${inter.className}`}><ToastProvider>{children}</ToastProvider></body>
     </html>
   );
 }
