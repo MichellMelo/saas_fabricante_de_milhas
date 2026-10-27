@@ -14,7 +14,7 @@ function BrandLockup() {
         alt="Fabricante de Milhas"
         width={120}
         height={120}
-        className="h-auto w-[88px] object-contain sm:w-[104px]"
+        className="h-auto w-[72px] object-contain sm:w-[88px] lg:w-[104px]"
         fetchPriority="high"
       />
     </Link>
@@ -59,7 +59,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   }
 
-  const inputClass = "mt-2.5 block w-full rounded-xl border border-[#dfe3e8] bg-[#fbfcfd] px-4 py-[12px] text-[14px] text-[#152033] outline-none transition placeholder:text-[#a1a9b5] hover:border-[#c4cbd4] focus:border-[#b58a37] focus:bg-white focus:ring-4 focus:ring-[#d6b66f]/15 disabled:cursor-wait disabled:opacity-60";
+  const inputClass = "mt-2 block w-full rounded-xl border border-[#dfe3e8] bg-[#fbfcfd] px-4 py-[11px] text-[14px] sm:mt-2.5 sm:py-[12px] text-[#152033] outline-none transition placeholder:text-[#a1a9b5] hover:border-[#c4cbd4] focus:border-[#b58a37] focus:bg-white focus:ring-4 focus:ring-[#d6b66f]/15 disabled:cursor-wait disabled:opacity-60";
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#0b1220] text-[#111b2b]">
@@ -69,7 +69,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         <div className="absolute inset-0 opacity-[0.045]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.22) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px)", backgroundSize: "56px 56px" }} />
       </div>
 
-      <header className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center justify-between px-6 py-4 sm:px-8 lg:px-10 lg:py-4">
+      <header className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center justify-between px-5 py-3 sm:px-8 sm:py-4 lg:px-10 lg:py-4">
         <BrandLockup />
         <div className="hidden items-center gap-2 text-[10px] tracking-[0.12em] text-slate-400 sm:flex">
           <span className="h-1.5 w-1.5 rounded-full bg-[#d6b66f]" />
@@ -77,7 +77,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         </div>
       </header>
 
-      <div className="relative z-10 mx-auto grid w-full min-h-[calc(100vh-112px)] max-w-[1280px] items-center gap-10 px-6 pb-10 pt-4 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(380px,440px)] lg:gap-16 lg:px-10 lg:pb-12 lg:pt-4 xl:gap-20">
+      <div className="relative z-10 mx-auto grid w-full min-h-[calc(100vh-88px)] max-w-[1280px] items-center gap-6 px-5 pb-6 pt-2 sm:gap-10 sm:px-8 sm:pb-10 sm:pt-4 lg:grid-cols-[minmax(0,1fr)_minmax(380px,440px)] lg:gap-16 lg:px-10 lg:pb-12 lg:pt-4 xl:gap-20">
         <section className="relative hidden min-h-[500px] flex-col justify-center lg:flex">
           <div aria-hidden="true" className="absolute left-[-90px] top-1/2 h-[430px] w-[430px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
           <div aria-hidden="true" className="absolute left-[-28px] top-1/2 h-[320px] w-[320px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
@@ -91,7 +91,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               Milhas não são sorte.
               <span className="mt-2 block text-[#d6b66f]">São estratégia.</span>
             </h1>
-            <p className="mt-6 max-w-[430px] text-[14px] leading-7 text-slate-300/80">
+            <p className="mt-4 max-w-[430px] text-[14px] leading-6 sm:mt-6 sm:leading-7 text-slate-300/80">
               Compare custos, entenda o valor real dos seus pontos e transforme cada decisão em uma viagem melhor planejada.
             </p>
             <div className="mt-8 flex max-w-[440px] items-center gap-5 border-t border-white/10 pt-6">
@@ -110,14 +110,14 @@ export function AuthForm({ mode }: AuthFormProps) {
         </section>
 
         <section className="mx-auto w-full max-w-[440px]">
-          <div className="relative overflow-hidden rounded-[24px] border border-white/80 bg-[#fffefd] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-8 lg:p-9">
+          <div className="relative overflow-hidden rounded-[22px] border border-white/80 bg-[#fffefd] p-5 shadow-[0_20px_55px_rgba(0,0,0,0.2)] sm:rounded-[24px] sm:p-8 lg:p-9">
             <div aria-hidden="true" className="absolute right-0 top-0 h-1 w-full bg-gradient-to-r from-[#d6b66f] via-[#f1dfad] to-transparent" />
-            <div className="mb-6 flex items-start justify-between gap-4">
+            <div className="mb-5 flex items-start justify-between gap-4 sm:mb-6">
               <div>
                 <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.23em] text-[#a6792d]">
                   {isRegister ? "Sua próxima decisão começa aqui" : "Acesse sua estratégia"}
                 </p>
-                <h2 className="text-[29px] font-semibold leading-[1.12] tracking-[-0.05em] text-[#101a2b]">
+                <h2 className="text-[27px] font-semibold leading-[1.12] tracking-[-0.05em] sm:text-[29px] text-[#101a2b]">
                   {isRegister ? "Abra seu espaço." : "Continue de onde parou."}
                 </h2>
                 <p className="mt-3 max-w-[340px] text-[13px] leading-6 text-[#6f7886]">
@@ -126,7 +126,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
               {isRegister && (
                 <label className="block text-[12px] font-semibold text-[#344054]">
                   Como devemos chamar você? <span className="font-normal text-[#9aa2ae]">Opcional</span>
@@ -151,14 +151,14 @@ export function AuthForm({ mode }: AuthFormProps) {
               </button>
             </form>
 
-            <p className="mt-7 text-center text-[12px] text-[#7b8491]">
+            <p className="mt-5 text-center text-[12px] text-[#7b8491] sm:mt-7">
               {isRegister ? "Já tem uma conta?" : "Ainda não tem uma conta?"}{" "}
               <Link href={isRegister ? "/login" : "/register"} className="font-bold text-[#98691e] decoration-[#d6b66f] underline-offset-4 hover:underline">
                 {isRegister ? "Fazer login" : "Criar conta"}
               </Link>
             </p>
 
-            <div className="mt-7 flex items-center justify-center gap-2 border-t border-[#eceef1] pt-5 text-[10px] text-[#9aa2ae]">
+            <div className="mt-5 flex items-center justify-center gap-2 border-t sm:mt-7 border-[#eceef1] pt-5 text-[10px] text-[#9aa2ae]">
               <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 7V4.8a3 3 0 0 1 6 0V7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
               Proteção de conta com sessão segura
             </div>
