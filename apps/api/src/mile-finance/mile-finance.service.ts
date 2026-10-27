@@ -76,7 +76,7 @@ export class MileFinanceService {
   async listPurchases(userId: string, from?: string, to?: string, page = 1, pageSize = 10, loyaltyProgramId?: string) {
     const purchasedAt: Prisma.DateTimeFilter = {};
     if (from) purchasedAt.gte = this.validDate(from, "início do período");
-    if (to) purchasedAt.lte = this.validDate(to, "fim do período");
+    if (to) { const end = this.validDate(to, "fim do período"); end.setHours(23, 59, 59, 999); purchasedAt.lte = end; }
     const where: Prisma.MilePurchaseWhereInput = { userId, ...(from || to ? { purchasedAt } : {}), ...(loyaltyProgramId ? { loyaltyProgramId } : {}) };
     const safePage = Math.max(1, Math.floor(page));
     const safePageSize = Math.min(50, Math.max(1, Math.floor(pageSize)));
@@ -90,7 +90,7 @@ export class MileFinanceService {
   async listSales(userId: string, from?: string, to?: string, page = 1, pageSize = 10, loyaltyProgramId?: string) {
     const soldAt: Prisma.DateTimeFilter = {};
     if (from) soldAt.gte = this.validDate(from, "início do período");
-    if (to) soldAt.lte = this.validDate(to, "fim do período");
+    if (to) { const end = this.validDate(to, "fim do período"); end.setHours(23, 59, 59, 999); soldAt.lte = end; }
     const where: Prisma.MileSaleWhereInput = { userId, ...(from || to ? { soldAt } : {}), ...(loyaltyProgramId ? { loyaltyProgramId } : {}) };
     const safePage = Math.max(1, Math.floor(page));
     const safePageSize = Math.min(50, Math.max(1, Math.floor(pageSize)));
@@ -104,7 +104,7 @@ export class MileFinanceService {
   async listMovements(userId: string, from?: string, to?: string, page = 1, pageSize = 20, loyaltyProgramId?: string, type?: string) {
     const occurredAt: Prisma.DateTimeFilter = {};
     if (from) occurredAt.gte = this.validDate(from, "início do período");
-    if (to) occurredAt.lte = this.validDate(to, "fim do período");
+    if (to) { const end = this.validDate(to, "fim do período"); end.setHours(23, 59, 59, 999); occurredAt.lte = end; }
     const where: Prisma.MileInventoryMovementWhereInput = { userId, ...(from || to ? { occurredAt } : {}), ...(loyaltyProgramId ? { loyaltyProgramId } : {}), ...(type ? { type: type as import("@prisma/client").MileInventoryMovementType } : {}) };
     const safePage = Math.max(1, Math.floor(page));
     const safePageSize = Math.min(50, Math.max(1, Math.floor(pageSize)));
