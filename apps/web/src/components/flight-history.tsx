@@ -132,7 +132,7 @@ export function FlightHistory() {
     <Drawer open={Boolean(selected)} onOpenChange={(open) => { if (!open) setSelected(null); }}>
       <DrawerContent>
         {selected && <>
-          <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+          <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-6 sm:px-7">
             <DrawerHeader className="p-0">
               <p className="text-xs font-semibold uppercase tracking-widest text-amber-700">Disponibilidade registrada</p>
               <DrawerTitle className="mt-1 text-3xl tracking-tight">{selected.origin} → {selected.destination}</DrawerTitle>
@@ -140,10 +140,10 @@ export function FlightHistory() {
             </DrawerHeader>
             <DrawerClose aria-label="Fechar detalhes" className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"><X size={19}/></DrawerClose>
           </div>
-          <div className="flex-1 space-y-6 overflow-y-auto p-6">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Data do registro</p><p className="mt-1 font-semibold text-slate-900">{dateFormat(selected.dateRegistered)}</p></div>
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><p className="text-xs text-amber-800">Piso em milhas</p><p className="mt-1 text-xl font-semibold text-slate-900">{numberFormat.format(selected.milesFloor)}</p></div>
+          <div className="flex-1 space-y-7 overflow-y-auto p-6 sm:p-7">
+            <div className="grid grid-cols-2 gap-3.5">
+              <div className="rounded-2xl bg-slate-50 p-5"><p className="text-xs text-slate-500">Data do registro</p><p className="mt-1 font-semibold text-slate-900">{dateFormat(selected.dateRegistered)}</p></div>
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><p className="text-xs text-amber-800">Piso em milhas</p><p className="mt-1 text-xl font-semibold text-slate-900">{numberFormat.format(selected.milesFloor)}</p></div>
             </div>
             <section><h3 className="font-semibold text-slate-900">Meses disponíveis</h3><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">{selected.monthsAvailable||"Não informado"}</p></section>
             <section><h3 className="font-semibold text-slate-900">Datas de ida</h3><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">{selected.outboundDates||"Não informado"}</p></section>
