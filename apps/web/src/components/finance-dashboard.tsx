@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/page-header";
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -178,13 +179,7 @@ export function FinanceDashboard() {
 
   return <section className="space-y-6">
     {toast && <div role={toast.type === "error" ? "alert" : "status"} aria-live={toast.type === "error" ? "assertive" : "polite"} className={`fixed right-5 top-5 z-[100] max-w-[min(420px,calc(100vw-2.5rem))] rounded-xl border px-4 py-3 text-sm font-medium shadow-xl ${toast.type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-rose-200 bg-rose-50 text-rose-900"}`}>{toast.message}<button type="button" onClick={() => setToast(null)} aria-label="Fechar aviso" className="ml-4 font-bold">×</button></div>}
-    <div className="welcome-row">
-      <div>
-        <div className="eyebrow"><span className="eyebrow-line" /> CONTROLE DE RECEBIMENTOS</div>
-        <h1 className="page-title">Financeiro</h1>
-        <p className="page-subtitle">Acompanhe cobranças, recebimentos e valores vencidos a partir dos lançamentos registrados.</p>
-      </div>
-    </div>
+    <PageHeader eyebrow="CONTROLE DE RECEBIMENTOS" title="Financeiro" description="Acompanhe cobranças, recebimentos e valores vencidos a partir dos lançamentos registrados." />
     {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
     <div className="flex flex-wrap items-center justify-between gap-3">
       <p className="text-xs text-slate-500">O período considera a data de pagamento para recebidos e o vencimento para cobranças em aberto.</p>
