@@ -179,7 +179,7 @@ export function MileFinanceDashboard() {
         </div>
       </div>
       {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800"><span>{error}</span><Button variant="outline" onClick={() => void load()}>Tentar novamente</Button></div>}
-      {formType && <Card className="panel p-5"><form onSubmit={submit} className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {formType && <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/50 p-4"><Card className="panel max-h-[90vh] w-full max-w-4xl overflow-y-auto p-5 shadow-2xl"><form onSubmit={submit} className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="md:col-span-2 xl:col-span-3"><h2 className="text-lg font-semibold">{editingId ? "Editar operação" : formType === "purchase" ? "Registrar compra de milhas" : "Registrar venda de milhas"}</h2><p className="text-sm text-slate-500">{formType === "sale" ? `Saldo disponível neste programa: ${integer(availableForSale)} milhas${!selectedInventory?.miles && selectedWalletBalance > 0 ? " (custo de aquisição não apurado)" : ""}` : "O custo médio será atualizado automaticamente após a compra."}</p></div>
         <label className="text-sm font-medium">Programa<select required disabled={!!editingId} value={programId} onChange={(e) => setProgramId(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2"><option value="">Selecione um programa</option>{programs.map((program) => <option key={program.id} value={program.id}>{program.name}</option>)}</select></label>
         <label className="text-sm font-medium">Quantidade de milhas<input required disabled={!!editingId} type="number" min="1" step="1" value={miles} onChange={(e) => setMiles(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2" /></label>
@@ -189,7 +189,7 @@ export function MileFinanceDashboard() {
         <label className="text-sm font-medium">Data<input required type="date" value={occurredAt} onChange={(e) => setOccurredAt(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2" /></label>
         <label className="text-sm font-medium md:col-span-2">Observações<textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2" /></label>
         <div className="flex gap-2 md:col-span-2 xl:col-span-3"><Button type="submit" disabled={saving || !programId}>{saving ? <><LoaderCircle className="mr-2 animate-spin" size={15} />Salvando…</> : editingId ? "Salvar alterações" : "Salvar operação"}</Button><Button type="button" variant="outline" onClick={() => { setFormType(null); setEditingId(null); }} disabled={saving}>Cancelar</Button></div>
-      </form></Card>}
+      </form></Card></div>}
       {loading && !dashboard ? <Card className="p-10 text-center text-slate-500"><LoaderCircle className="mx-auto mb-2 animate-spin" />Carregando financeiro de milhas…</Card> : dashboard && <>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Card className="panel p-5"><div className="text-sm text-slate-500">Compras no período</div><div className="mt-2 text-2xl font-semibold">{money(dashboard.purchases.grossAmount)} </div><div className="mt-1 text-xs text-slate-500">{integer(dashboard.purchases.miles)} milhas adquiridas</div></Card>
