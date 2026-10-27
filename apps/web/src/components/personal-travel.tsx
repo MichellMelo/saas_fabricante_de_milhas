@@ -175,7 +175,7 @@ export function PersonalTravel() {
   }
 
   return <section className="space-y-5">
-    <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="welcome-row flex flex-wrap items-start justify-between gap-4">
       <div><div className="eyebrow"><span className="eyebrow-line" /> VIAGENS E RESGATES</div><h1 className="page-title">Passagens e resgates<span className="gold-period">.</span></h1><p className="page-subtitle">Organize suas emissões, agrupe resgates por viagem e acompanhe os custos com transparência.</p></div>
       <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => void load()} disabled={loading || saving}><RefreshCw size={14}/> Atualizar</Button><Button onClick={() => { setRedemptionForm(emptyRedemption); setShowRedemptionForm(true); }}><Plus size={15}/> Novo resgate</Button></div>
     </div>
