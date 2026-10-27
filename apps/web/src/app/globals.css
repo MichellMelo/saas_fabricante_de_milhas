@@ -1814,3 +1814,14 @@ body { font-size: 15px; }
     transition: none;
   }
 }
+
+
+/* Mantém o controle de recolher a sidebar próximo à borda da navegação. */
+@media (min-width: 761px) {
+  .topbar {
+    padding-left: 16px;
+  }
+  .topbar-leading {
+    gap: 8px;
+  }
+}
