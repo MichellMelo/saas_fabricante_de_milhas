@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/page-header";
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
@@ -167,17 +168,7 @@ export function MileFinanceDashboard() {
   return (
     <section className="space-y-6">
       {toast && <div role={toast.type === "error" ? "alert" : "status"} aria-live={toast.type === "error" ? "assertive" : "polite"} className={`fixed right-5 top-5 z-[100] max-w-[min(420px,calc(100vw-2.5rem))] rounded-xl border px-4 py-3 text-sm font-medium shadow-xl ${toast.type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-rose-200 bg-rose-50 text-rose-900"}`}>{toast.message}<button type="button" onClick={() => setToast(null)} aria-label="Fechar aviso" className="ml-4 font-bold">×</button></div>}
-      <div className="welcome-row">
-        <div>
-          <div className="eyebrow"><span className="eyebrow-line" />GESTÃO DE OPERAÇÕES</div>
-          <h1 className="page-title">Financeiro de Milhas<span className="gold-period">.</span></h1>
-          <p className="page-subtitle">Compras, vendas, estoque e resultado por programa — separado do financeiro administrativo.</p>
-        </div>
-        <div className="welcome-actions">
-          <Button variant="outline" className="!border-slate-200 !bg-white !text-[#142137] hover:!bg-slate-50" onClick={() => openForm("purchase")}><Plus size={15} className="mr-2" />Registrar compra</Button>
-          <Button onClick={() => openForm("sale")}><Plus size={15} className="mr-2" />Registrar venda</Button>
-        </div>
-      </div>
+      <PageHeader eyebrow="GESTÃO DE OPERAÇÕES" title={<>Financeiro de Milhas<span className="gold-period">.</span></>} description="Compras, vendas, estoque e resultado por programa — separado do financeiro administrativo." actions={<><Button variant="outline" className="!border-slate-200 !bg-white !text-[#142137] hover:!bg-slate-50" onClick={() => openForm("purchase")}><Plus size={15} className="mr-2" />Registrar compra</Button><Button onClick={() => openForm("sale")}><Plus size={15} className="mr-2" />Registrar venda</Button></>} />
       {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800"><span>{error}</span><Button variant="outline" onClick={() => void load()}>Tentar novamente</Button></div>}
       {formType && <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/50 p-4"><Card className="panel max-h-[90vh] w-full max-w-4xl overflow-y-auto p-5 shadow-2xl"><form onSubmit={submit} className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="md:col-span-2 xl:col-span-3"><h2 className="text-lg font-semibold">{editingId ? "Editar operação" : formType === "purchase" ? "Registrar compra de milhas" : "Registrar venda de milhas"}</h2><p className="text-sm text-slate-500">{formType === "sale" ? `Saldo disponível neste programa: ${integer(availableForSale)} milhas${!selectedInventory?.miles && selectedWalletBalance > 0 ? " (custo de aquisição não apurado)" : ""}` : "O custo médio será atualizado automaticamente após a compra."}</p></div>
