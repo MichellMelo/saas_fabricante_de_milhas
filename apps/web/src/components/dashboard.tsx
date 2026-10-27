@@ -13,7 +13,6 @@ import {
   LayoutDashboard,
   Plane,
   Plus,
-  ShieldCheck,
   Sparkles,
   Star,
   Settings2,
