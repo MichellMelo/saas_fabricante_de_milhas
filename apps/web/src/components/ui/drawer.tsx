@@ -27,8 +27,8 @@ export function DrawerContent({ className, children, side = "right" }: { classNa
   }, [open, setOpen]);
   return <AnimatePresence>
     {open && <>
-      <motion.button type="button" aria-label="Fechar painel de detalhes" className="fixed inset-0 z-50 cursor-default bg-slate-950/40 backdrop-blur-[2px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} onClick={() => setOpen(false)} />
-      <motion.aside role="dialog" aria-modal="true" className={cn("fixed z-[51] flex flex-col overflow-hidden bg-white shadow-2xl outline-none", side === "right" ? "inset-y-0 right-0 h-full w-full max-w-xl border-l border-slate-200" : "inset-x-0 bottom-0 max-h-[90vh] w-full rounded-t-2xl", className)} initial={side === "right" ? { x: "100%" } : { y: "100%" }} animate={side === "right" ? { x: 0 } : { y: 0 }} exit={side === "right" ? { x: "100%" } : { y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }}>
+      <motion.button type="button" aria-label="Fechar painel de detalhes" className="fixed inset-0 z-50 cursor-default bg-slate-950/30 backdrop-blur-[5px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} onClick={() => setOpen(false)} />
+      <motion.aside role="dialog" aria-modal="true" className={cn("fixed z-[51] flex flex-col overflow-hidden bg-white shadow-2xl outline-none", side === "right" ? "inset-y-2 right-2 h-[calc(100%-1rem)] w-[calc(100%-1rem)] max-w-[460px] rounded-[28px] border border-slate-200 sm:inset-y-3 sm:right-3 sm:h-[calc(100%-1.5rem)] sm:w-[min(460px,calc(100%-1.5rem))]" : "inset-x-2 bottom-2 max-h-[90vh] w-[calc(100%-1rem)] rounded-[28px] border border-slate-200 sm:inset-x-3 sm:bottom-3 sm:w-[calc(100%-1.5rem)]", className)} initial={side === "right" ? { x: "100%" } : { y: "100%" }} animate={side === "right" ? { x: 0 } : { y: 0 }} exit={side === "right" ? { x: "100%" } : { y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }}>
         {children}
       </motion.aside>
     </>}
