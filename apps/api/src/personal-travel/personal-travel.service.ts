@@ -100,6 +100,7 @@ export class PersonalTravelService {
   }
 
   async listRedemptions(userId: string, trash = false) {
+    await this.purgeExpiredTrash(userId);
     const where: Prisma.PersonalRedemptionWhereInput = trash
       ? { userId, deletedAt: { not: null } }
       : { userId, deletedAt: null };
@@ -181,6 +182,13 @@ export class PersonalTravelService {
       where: redemptionId ? { redemptionId } : {},
       orderBy: { createdAt: "desc" },
       take: 500,
+    });
+  }
+
+  private async purgeExpiredTrash(userId: string) {
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    await this.prisma.personalRedemption.deleteMany({
+      where: { userId, deletedAt: { lte: cutoff } },
     });
   }
 
