@@ -199,7 +199,7 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
   const [clientQuery, setClientQuery] = useState("");
   const [accessFilter, setAccessFilter] = useState<"all" | "active" | "none">("all");
   const [productFilter, setProductFilter] = useState<Product | "all">("all");
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(5);
   const [clientPage, setClientPage] = useState(1);
   const [detailTab, setDetailTab] = useState<"overview" | "access" | "finance">("overview");
   const [expandedClientId, setExpandedClientId] = useState<string | null>(selectedClientId ?? null);
@@ -527,7 +527,7 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
               </article>;
             })}
             {!selectedClientId && pageCount > 1 && <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
-              <div className="flex flex-wrap items-center gap-3"><label className="flex items-center gap-2 text-xs text-slate-500">Por página<select value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))} className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-700"><option value={10}>10</option><option value={25}>25</option><option value={50}>50</option></select></label><p className="text-xs text-slate-500">Mostrando {filteredClients.length ? (clientPage - 1) * pageSize + 1 : 0}–{Math.min(clientPage * pageSize, filteredClients.length)} de {filteredClients.length} clientes</p></div>
+              <div className="flex flex-wrap items-center gap-3"><label className="flex items-center gap-2 text-xs text-slate-500">Por página<select value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))} className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-700"><option value={5}>5</option><option value={10}>10</option><option value={25}>25</option><option value={50}>50</option></select></label><p className="text-xs text-slate-500">Mostrando {filteredClients.length ? (clientPage - 1) * pageSize + 1 : 0}–{Math.min(clientPage * pageSize, filteredClients.length)} de {filteredClients.length} clientes</p></div>
               <div className="flex items-center gap-2"><button type="button" onClick={() => setClientPage((page) => Math.max(1, page - 1))} disabled={clientPage === 1} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-40">Anterior</button><span className="text-xs text-slate-500">Página {clientPage} de {pageCount}</span><button type="button" onClick={() => setClientPage((page) => Math.min(pageCount, page + 1))} disabled={clientPage === pageCount} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-40">Próxima</button></div>
             </div>}
           </div>}
