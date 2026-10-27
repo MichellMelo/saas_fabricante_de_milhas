@@ -17,11 +17,11 @@ const PRODUCT_LABELS: Record<ExpiringAccess["product"], string> = {
   MENTORSHIP: "Mentorias",
 };
 
-export function DashboardHeader({ title, mobileOpen, onToggleMobile, desktopSidebarHidden, onToggleDesktopSidebar, user, onLogout }: {
+export function DashboardHeader({ title, mobileOpen, onToggleMobile, desktopSidebarCollapsed, onToggleDesktopSidebar, user, onLogout }: {
   title: string;
   mobileOpen: boolean;
   onToggleMobile: () => void;
-  desktopSidebarHidden: boolean;
+  desktopSidebarCollapsed: boolean;
   onToggleDesktopSidebar: () => void;
   notify: (message: string) => void;
   user: DashboardUser;
@@ -66,10 +66,10 @@ export function DashboardHeader({ title, mobileOpen, onToggleMobile, desktopSide
                 size="icon"
                 className="hidden md:inline-flex"
                 onClick={onToggleDesktopSidebar}
-                aria-label={desktopSidebarHidden ? "Mostrar barra lateral" : "Ocultar barra lateral"}
-                title={desktopSidebarHidden ? "Mostrar barra lateral" : "Ocultar barra lateral"}
+                aria-label={desktopSidebarCollapsed ? "Expandir barra lateral" : "Recolher barra lateral"}
+                title={desktopSidebarCollapsed ? "Mostrar barra lateral" : "Ocultar barra lateral"}
               >
-                {desktopSidebarHidden ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+                {desktopSidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
               </Button>
               <div className="breadcrumbs">
                 <span>Workspace</span>
