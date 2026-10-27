@@ -59,6 +59,7 @@ const PROGRAM_LOGOS: { match: RegExp; src: string; label: string }[] = [
   { match: /american|aadvantage/i, src: "/program-icons/AA.png", label: "AAdvantage" },
   { match: /qatar/i, src: "/program-icons/qatar.png", label: "Qatar Airways" },
   { match: /turkish|miles.?&.?smiles/i, src: "/program-icons/turkish.png", label: "Turkish Airlines" },
+  { match: /iberia/i, src: "/program-icons/iberia.png", label: "Iberia" },
 ];
 function ProgramIdentity({ program }: { program: string }) {
   const logo = PROGRAM_LOGOS.find(item => item.match.test(program));
