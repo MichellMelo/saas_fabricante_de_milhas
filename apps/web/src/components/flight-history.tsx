@@ -108,7 +108,7 @@ export function FlightHistory() {
   ];  return <section className="space-y-5">
     <div className="welcome-row">
       <div><div className="eyebrow"><span className="eyebrow-line" /> BASE PARA FUTURAS EMISSÕES</div><h1 className="page-title">Histórico de disponibilidades<span className="gold-period">.</span></h1><p className="page-subtitle">Compare rotas, programas e pisos de milhas registrados ao longo do tempo.</p></div>
-      <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={exportCsv} disabled={!filtered.length}><Download size={15}/> Exportar CSV</Button><Button onClick={() => fileRef.current?.click()}><Upload size={15}/> Importar CSV</Button><input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={e => void chooseFile(e.target.files?.[0])}/></div>
+      <div className="flex flex-wrap gap-2"><Button variant="outline" className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50 hover:text-slate-950 disabled:text-slate-400" onClick={exportCsv} disabled={!filtered.length}><Download size={15}/> Exportar CSV</Button><Button onClick={() => fileRef.current?.click()}><Upload size={15}/> Importar CSV</Button><input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={e => void chooseFile(e.target.files?.[0])}/></div>
     </div>
     {message && <Alert role="status" className="border-emerald-200 bg-emerald-50 text-emerald-800"><AlertDescription>{message}</AlertDescription></Alert>}
     {error && <Alert role="alert" className="border-rose-200 bg-rose-50 text-rose-800"><AlertDescription>{error}</AlertDescription></Alert>}
