@@ -7,6 +7,7 @@ import { ClientsModule } from "./clients/clients.module";
 import { GroupVipModule } from "./group-vip/group-vip.module";
 import { HealthController } from "./health.controller";
 import { LoyaltyModule } from "./loyalty/loyalty.module";
+import { MileFinanceModule } from "./mile-finance/mile-finance.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { ProductContentModule } from "./product-content/product-content.module";
 
@@ -22,6 +23,7 @@ import { ProductContentModule } from "./product-content/product-content.module";
     GroupVipModule,
     ProductContentModule,
     LoyaltyModule,
+    MileFinanceModule,
   ],
   controllers: [HealthController],
   providers: [

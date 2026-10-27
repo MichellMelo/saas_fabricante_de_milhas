@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ChevronDown, Copy, Search, ShieldCheck, UserPlus, Users } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const PRODUCTS = [
   { value: "GROUP_VIP", label: "Grupo VIP" },
@@ -189,6 +190,7 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [inviteUrl, setInviteUrl] = useState("");
+  const [inviteCopied, setInviteCopied] = useState(false);
   const [inviteClientId, setInviteClientId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -204,6 +206,16 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
   useEffect(() => {
     if (selectedClientId) setExpandedClientId(selectedClientId);
   }, [selectedClientId]);
+
+  useEffect(() => {
+    if (!error && !notice) return;
+    const timeout = window.setTimeout(() => {
+      setError("");
+      setNotice("");
+      setInviteCopied(false);
+    }, 5000);
+    return () => window.clearTimeout(timeout);
+  }, [error, notice]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -265,15 +277,11 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
 
   async function sendInvitation(client: Client) {
     const selectedProducts = [...new Set(client.productAccesses.filter((access) => access.active).map((access) => access.product))];
-    if (!selectedProducts.length) {
-      setError("Configure e ative pelo menos um produto na ficha do cliente antes de enviar o convite.");
-      setNotice("");
-      return;
-    }
     setSaving(true);
     setError("");
     setNotice("");
     setInviteUrl("");
+    setInviteCopied(false);
     try {
       const response = await fetch("/api/admin/invitations", {
         method: "POST",
@@ -385,9 +393,13 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
   async function copyInvite() {
     try {
       await navigator.clipboard.writeText(inviteUrl);
-      setNotice("Link do convite copiado.");
+      setInviteCopied(true);
+      setError("");
+      setNotice("Link do convite copiado com sucesso.");
     } catch {
-      setNotice("Copie o link exibido no campo abaixo.");
+      setInviteCopied(false);
+      setError("Não foi possível copiar automaticamente. Selecione e copie o link exibido.");
+      setNotice("");
     }
   }
 
@@ -407,16 +419,16 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
 
   return (
     <section className="space-y-7">
-      <div className="welcome-row">
+      <section className={"welcome-row mb-6 min-w-0 " + (selectedClientId ? "client-detail-welcome" : "")}>
         <div>
           <div className="eyebrow"><span className="eyebrow-line" /> ADMINISTRAÇÃO · CLIENTES</div>
-          <h1 className="page-title">{selectedClientId ? "Ficha do cliente" : "Clientes e produtos"}</h1>
-          <p className="page-subtitle">{selectedClientId ? "Consulte e gerencie os dados, acessos e pagamentos deste cliente." : "Crie convites e controle o acesso de cada cliente ao Grupo VIP, aulões e mentorias. A API valida as permissões no servidor."}</p>
+          <h1 className="page-title">{selectedClientId ? "Ficha do cliente" : "Clientes e produtos"}<span className="gold-period">.</span></h1>
+          <p className="page-subtitle">{selectedClientId ? "Consulte e gerencie os dados, acessos e pagamentos deste cliente." : "Crie convites e controle o acesso de cada cliente ao Grupo VIP, aulões e mentorias."}</p>
         </div>
-      </div>
+      </section>
 
-      {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
-      {notice && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{notice}</div>}
+      {error && <Alert role="alert" className="fixed right-4 top-4 z-[100] w-[calc(100%-2rem)] max-w-md border-red-200 bg-red-50 px-4 py-3 text-red-800 shadow-lg"><AlertDescription>{error}</AlertDescription></Alert>}
+      {notice && <Alert role="status" className="fixed right-4 top-4 z-[100] w-[calc(100%-2rem)] max-w-md border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 shadow-lg"><AlertDescription>{notice}</AlertDescription></Alert>}
 
       <div className={"grid gap-5 " + (selectedClientId ? "grid-cols-1" : "xl:grid-cols-[minmax(320px,0.8fr)_minmax(0,1.2fr)]")}>
         {!selectedClientId && <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -478,11 +490,26 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
                   {selectedClientId && <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
                     {([{ key: "overview", label: "Visão geral" }, { key: "access", label: "Produtos e acessos" }, { key: "finance", label: "Financeiro" }] as const).map((tab) => <button key={tab.key} type="button" onClick={() => setDetailTab(tab.key)} className={"rounded-lg px-3 py-2 text-sm font-semibold " + (detailTab === tab.key ? "bg-[#101a2b] text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100")}>{tab.label}</button>)}
                   </div>}
+                  {selectedClientId && detailTab === "overview" && (() => {
+                    const clientPayments = payments.filter((payment) => payment.userId === client.id);
+                    const activeAccesses = client.productAccesses.filter((access) => isAccessActive(access));
+                    const paidPayments = clientPayments.filter((payment) => payment.status === "PAID");
+                    const paidTotal = paidPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+                    const pendingPayments = clientPayments.filter((payment) => payment.status === "PENDING");
+                    const pendingTotal = pendingPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+                    const accountStatus = !client.hasAccount ? (invitations.some((invitation) => invitation.email.toLowerCase() === client.email.toLowerCase()) ? "Convite pendente" : "Aguardando convite") : client.active ? "Conta ativa" : "Conta inativa";
+                    return <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-xs font-medium text-slate-500">Status da conta</p><p className="mt-2 text-base font-semibold text-slate-900">{accountStatus}</p><p className="mt-1 text-xs text-slate-500">Cadastro em {new Date(client.createdAt).toLocaleDateString("pt-BR")}</p></div>
+                      <div className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-xs font-medium text-slate-500">Produtos ativos</p><p className="mt-2 text-base font-semibold text-slate-900">{activeAccesses.length} de {PRODUCTS.length}</p><p className="mt-1 text-xs leading-5 text-slate-500">{activeAccesses.length ? activeAccesses.map((access) => PRODUCTS.find((product) => product.value === access.product)?.label ?? access.product).join(" · ") : "Nenhum produto ativo"}</p></div>
+                      <div className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-xs font-medium text-slate-500">Pagamentos recebidos</p><p className="mt-2 text-base font-semibold text-emerald-700">{money(paidTotal)}</p><p className="mt-1 text-xs text-slate-500">{paidPayments.length} lançamento(s) pago(s)</p></div>
+                      <div className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-xs font-medium text-slate-500">Em aberto</p><p className="mt-2 text-base font-semibold text-slate-900">{money(pendingTotal)}</p><p className="mt-1 text-xs text-slate-500">{pendingPayments.length} lançamento(s) pendente(s)</p></div>
+                    </div>;
+                  })()}
                   {(!selectedClientId || detailTab === "overview") && <ClientProfileEditor client={client} onSave={(values) => updateClient(client, values)} />}
                   {(!selectedClientId || detailTab === "overview") && <div className="flex flex-wrap items-center gap-2">
                     {client.hasAccount && <button type="button" onClick={() => void setClientStatus(client, !client.active)} disabled={saving} className={"rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-50 " + (client.active ? "border border-rose-200 bg-rose-50 text-rose-700" : "border border-emerald-200 bg-emerald-50 text-emerald-700")}>{client.active ? "Inativar conta" : "Ativar conta"}</button>}
                     <button type="button" onClick={() => void sendInvitation(client)} disabled={saving || client.hasAccount} className="rounded-lg bg-[#101a2b] px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{client.hasAccount ? "Conta já ativada" : invitations.some((invitation) => invitation.email.toLowerCase() === client.email.toLowerCase()) ? "Reenviar convite" : "Enviar convite"}</button>
-                    {inviteUrl && inviteClientId === client.id && <button type="button" onClick={() => void copyInvite()} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"><Copy size={13} /> Copiar link</button>}
+                    {inviteUrl && inviteClientId === client.id && <button type="button" disabled={inviteCopied} onClick={() => void copyInvite()} className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-100 ${inviteCopied ? "border-emerald-200 bg-emerald-600 text-white" : "border-slate-200 bg-white text-slate-700"}`}><Copy size={13} /> {inviteCopied ? "Copiado" : "Copiar link"}</button>}
                   </div>}
                   {(!selectedClientId || detailTab === "overview") && inviteUrl && inviteClientId === client.id && <div className="rounded-lg border border-[#e7d7ad] bg-[#fcf8ed] p-3"><label className="text-xs font-semibold text-slate-800">Link de ativação<input readOnly value={inviteUrl} onFocus={(event) => event.currentTarget.select()} className="mt-2 w-full rounded-lg border border-[#e7d7ad] bg-white px-3 py-2 text-xs text-slate-700" /></label><p className="mt-2 text-xs leading-5 text-slate-500">Link de uso único, válido por 7 dias. Envie apenas ao destinatário correto.</p></div>}
                   {(!selectedClientId || detailTab === "access") && PRODUCTS.map((product) => {

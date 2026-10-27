@@ -4,7 +4,7 @@ import { CircleHelp, ChevronRight, LayoutDashboard, CreditCard, Calculator, Plan
 import type { LucideIcon } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator } from "@/components/ui/sidebar";
 
-export type DashboardRoute = "dashboard" | "oportunidades" | "aprender" | "programas" | "calculadoras" | "passagens" | "historico" | "programas-admin" | "clientes-admin" | "grupo-vip" | "auloes" | "mentorias" | "financeiro";
+export type DashboardRoute = "dashboard" | "oportunidades" | "aprender" | "programas" | "calculadoras" | "passagens" | "historico" | "programas-admin" | "clientes-admin" | "grupo-vip" | "auloes" | "mentorias" | "financeiro" | "mile-finance";
 export type SidebarNavItem = { key: DashboardRoute; label: string; icon: LucideIcon; soon?: boolean };
 
 const iconByRoute: Partial<Record<DashboardRoute, LucideIcon>> = {

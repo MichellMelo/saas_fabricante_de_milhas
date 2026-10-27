@@ -1,18 +1,18 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { DashboardSidebar, type DashboardRoute, type SidebarNavItem } from "@/components/dashboard-sidebar";
 import { DashboardFooter } from "@/components/dashboard-footer";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   ArrowRight,
-  ArrowUpRight,
   Calculator,
   Clock3,
   CreditCard,
   LayoutDashboard,
   Plane,
+  Plus,
   ShieldCheck,
   Sparkles,
   Star,
@@ -22,6 +22,7 @@ import {
   Video,
   GraduationCap,
   Wallet,
+  TrendingUp,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,8 @@ import { ClientManagement } from "@/components/client-management";
 import { GroupVipContent } from "@/components/group-vip-content";
 import { ProductContent } from "@/components/product-content";
 import { FinanceDashboard } from "@/components/finance-dashboard";
+import { MileFinanceDashboard } from "@/components/mile-finance-dashboard";
+import { CalculatorTools } from "@/components/calculator-tools";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -48,7 +51,8 @@ const navItems: SidebarNavItem[] = [
   { key: "programas-admin", label: "Cadastro de programas", icon: Settings2 },
   { key: "clientes-admin", label: "Clientes e produtos", icon: Users },
   { key: "financeiro", label: "Financeiro", icon: Wallet },
-  { key: "calculadoras", label: "Calculadoras", icon: Calculator, soon: true },
+  { key: "mile-finance", label: "Financeiro de Milhas", icon: TrendingUp },
+  { key: "calculadoras", label: "Calculadoras", icon: Calculator },
   { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
   { key: "historico", label: "Histórico", icon: Clock3, soon: true },
 ];
@@ -87,6 +91,12 @@ const routeCopy: Record<
     description: "Convide clientes e gerencie o acesso ao Grupo VIP, aulões e mentorias.",
     icon: Users,
   },
+  "mile-finance": {
+    title: "Financeiro de Milhas",
+    eyebrow: "COMPRAS, VENDAS E ESTOQUE",
+    description: "Controle seu estoque de milhas, custo médio ponderado e resultado das operações.",
+    icon: TrendingUp,
+  },
   financeiro: {
     title: "Financeiro",
     eyebrow: "CONTROLE DE RECEBIMENTOS",
@@ -115,7 +125,7 @@ const routeCopy: Record<
     title: "Calculadoras",
     eyebrow: "DECISÕES COM NÚMEROS",
     description:
-      "Compare custos, resgates e oportunidades antes de tomar uma decisão. As regras de cálculo serão implementadas e testadas antes de usar dados reais.",
+      "Calcule custo por milheiro, transferência bonificada e valor de resgate com fórmulas transparentes e dados informados por você.",
     icon: Calculator,
   },
   passagens: {
@@ -214,6 +224,14 @@ function StatCard({
   );
 }
 
+type DashboardLoyaltyAccount = {
+  id: string;
+  balance: string | number;
+  currency: string;
+  loyaltyProgram: { id: string; name: string; type: "BANK" | "AIRLINE" | "HOTEL" | "OTHER" };
+  _count?: { transactions: number };
+};
+
 type DashboardUser = {
   id: string;
   email: string;
@@ -225,23 +243,65 @@ type DashboardUser = {
 
 export function Dashboard({ user }: { user: DashboardUser }) {
   const reduceMotion = useReducedMotion();
-  const [route, setRoute] = useState<RouteKey>("dashboard");
+  const [route, setRoute] = useState<RouteKey>(!user.isAdmin && !(user.productAccesses?.some((access) => access.active) ?? false) ? "calculadoras" : "dashboard");
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [period, setPeriod] = useState("30");
   const [toast, setToast] = useState("");
-  const [updated, setUpdated] = useState(false);
+  const [loyaltyAccounts, setLoyaltyAccounts] = useState<DashboardLoyaltyAccount[]>([]);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [dashboardError, setDashboardError] = useState("");
+
+  const hasAnyProduct = Boolean(user.productAccesses?.some((access) => access.active));
+  const allowedNavItems = useMemo(() => user.isAdmin ? navItems : navItems.filter((item) => {
+    if (item.key === "clientes-admin" || item.key === "financeiro" || item.key === "programas-admin") return false;
+    if (!hasAnyProduct) return item.key === "calculadoras" || item.key === "programas" || item.key === "mile-finance";
+    if (item.key === "grupo-vip") return user.productAccesses?.some((access) => access.product === "GROUP_VIP") ?? false;
+    if (item.key === "auloes") return user.productAccesses?.some((access) => access.product === "AULAO") ?? false;
+    if (item.key === "mentorias") return user.productAccesses?.some((access) => access.product === "MENTORSHIP") ?? false;
+    return true;
+  }), [user.isAdmin, hasAnyProduct, user.productAccesses]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadDashboardData() {
+      setDashboardLoading(true);
+      setDashboardError("");
+      try {
+        const response = await fetch("/api/loyalty-accounts", { cache: "no-store" });
+        const payload = await response.json().catch(() => []);
+        if (!response.ok) {
+          const message = Array.isArray(payload.message) ? payload.message.join(" ") : payload.message;
+          throw new Error(message || "Não foi possível carregar seus saldos.");
+        }
+        if (!Array.isArray(payload)) throw new Error("A resposta de saldos está em formato inesperado.");
+        if (!cancelled) setLoyaltyAccounts(payload as DashboardLoyaltyAccount[]);
+      } catch (error) {
+        if (!cancelled) setDashboardError(error instanceof Error ? error.message : "Não foi possível carregar seus saldos.");
+      } finally {
+        if (!cancelled) setDashboardLoading(false);
+      }
+    }
+    void loadDashboardData();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     const syncRouteFromHash = () => {
       const hash = window.location.hash.slice(1);
-      if (navItems.some((item) => item.key === hash)) {
+      const allowed = allowedNavItems.some((item) => item.key === hash);
+      if (allowed) {
         setRoute(hash as RouteKey);
+      } else if (!user.isAdmin && !hasAnyProduct) {
+        setRoute("calculadoras");
+        window.history.replaceState(null, "", window.location.pathname + "#calculadoras");
+      } else if (hash) {
+        setRoute("calculadoras");
+        window.history.replaceState(null, "", window.location.pathname + "#calculadoras");
       }
     };
     syncRouteFromHash();
     window.addEventListener("hashchange", syncRouteFromHash);
     return () => window.removeEventListener("hashchange", syncRouteFromHash);
-  }, []);
+  }, [user.isAdmin, hasAnyProduct, allowedNavItems]);
   function notify(message: string) {
     setToast(message);
     window.setTimeout(() => setToast(""), 3200);
@@ -255,27 +315,13 @@ export function Dashboard({ user }: { user: DashboardUser }) {
       next === "dashboard" ? window.location.pathname : "#" + next,
     );
   }
-  const chartLabels: Record<string, string[]> = {
-    "7": ["12 out", "13 out", "14 out", "15 out", "16 out", "17 out", "18 out"],
-    "30": [
-      "19 set",
-      "24 set",
-      "29 set",
-      "04 out",
-      "09 out",
-      "14 out",
-      "18 out",
-    ],
-    "90": [
-      "21 jul",
-      "05 ago",
-      "20 ago",
-      "04 set",
-      "19 set",
-      "04 out",
-      "18 out",
-    ],
-  };
+  const pointAccounts = loyaltyAccounts.filter((account) => account.currency === "POINTS");
+  const totalPoints = pointAccounts.reduce((sum, account) => sum + Number(account.balance || 0), 0);
+  const programsCount = new Set(loyaltyAccounts.map((account) => account.loyaltyProgram.id)).size;
+  const totalTransactions = loyaltyAccounts.reduce((sum, account) => sum + (account._count?.transactions ?? 0), 0);
+  const numberFormat = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 });
+  const pointFormat = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
+
   return (
     <div className="dashboard-shell">
       {mobileOpen && (
@@ -288,13 +334,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
       <DashboardSidebar
         mobileOpen={mobileOpen}
         route={route}
-        navItems={user.isAdmin ? navItems : navItems.filter((item) => {
-          if (item.key === "clientes-admin" || item.key === "financeiro" || item.key === "programas-admin") return false;
-          if (item.key === "grupo-vip") return user.productAccesses?.some((access) => access.product === "GROUP_VIP") ?? false;
-          if (item.key === "auloes") return user.productAccesses?.some((access) => access.product === "AULAO") ?? false;
-          if (item.key === "mentorias") return user.productAccesses?.some((access) => access.product === "MENTORSHIP") ?? false;
-          return true;
-        })}
+        navItems={allowedNavItems}
         navigate={navigate}
         notify={notify}
       />
@@ -334,338 +374,156 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   </p>
                 </div>
               </motion.section>
-              <motion.div
-                initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.08, duration: 0.4 }}
-              >
-                <Alert className="demo-notice">
-                  <ShieldCheck size={16} className="shrink-0" />
-                  <AlertDescription>
-                    <strong>AMBIENTE DE DEMONSTRAÇÃO.</strong> Os saldos, valores
-                    e oportunidades abaixo são fictícios e servem apenas para
-                    apresentar a interface.
-                  </AlertDescription>
+              {dashboardError && (
+                <Alert role="alert" className="mb-5 border-red-200 bg-red-50 text-red-800">
+                  <AlertDescription>{dashboardError}</AlertDescription>
                 </Alert>
-              </motion.div>
+              )}
               <motion.section
                 className="kpi-grid"
-                aria-label="Indicadores principais"
+                aria-label="Indicadores reais da carteira"
                 initial="hidden"
                 animate="visible"
                 variants={{
                   hidden: {},
-                  visible: {
-                    transition: {
-                      staggerChildren: reduceMotion ? 0 : 0.075,
-                      delayChildren: 0.12,
-                    },
-                  },
+                  visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.075, delayChildren: 0.12 } },
                 }}
               >
                 <StatCard
                   label="Total de pontos e milhas"
-                  value="248.650"
+                  value={dashboardLoading ? "—" : pointFormat.format(totalPoints)}
                   suffix="pts"
                   icon={Star}
                   tone="icon-gold"
-                  spark
-                  foot={
-                    <>
-                      <span className="trend-up flex items-center gap-1">
-                        <ArrowUpRight size={12} /> 8,4%
-                      </span>
-                      <span>vs. período anterior</span>
-                    </>
-                  }
+                  foot={<span>{dashboardLoading ? "Carregando saldos…" : `${pointAccounts.length} conta(s) com saldo em pontos`}</span>}
                 />
                 <StatCard
                   label="Valor estimado dos saldos"
-                  value="R$ 6.840"
-                  suffix={<span className="decimal">,00</span>}
+                  value="—"
                   icon={CreditCard}
                   tone="icon-green"
-                  spark
-                  foot={
-                    <>
-                      <span className="neutral-chip">Estimativa</span>
-                      <span>por custo de aquisição</span>
-                    </>
-                  }
+                  foot={<span>Sem custo de aquisição suficiente para estimar com segurança</span>}
                 />
                 <StatCard
                   label="Programas acompanhados"
-                  value="04"
+                  value={dashboardLoading ? "—" : String(programsCount).padStart(2, "0")}
                   suffix="programas"
                   icon={CreditCard}
                   tone="icon-blue"
-                  foot={
-                    <>
-                      <span className="neutral-chip">2 nacionais</span>
-                      <span>+ 2 internacionais</span>
-                    </>
-                  }
+                  foot={<span>{dashboardLoading ? "Carregando carteira…" : `${loyaltyAccounts.length} conta(s) cadastrada(s)`}</span>}
                 />
                 <StatCard
-                  label="Oportunidades mapeadas"
-                  value="12"
-                  suffix="ativas"
+                  label="Movimentações registradas"
+                  value={dashboardLoading ? "—" : pointFormat.format(totalTransactions)}
+                  suffix="lançamentos"
                   icon={Sparkles}
                   tone="icon-purple"
-                  trend
-                  foot={
-                    <>
-                      <span className="trend-up flex items-center gap-1">
-                        <ArrowUpRight size={12} /> 3 novas
-                      </span>
-                      <span>nesta semana</span>
-                    </>
-                  }
+                  foot={<span>Movimentações persistidas nas suas contas</span>}
                 />
               </motion.section>
               <motion.section
                 className="content-grid"
                 initial={reduceMotion ? false : { opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: 0.24,
-                  duration: 0.5,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
+                transition={{ delay: 0.12, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               >
                 <Card className="panel">
                   <div className="panel-heading">
                     <div>
                       <h2>Evolução dos saldos</h2>
-                      <p>Acompanhe a variação do seu patrimônio em pontos.</p>
+                      <p>O histórico será exibido quando houver uma série temporal confiável.</p>
                     </div>
-                    <label>
-                      <span className="sr-only">Período do gráfico</span>
-                      <select
-                        className="period-select"
-                        value={period}
-                        onChange={(event) => {
-                          setPeriod(event.target.value);
-                          notify(
-                            "Período alterado. A curva continua ilustrativa nesta versão.",
-                          );
-                        }}
-                      >
-                        <option value="30">Últimos 30 dias</option>
-                        <option value="7">Últimos 7 dias</option>
-                        <option value="90">Últimos 90 dias</option>
-                      </select>
-                    </label>
                   </div>
-                  <div className="chart-legend">
-                    <span>
-                      <i className="legend-dot" /> Saldo total
-                    </span>
-                    <span className="chart-current">
-                      248.650 pts <b>+8,4%</b>
-                    </span>
-                  </div>
-                  <div className="chart-wrap">
-                    <div className="chart-y-labels" aria-hidden="true">
-                      <span>260k</span>
-                      <span>240k</span>
-                      <span>220k</span>
-                      <span>200k</span>
-                      <span>180k</span>
-                    </div>
-                    <svg
-                      className="balance-chart"
-                      viewBox="0 0 640 220"
-                      role="img"
-                      aria-label="Gráfico ilustrativo de evolução crescente do saldo total em pontos"
-                    >
-                      <defs>
-                        <linearGradient
-                          id="chart-fill"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="0%"
-                            stopColor="#c6a45c"
-                            stopOpacity=".24"
-                          />
-                          <stop
-                            offset="100%"
-                            stopColor="#c6a45c"
-                            stopOpacity="0"
-                          />
-                        </linearGradient>
-                      </defs>
-                      <g className="chart-grid">
-                        <path d="M0 20H640M0 62H640M0 104H640M0 146H640M0 188H640" />
-                      </g>
-                      <path
-                        className="chart-area"
-                        d="M0 165 C24 158 32 166 56 148 S92 150 112 132 S148 138 170 112 S208 126 228 103 S263 108 286 87 S320 100 342 77 S378 88 399 66 S432 79 454 58 S487 71 510 49 S546 56 568 39 S608 44 640 19 L640 202 L0 202Z"
-                      />
-                      <path
-                        className="chart-line"
-                        d="M0 165 C24 158 32 166 56 148 S92 150 112 132 S148 138 170 112 S208 126 228 103 S263 108 286 87 S320 100 342 77 S378 88 399 66 S432 79 454 58 S487 71 510 49 S546 56 568 39 S608 44 640 19"
-                      />
-                      <circle className="chart-point" cx="640" cy="19" r="5" />
-                    </svg>
-                  </div>
-                  <div className="chart-x-labels">
-                    {chartLabels[period].map((label) => (
-                      <span key={label}>{label}</span>
-                    ))}
-                  </div>
-                  <div className="panel-note">
-                    <ShieldCheck size={13} /> Gráfico ilustrativo. A integração
-                    de saldos será definida em uma fase futura.
+                  <div className="flex min-h-64 flex-col items-center justify-center gap-3 px-5 py-8 text-center">
+                    <div className="placeholder-mark"><Clock3 size={24} /></div>
+                    {dashboardLoading ? (
+                      <p className="text-sm text-slate-500">Carregando dados da carteira…</p>
+                    ) : dashboardError ? (
+                      <p className="text-sm text-slate-500">Não foi possível carregar o histórico agora.</p>
+                    ) : totalTransactions === 0 ? (
+                      <>
+                        <h3 className="font-semibold text-slate-800">Ainda não há histórico de movimentações</h3>
+                        <p className="max-w-md text-sm text-slate-500">Registre entradas, resgates ou ajustes em Programas e saldos para começar a acompanhar as movimentações.</p>
+                        <Button variant="outline" onClick={() => navigate("programas")}>Registrar movimentação <ArrowRight size={14} /></Button>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="font-semibold text-slate-800">Há movimentações registradas</h3>
+                        <p className="max-w-md text-sm text-slate-500">O saldo atual e a quantidade de lançamentos estão atualizados. Ainda não há uma consulta temporal integrada para reconstruir a evolução por período.</p>
+                      </>
+                    )}
                   </div>
                 </Card>
                 <Card className="panel">
                   <div className="panel-heading">
                     <div>
                       <h2>Oportunidades em destaque</h2>
-                      <p>Exemplos de decisões que o painel poderá apoiar.</p>
+                      <p>Somente oportunidades reais e publicadas serão exibidas aqui.</p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Ver todas as oportunidades"
-                      onClick={() => navigate("oportunidades")}
-                    >
+                    <Button variant="ghost" size="icon" aria-label="Ver oportunidades" onClick={() => navigate("oportunidades")}>
                       ···
                     </Button>
                   </div>
-                  <div className="opportunity-list">
-                    <div className="opportunity-item">
-                      <div className="opportunity-brand brand-smile">S</div>
-                      <div className="opportunity-copy">
-                        <strong>Bônus de transferência</strong>
-                        <span>Programa A → Companhia aérea</span>
-                        <small>
-                          <i className="tag tag-green">TRANSFERÊNCIA</i>
-                          <b>Exemplo</b>
-                        </small>
-                      </div>
-                      <div className="opportunity-value">
-                        <strong>+80%</strong>
-                        <span>de bônus</span>
-                      </div>
-                    </div>
-                    <div className="opportunity-item">
-                      <div className="opportunity-brand brand-points">P</div>
-                      <div className="opportunity-copy">
-                        <strong>Compra de pontos</strong>
-                        <span>Clube de pontos</span>
-                        <small>
-                          <i className="tag tag-blue">COMPRA</i>
-                          <b>Exemplo</b>
-                        </small>
-                      </div>
-                      <div className="opportunity-value">
-                        <strong>R$ 21,00</strong>
-                        <span>por milheiro</span>
-                      </div>
-                    </div>
-                    <div className="opportunity-item">
-                      <div className="opportunity-brand brand-flight">
-                        <Plane size={17} />
-                      </div>
-                      <div className="opportunity-copy">
-                        <strong>Resgate internacional</strong>
-                        <span>Trecho de longa distância</span>
-                        <small>
-                          <i className="tag tag-gold">RESGATE</i>
-                          <b>Exemplo</b>
-                        </small>
-                      </div>
-                      <div className="opportunity-value">
-                        <strong>62 mil</strong>
-                        <span>pontos + taxas</span>
-                      </div>
-                    </div>
+                  <div className="flex min-h-64 flex-col items-center justify-center gap-3 px-5 py-8 text-center">
+                    <div className="placeholder-mark"><Sparkles size={24} /></div>
+                    <h3 className="font-semibold text-slate-800">Nenhuma oportunidade publicada</h3>
+                    <p className="max-w-md text-sm text-slate-500">A área de oportunidades ainda não possui um catálogo persistido conectado. Nenhuma oferta fictícia será apresentada como ativa.</p>
+                    <Button variant="outline" onClick={() => navigate("oportunidades")}>Consultar oportunidades <ArrowRight size={14} /></Button>
                   </div>
-                  <button
-                    className="panel-footer-link"
-                    onClick={() => navigate("oportunidades")}
-                  >
-                    Explorar oportunidades <ArrowRight size={15} />
-                  </button>
                 </Card>
               </motion.section>
               <motion.section
                 className="bottom-grid"
                 initial={reduceMotion ? false : { opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: 0.32,
-                  duration: 0.5,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
+                transition={{ delay: 0.18, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               >
                 <Card className="panel">
                   <div className="panel-heading">
                     <div>
                       <h2>Distribuição por programa</h2>
-                      <p>Composição ilustrativa dos saldos cadastrados.</p>
+                      <p>Composição calculada a partir dos saldos cadastrados.</p>
                     </div>
-                    <button
-                      className="subtle-link"
-                      onClick={() => navigate("programas")}
-                    >
-                      Ver programas <ArrowRight size={13} />
-                    </button>
+                    <button className="subtle-link" onClick={() => navigate("programas")}>Ver programas <ArrowRight size={13} /></button>
                   </div>
-                  <div className="program-content">
-                    <div className="donut-wrap">
-                      <div className="donut-chart">
-                        <div className="donut-center">
-                          <strong>248,6k</strong>
-                          <span>pontos totais</span>
-                        </div>
-                      </div>
+                  {dashboardLoading ? (
+                    <p className="py-10 text-center text-sm text-slate-500">Carregando programas e saldos…</p>
+                  ) : loyaltyAccounts.length === 0 ? (
+                    <div className="flex flex-col items-center gap-3 py-10 text-center">
+                      <div className="placeholder-mark"><CreditCard size={24} /></div>
+                      <h3 className="font-semibold text-slate-800">Sua carteira ainda está vazia</h3>
+                      <p className="max-w-sm text-sm text-slate-500">Adicione programas e informe os saldos para visualizar sua distribuição.</p>
+                      <Button variant="outline" onClick={() => navigate("programas")}>Adicionar programa <ArrowRight size={14} /></Button>
                     </div>
-                    <div className="program-legend">
-                      {[
-                        ["Programa A", "42%", "104.433", "dot-one"],
-                        ["Programa B", "28%", "69.622", "dot-two"],
-                        ["Programa C", "18%", "44.757", "dot-three"],
-                        ["Programa D", "12%", "29.838", "dot-four"],
-                      ].map(([name, percent, points, dot]) => (
-                        <div key={name}>
-                          <span className="program-name">
-                            <i className={"program-dot " + dot} />
-                            {name}
-                          </span>
-                          <strong>
-                            {percent}
-                            <small>{points}</small>
-                          </strong>
-                        </div>
-                      ))}
+                  ) : (
+                    <div className="space-y-4 py-4">
+                      {loyaltyAccounts.slice().sort((a, b) => Number(b.balance) - Number(a.balance)).map((account, index) => {
+                        const balance = Number(account.balance || 0);
+                        const share = totalPoints > 0 && account.currency === "POINTS" ? (balance / totalPoints) * 100 : 0;
+                        const dotClasses = ["dot-one", "dot-two", "dot-three", "dot-four"];
+                        return (
+                          <div key={account.id} className="space-y-2">
+                            <div className="flex items-center justify-between gap-3 text-sm">
+                              <span className="flex min-w-0 items-center gap-2 font-medium text-slate-700"><i className={"program-dot " + dotClasses[index % dotClasses.length]} /> <span className="truncate">{account.loyaltyProgram.name}</span></span>
+                              <strong className="shrink-0 text-slate-800">{numberFormat.format(balance)} <small className="font-normal text-slate-500">{account.currency === "POINTS" ? "pts" : account.currency}</small></strong>
+                            </div>
+                            <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#c6a45c]" style={{ width: `${Math.max(0, Math.min(100, share))}%` }} /></div>
+                            <p className="text-right text-xs text-slate-500">{account.currency === "POINTS" && totalPoints > 0 ? `${share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% do saldo em pontos` : "Saldo não comparável ao total em pontos"}</p>
+                          </div>
+                        );
+                      })}
                     </div>
-                  </div>
+                  )}
                 </Card>
                 <Card className="quick-insight">
                   <div className="insight-header">
                     <Sparkles size={16} />
                     <span>INSIGHT DO PAINEL</span>
-                    <Badge variant="gold" className="insight-demo">
-                      ILUSTRATIVO
-                    </Badge>
+                    <Badge variant="gold" className="insight-demo">ORIENTAÇÃO</Badge>
                   </div>
-                  <h2>O custo por milheiro muda a decisão.</h2>
-                  <p>
-                    Antes de comprar ou transferir pontos, compare o custo total
-                    com o valor que você consegue extrair no resgate — incluindo
-                    taxas e oportunidade perdida.
-                  </p>
-                  <Button onClick={() => navigate("calculadoras")}>
-                    <Calculator size={14} /> Conhecer calculadoras{" "}
-                    <ArrowRight size={14} />
-                  </Button>
+                  <h2>Compare o custo antes de decidir.</h2>
+                  <p>O saldo em pontos, sozinho, não determina o melhor resgate. Compare custo de aquisição, taxas e valor da passagem em dinheiro para avaliar o custo-benefício.</p>
+                  <Button onClick={() => navigate("calculadoras")}><Calculator size={14} /> Abrir calculadoras <ArrowRight size={14} /></Button>
                 </Card>
               </motion.section>
               <DashboardFooter reduceMotion={reduceMotion} notify={notify} />
@@ -680,6 +538,10 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <ProgramManagement onBack={() => navigate("dashboard")} />
           ) : route === "clientes-admin" ? (
             <ClientManagement onBack={() => navigate("dashboard")} />
+          ) : route === "calculadoras" ? (
+            <CalculatorTools />
+          ) : route === "mile-finance" ? (
+            <MileFinanceDashboard />
           ) : route === "financeiro" ? (
             user.isAdmin ? <FinanceDashboard /> : <ModulePlaceholder route="historico" onBack={() => navigate("dashboard")} />
           ) : route === "grupo-vip" ? (
@@ -703,14 +565,15 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             { key: "oportunidades", label: "Oportunidades", icon: Sparkles },
             { key: "programas", label: "Meus Pontos", icon: CreditCard },
             { key: "grupo-vip", label: "Comunidade", icon: MessageCircle },
-            { key: "aprender", label: "Aprender", icon: GraduationCap },
+            { key: "menu", label: "Mais", icon: Plus },
           ] as const).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               type="button"
-              className={`mobile-nav-item ${route === key ? "is-active" : ""}`}
-              onClick={() => navigate(key)}
-              aria-current={route === key ? "page" : undefined}
+              className={`mobile-nav-item ${key === "menu" ? "mobile-nav-more" : route === key ? "is-active" : ""}`}
+              onClick={() => key === "menu" ? setMobileOpen(true) : navigate(key)}
+              aria-current={key !== "menu" && route === key ? "page" : undefined}
+              aria-label={key === "menu" ? "Mais opções, abrir menu" : label}
             >
               <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
               <span>{label}</span>

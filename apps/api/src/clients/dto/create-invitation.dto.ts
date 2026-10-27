@@ -1,4 +1,4 @@
-import { ArrayNotEmpty, ArrayUnique, IsArray, IsEmail, IsEnum, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import { ArrayUnique, IsArray, IsEmail, IsEnum, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 import { ProductType } from "@prisma/client";
 
 export class CreateInvitationDto {
@@ -12,7 +12,6 @@ export class CreateInvitationDto {
   name?: string;
 
   @IsArray()
-  @ArrayNotEmpty()
   @ArrayUnique()
   @IsEnum(ProductType, { each: true })
   products!: ProductType[];
