@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 type PageHeaderProps = {
   eyebrow: string;
-  title: string;
+  title: ReactNode;
   description: string;
   actions?: ReactNode;
   className?: string;
@@ -27,7 +27,7 @@ export function PageHeader({
           {eyebrow}
         </div>
         <h1 className="page-title">
-          {title}<span className="gold-period">.</span>
+          {title}
         </h1>
         <p className="page-subtitle">{description}</p>
       </div>
