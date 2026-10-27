@@ -195,7 +195,7 @@ export class PersonalTravelService {
     return names;
   }
 
-  private parseRedemption(body: Payload, existing?: Prisma.PersonalRedemptionGetPayload<object>) {
+  private parseRedemption(body: Payload, existing?: Prisma.PersonalRedemptionGetPayload<{}>) {
     const origin = body.origin === undefined && existing ? existing.origin : airport(body.origin, "origem");
     const destination = body.destination === undefined && existing ? existing.destination : airport(body.destination, "destino");
     const issuanceDate = body.issuanceDate === undefined && existing ? existing.issuanceDate : asDate(body.issuanceDate, "data de emissão")!;
