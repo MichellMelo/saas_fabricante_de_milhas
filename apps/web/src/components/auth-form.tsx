@@ -10,7 +10,7 @@ function BrandLockup() {
   return (
     <Link href="/" className="inline-flex items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6b66f]" aria-label="Fabricante de Milhas — página inicial">
       <img
-        src="/logo-fabricante-de-milhas.svg"
+        src="/logo-sem-background.png"
         alt="Fabricante de Milhas"
         width={220}
         height={66}
