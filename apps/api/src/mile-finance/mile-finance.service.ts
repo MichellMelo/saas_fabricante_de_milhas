@@ -278,6 +278,103 @@ export class MileFinanceService {
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
 
+  async updatePurchase(userId: string, id: string, dto: CreateMilePurchaseDto) {
+    const purchasedAt = this.validDate(dto.purchasedAt, "compra");
+    const gross = new Prisma.Decimal(dto.grossAmount);
+    const fees = new Prisma.Decimal(dto.fees ?? 0);
+    if (fees.gt(gross)) throw new BadRequestException("As taxas não podem superar o valor bruto da compra.");
+    return this.prisma.$transaction(async (tx) => {
+      const purchase = await tx.milePurchase.findFirst({ where: { id, userId } });
+      if (!purchase) throw new NotFoundException("Compra não encontrada.");
+      if (purchase.miles !== dto.miles || purchase.loyaltyProgramId !== dto.loyaltyProgramId) {
+        throw new BadRequestException("Para preservar o custo médio, edição de compra permite alterar valor, taxas, data e observações, mas não programa ou quantidade. Exclua e registre novamente se precisar mudar esses dados.");
+      }
+      const laterMovement = await tx.mileInventoryMovement.findFirst({ where: { userId, loyaltyProgramId: purchase.loyaltyProgramId, occurredAt: { gt: purchase.purchasedAt }, id: { not: undefined } } });
+      if (laterMovement) throw new BadRequestException("Esta compra possui movimentações posteriores. Não pode ser editada sem reconstruir o histórico do estoque.");
+      const oldTotal = purchase.grossAmount.plus(purchase.fees);
+      const newTotal = gross.plus(fees).toDecimalPlaces(2);
+      const delta = newTotal.minus(oldTotal);
+      const inventory = await tx.mileInventory.findUnique({ where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: purchase.loyaltyProgramId } } });
+      if (!inventory) throw new BadRequestException("Estoque da compra não encontrado.");
+      const totalCost = inventory.totalCost.plus(delta).toDecimalPlaces(2);
+      if (totalCost.lt(0)) throw new BadRequestException("A edição deixaria o custo do estoque negativo.");
+      const averageCpm = inventory.miles === 0 ? new Prisma.Decimal(0) : totalCost.div(inventory.miles).mul(1000).toDecimalPlaces(4);
+      await tx.mileInventory.update({ where: { id: inventory.id }, data: { totalCost, averageCpm } });
+      const updated = await tx.milePurchase.update({ where: { id }, data: { grossAmount: gross, fees, purchasedAt, notes: dto.notes?.trim() || null, acquisitionCpm: newTotal.div(purchase.miles).mul(1000).toDecimalPlaces(4) } });
+      await tx.mileInventoryMovement.updateMany({ where: { purchaseId: id }, data: { occurredAt: purchasedAt, totalCost: newTotal, unitCostCpm: newTotal.div(purchase.miles).mul(1000).toDecimalPlaces(4) } });
+      return updated;
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  }
+
+  async deletePurchase(userId: string, id: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const purchase = await tx.milePurchase.findFirst({ where: { id, userId } });
+      if (!purchase) throw new NotFoundException("Compra não encontrada.");
+      const laterMovement = await tx.mileInventoryMovement.findFirst({ where: { userId, loyaltyProgramId: purchase.loyaltyProgramId, occurredAt: { gt: purchase.purchasedAt } } });
+      if (laterMovement) throw new BadRequestException("Esta compra possui movimentações posteriores. Exclua ou ajuste as operações mais recentes primeiro.");
+      const inventory = await tx.mileInventory.findUnique({ where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: purchase.loyaltyProgramId } } });
+      if (!inventory || inventory.miles < purchase.miles) throw new BadRequestException("Não é possível excluir: o estoque atual não comporta a reversão desta compra.");
+      const totalCost = inventory.totalCost.minus(purchase.grossAmount).minus(purchase.fees).toDecimalPlaces(2);
+      const miles = inventory.miles - purchase.miles;
+      if (totalCost.lt(0)) throw new BadRequestException("Não é possível excluir: o custo do estoque ficaria negativo.");
+      await tx.mileInventory.update({ where: { id: inventory.id }, data: { miles, totalCost: miles === 0 ? 0 : totalCost, averageCpm: miles === 0 ? 0 : totalCost.div(miles).mul(1000).toDecimalPlaces(4) } });
+      const account = await tx.loyaltyAccount.findUnique({ where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: purchase.loyaltyProgramId } } });
+      if (account) {
+        const balance = new Prisma.Decimal(account.balance);
+        if (balance.lt(purchase.miles)) throw new BadRequestException("Não é possível reverter a compra: saldo atual da carteira insuficiente.");
+        await tx.loyaltyAccount.update({ where: { id: account.id }, data: { balance: { decrement: purchase.miles }, lastBalanceAt: new Date() } });
+        await tx.pointTransaction.create({ data: { userId, loyaltyAccountId: account.id, type: "ADJUSTMENT", points: new Prisma.Decimal(-purchase.miles), occurredAt: new Date(), notes: "Estorno auditável de compra excluída do Financeiro de Milhas." } });
+      }
+      await tx.mileInventoryMovement.deleteMany({ where: { purchaseId: id } });
+      await tx.milePurchase.delete({ where: { id } });
+      return { success: true };
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  }
+
+  async updateSale(userId: string, id: string, dto: CreatePersonalMileSaleDto) {
+    const soldAt = this.validDate(dto.soldAt, "venda");
+    const gross = new Prisma.Decimal(dto.grossAmount);
+    const fees = new Prisma.Decimal(dto.fees ?? 0);
+    if (fees.gt(gross)) throw new BadRequestException("As taxas não podem superar o valor bruto da venda.");
+    return this.prisma.$transaction(async (tx) => {
+      const sale = await tx.mileSale.findFirst({ where: { id, userId } });
+      if (!sale) throw new NotFoundException("Venda não encontrada.");
+      if (sale.miles !== dto.miles || sale.loyaltyProgramId !== dto.loyaltyProgramId) throw new BadRequestException("Para preservar estoque e custo médio, edição de venda permite alterar valor, taxas, comprador, data e observações, mas não programa ou quantidade.");
+      const laterMovement = sale.inventoryManaged ? await tx.mileInventoryMovement.findFirst({ where: { userId, loyaltyProgramId: sale.loyaltyProgramId!, occurredAt: { gt: sale.soldAt }, saleId: { not: id } } }) : null;
+      if (laterMovement) throw new BadRequestException("Esta venda possui movimentações posteriores. Não pode ser editada sem reconstruir o histórico do estoque.");
+      const updated = await tx.mileSale.update({ where: { id }, data: { grossAmount: gross, fees, soldAt, buyerName: dto.buyerName?.trim() || null, notes: dto.notes?.trim() || null } });
+      await tx.mileInventoryMovement.updateMany({ where: { saleId: id }, data: { occurredAt: soldAt } });
+      await tx.pointTransaction.updateMany({ where: { userId, notes: { contains: id } }, data: { occurredAt: soldAt } });
+      return updated;
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  }
+
+  async deleteSale(userId: string, id: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const sale = await tx.mileSale.findFirst({ where: { id, userId } });
+      if (!sale) throw new NotFoundException("Venda não encontrada.");
+      if (sale.inventoryManaged && sale.loyaltyProgramId) {
+        const laterMovement = await tx.mileInventoryMovement.findFirst({ where: { userId, loyaltyProgramId: sale.loyaltyProgramId, occurredAt: { gt: sale.soldAt }, saleId: { not: id } } });
+        if (laterMovement) throw new BadRequestException("Esta venda possui movimentações posteriores. Exclua ou ajuste as operações mais recentes primeiro.");
+        const inventory = await tx.mileInventory.findUnique({ where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: sale.loyaltyProgramId } } });
+        if (!inventory) throw new BadRequestException("Estoque não encontrado para reverter esta venda.");
+        const restoredMiles = inventory.miles + sale.miles;
+        const restoredCost = inventory.totalCost.plus(sale.costOfGoodsSold ?? 0).toDecimalPlaces(2);
+        await tx.mileInventory.update({ where: { id: inventory.id }, data: { miles: restoredMiles, totalCost: restoredCost, averageCpm: restoredCost.div(restoredMiles).mul(1000).toDecimalPlaces(4) } });
+      }
+      if (sale.loyaltyProgramId) {
+        const account = await tx.loyaltyAccount.findUnique({ where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: sale.loyaltyProgramId } } });
+        if (account) {
+          await tx.loyaltyAccount.update({ where: { id: account.id }, data: { balance: { increment: sale.miles }, lastBalanceAt: new Date() } });
+          await tx.pointTransaction.create({ data: { userId, loyaltyAccountId: account.id, type: "ADJUSTMENT", points: new Prisma.Decimal(sale.miles), occurredAt: new Date(), notes: "Estorno auditável de venda excluída do Financeiro de Milhas." } });
+        }
+      }
+      await tx.mileInventoryMovement.deleteMany({ where: { saleId: id } });
+      await tx.mileSale.delete({ where: { id } });
+      return { success: true };
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  }
+
   async createAdjustment(userId: string, dto: CreateInventoryAdjustmentDto) {
     const program = await this.prisma.loyaltyProgram.findFirst({
       where: { id: dto.loyaltyProgramId, active: true, OR: [{ ownerUserId: null }, { ownerUserId: userId }] },
