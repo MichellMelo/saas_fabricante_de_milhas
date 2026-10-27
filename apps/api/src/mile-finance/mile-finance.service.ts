@@ -73,41 +73,46 @@ export class MileFinanceService {
     });
   }
 
-  listPurchases(userId: string, from?: string, to?: string) {
+  async listPurchases(userId: string, from?: string, to?: string, page = 1, pageSize = 10, loyaltyProgramId?: string) {
     const purchasedAt: Prisma.DateTimeFilter = {};
     if (from) purchasedAt.gte = this.validDate(from, "início do período");
     if (to) purchasedAt.lte = this.validDate(to, "fim do período");
-    return this.prisma.milePurchase.findMany({
-      where: { userId, ...(from || to ? { purchasedAt } : {}) },
-      include: { loyaltyProgram: { select: { id: true, name: true, code: true, type: true } } },
-      orderBy: [{ purchasedAt: "desc" }, { createdAt: "desc" }],
-    });
+    const where: Prisma.MilePurchaseWhereInput = { userId, ...(from || to ? { purchasedAt } : {}), ...(loyaltyProgramId ? { loyaltyProgramId } : {}) };
+    const safePage = Math.max(1, Math.floor(page));
+    const safePageSize = Math.min(50, Math.max(1, Math.floor(pageSize)));
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.milePurchase.findMany({ where, include: { loyaltyProgram: { select: { id: true, name: true, code: true, type: true } } }, orderBy: [{ purchasedAt: "desc" }, { createdAt: "desc" }], skip: (safePage - 1) * safePageSize, take: safePageSize }),
+      this.prisma.milePurchase.count({ where }),
+    ]);
+    return { items, total, page: safePage, pageSize: safePageSize, totalPages: Math.ceil(total / safePageSize) };
   }
 
-  listSales(userId: string, from?: string, to?: string) {
+  async listSales(userId: string, from?: string, to?: string, page = 1, pageSize = 10, loyaltyProgramId?: string) {
     const soldAt: Prisma.DateTimeFilter = {};
     if (from) soldAt.gte = this.validDate(from, "início do período");
     if (to) soldAt.lte = this.validDate(to, "fim do período");
-    return this.prisma.mileSale.findMany({
-      where: { userId, ...(from || to ? { soldAt } : {}) },
-      include: { loyaltyProgram: { select: { id: true, name: true, code: true, type: true } } },
-      orderBy: [{ soldAt: "desc" }, { createdAt: "desc" }],
-    });
+    const where: Prisma.MileSaleWhereInput = { userId, ...(from || to ? { soldAt } : {}), ...(loyaltyProgramId ? { loyaltyProgramId } : {}) };
+    const safePage = Math.max(1, Math.floor(page));
+    const safePageSize = Math.min(50, Math.max(1, Math.floor(pageSize)));
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.mileSale.findMany({ where, include: { loyaltyProgram: { select: { id: true, name: true, code: true, type: true } } }, orderBy: [{ soldAt: "desc" }, { createdAt: "desc" }], skip: (safePage - 1) * safePageSize, take: safePageSize }),
+      this.prisma.mileSale.count({ where }),
+    ]);
+    return { items, total, page: safePage, pageSize: safePageSize, totalPages: Math.ceil(total / safePageSize) };
   }
 
-  listMovements(userId: string, from?: string, to?: string) {
+  async listMovements(userId: string, from?: string, to?: string, page = 1, pageSize = 20, loyaltyProgramId?: string, type?: string) {
     const occurredAt: Prisma.DateTimeFilter = {};
     if (from) occurredAt.gte = this.validDate(from, "início do período");
     if (to) occurredAt.lte = this.validDate(to, "fim do período");
-    return this.prisma.mileInventoryMovement.findMany({
-      where: { userId, ...(from || to ? { occurredAt } : {}) },
-      include: {
-        loyaltyProgram: { select: { id: true, name: true, code: true, type: true } },
-        purchase: { select: { id: true, purchasedAt: true } },
-        sale: { select: { id: true, soldAt: true, buyerName: true } },
-      },
-      orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }],
-    });
+    const where: Prisma.MileInventoryMovementWhereInput = { userId, ...(from || to ? { occurredAt } : {}), ...(loyaltyProgramId ? { loyaltyProgramId } : {}), ...(type ? { type: type as import("@prisma/client").MileInventoryMovementType } : {}) };
+    const safePage = Math.max(1, Math.floor(page));
+    const safePageSize = Math.min(50, Math.max(1, Math.floor(pageSize)));
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.mileInventoryMovement.findMany({ where, include: { loyaltyProgram: { select: { id: true, name: true, code: true, type: true } }, purchase: { select: { id: true, purchasedAt: true } }, sale: { select: { id: true, soldAt: true, buyerName: true } } }, orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }], skip: (safePage - 1) * safePageSize, take: safePageSize }),
+      this.prisma.mileInventoryMovement.count({ where }),
+    ]);
+    return { items, total, page: safePage, pageSize: safePageSize, totalPages: Math.ceil(total / safePageSize) };
   }
 
   async createPurchase(userId: string, dto: CreateMilePurchaseDto) {
