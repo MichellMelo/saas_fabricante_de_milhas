@@ -2404,6 +2404,44 @@ article[class~="border-slate-200"][class~="bg-white"]:hover {
 .travel-summary-card:nth-child(3) > div:first-child > span { background:#f3efff!important; color:#8054e8!important; border-color:#e7ddff; }
 .travel-summary-card:nth-child(4) > div:first-child > span { background:#eafaf3!important; color:#07866a!important; border-color:#d1f2e4; }
 
+/* Filete inferior colorido alinhado à cor do ícone de cada indicador. */
+.loyalty-summary-card,
+.program-summary-card,
+.finance-summary-card,
+.mile-finance-summary-card,
+.travel-summary-card {
+  position: relative;
+  overflow: hidden;
+}
+.loyalty-summary-card::after,
+.program-summary-card::after,
+.finance-summary-card::after,
+.mile-finance-summary-card::after,
+.travel-summary-card::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  content: "";
+  background: #3478f6;
+}
+.loyalty-summary-card:nth-child(2)::after,
+.program-summary-card:nth-child(2)::after,
+.finance-summary-card:nth-child(2)::after,
+.mile-tone-violet::after,
+.travel-summary-card:nth-child(2)::after { background:#c66a00; }
+.loyalty-summary-card:nth-child(3)::after,
+.program-summary-card:nth-child(3)::after,
+.mile-tone-amber::after,
+.travel-summary-card:nth-child(3)::after { background:#8054e8; }
+.finance-summary-card:nth-child(3)::after,
+.mile-tone-green::after,
+.travel-summary-card:nth-child(4)::after { background:#07866a; }
+.finance-summary-card:nth-child(1)::after,
+.mile-tone-blue::after,
+.travel-summary-card:nth-child(1)::after { background:#3478f6; }
+
 /* Hover compartilhado com feedback claro sem exagerar a elevação. */
 .kpi-card:hover,
 .loyalty-summary-card:hover,
