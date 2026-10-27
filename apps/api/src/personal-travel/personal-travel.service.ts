@@ -106,7 +106,7 @@ export class PersonalTravelService {
       : { userId, deletedAt: null };
     const records = await this.prisma.personalRedemption.findMany({
       where,
-      include: { trip: { include: { passengers: { orderBy: { createdAt: "asc" } } } },
+      include: { trip: { include: { passengers: { orderBy: { createdAt: "asc" } } } } },
       orderBy: [{ issuanceDate: "desc" }, { createdAt: "desc" }],
     });
     return { records, total: records.length };
