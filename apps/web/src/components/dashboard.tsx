@@ -38,7 +38,7 @@ import { FinanceDashboard } from "@/components/finance-dashboard";
 import { MileFinanceDashboard } from "@/components/mile-finance-dashboard";
 import { CalculatorTools } from "@/components/calculator-tools";
 import { FlightHistory } from "@/components/flight-history";
-import { FlightRecords } from "@/components/flight-records";
+import { PersonalTravel } from "@/components/personal-travel";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -55,7 +55,7 @@ const navItems: SidebarNavItem[] = [
   { key: "financeiro", label: "Financeiro", icon: Wallet },
   { key: "mile-finance", label: "Financeiro de Milhas", icon: TrendingUp },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator },
-  { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
+  { key: "passagens", label: "Passagens e resgates", icon: Plane },
   { key: "historico", label: "Histórico de disponibilidades", icon: Clock3 },
 ];
 const routeCopy: Record<
@@ -134,7 +134,7 @@ const routeCopy: Record<
     title: "Passagens e resgates",
     eyebrow: "VIAGENS E RESGATES",
     description:
-      "Organize informações de viagens e resgates. Este módulo ainda está planejado para uma próxima fase.",
+      "Organize suas viagens, resgates, passageiros e custos em um só lugar.",
     icon: Plane,
   },
   historico: {
@@ -544,7 +544,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           ) : route === "clientes-admin" ? (
             <ClientManagement onBack={() => navigate("dashboard")} />
            ) : route === "passagens" ? (
-            <ModulePlaceholder route="passagens" onBack={() => navigate("dashboard")} />
+            <PersonalTravel />
            ) : route === "historico" ? (
             <FlightHistory />
           ) : route === "calculadoras" ? (

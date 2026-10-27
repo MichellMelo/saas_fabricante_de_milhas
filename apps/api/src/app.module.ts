@@ -9,6 +9,7 @@ import { HealthController } from "./health.controller";
 import { LoyaltyModule } from "./loyalty/loyalty.module";
 import { MileFinanceModule } from "./mile-finance/mile-finance.module";
 import { FlightHistoryModule } from "./flight-history/flight-history.module";
+import { PersonalTravelModule } from "./personal-travel/personal-travel.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { ProductContentModule } from "./product-content/product-content.module";
 
@@ -26,6 +27,7 @@ import { ProductContentModule } from "./product-content/product-content.module";
     LoyaltyModule,
     MileFinanceModule,
     FlightHistoryModule,
+    PersonalTravelModule,
   ],
   controllers: [HealthController],
   providers: [
