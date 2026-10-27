@@ -38,6 +38,7 @@ import { FinanceDashboard } from "@/components/finance-dashboard";
 import { MileFinanceDashboard } from "@/components/mile-finance-dashboard";
 import { CalculatorTools } from "@/components/calculator-tools";
 import { FlightHistory } from "@/components/flight-history";
+import { FlightRecords } from "@/components/flight-records";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -54,8 +55,8 @@ const navItems: SidebarNavItem[] = [
   { key: "financeiro", label: "Financeiro", icon: Wallet },
   { key: "mile-finance", label: "Financeiro de Milhas", icon: TrendingUp },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator },
-  { key: "passagens", label: "Passagens e resgates", icon: Plane, soon: true },
-  { key: "historico", label: "Histórico de passagens", icon: Clock3 },
+  { key: "passagens", label: "Passagens e resgates", icon: Plane },
+  { key: "historico", label: "Disponibilidade de emissões", icon: Clock3 },
 ];
 const routeCopy: Record<
   Exclude<RouteKey, "dashboard">,
@@ -133,13 +134,13 @@ const routeCopy: Record<
     title: "Passagens e resgates",
     eyebrow: "VIAGENS E RESGATES",
     description:
-      "Organize resgates e consulte o histórico das suas viagens. Ainda não há pesquisa de passagens nem integração com companhias aéreas.",
+      "Registre e acompanhe emissões feitas com milhas, dinheiro ou ambos. A sincronização com o banco será ativada após a publicação da API.",
     icon: Plane,
   },
   historico: {
-    title: "Histórico de emissões",
-    eyebrow: "DISPONIBILIDADES PESQUISADAS",
-    description: "Consulte os registros de emissões da sua planilha por programa, rota, classe e datas disponíveis.",
+    title: "Disponibilidade de emissões",
+    eyebrow: "RADAR DE DISPONIBILIDADE",
+    description: "Consulte os registros de disponibilidade de emissões por programa, rota, classe e datas pesquisadas. Esta área é diferente do seu histórico pessoal de passagens.",
     icon: Clock3,
   },
 };
@@ -542,6 +543,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <ProgramManagement onBack={() => navigate("dashboard")} />
           ) : route === "clientes-admin" ? (
             <ClientManagement onBack={() => navigate("dashboard")} />
+          ) : route === "passagens" ? (
+            <FlightRecords />
           ) : route === "historico" ? (
             <FlightHistory />
           ) : route === "calculadoras" ? (
