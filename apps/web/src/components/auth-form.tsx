@@ -9,11 +9,7 @@ type AuthFormProps = { mode: "login" | "register" };
 function BrandMark({ large = false }: { large?: boolean }) {
   return (
     <span className={`relative grid shrink-0 place-items-center overflow-hidden rounded-2xl border border-[#d5b56c]/35 bg-[#0c1422] ${large ? "h-[62px] w-[62px]" : "h-11 w-11"}`}>
-      <svg viewBox="0 0 64 64" className={large ? "h-12 w-12" : "h-8 w-8"} fill="none" aria-hidden="true">
-        <path d="M8 43 26 20l-3 16 17-12-10 20-12-3-10 2Z" fill="#D8B76C"/>
-        <path d="M8 51c13-2 22-7 31-16 5-5 10-11 16-21" stroke="#F8EAC4" strokeWidth="2.4" strokeLinecap="round"/>
-        <path d="m46 15 9-1-2 9" stroke="#F8EAC4" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
+      <img src="/logo-fabricante-de-milhas.svg" alt="" width={large ? 48 : 32} height={large ? 48 : 32} className="h-auto w-auto object-contain" />
     </span>
   );
 }
@@ -21,7 +17,7 @@ function BrandMark({ large = false }: { large?: boolean }) {
 function BrandLockup({ light = false }: { light?: boolean }) {
   return (
     <Link href="/" className="inline-flex items-center gap-3" aria-label="Fabricante de Milhas">
-      <BrandMark />
+      <img src="/logo-fabricante-de-milhas.svg" alt="Fabricante de Milhas" width={44} height={44} className="h-11 w-11 shrink-0 object-contain" />
       <span className="leading-none">
         <strong className={`block text-[17px] font-bold tracking-[-0.045em] ${light ? "text-white" : "text-[#111b2b]"}`}>Fabricante</strong>
         <span className="mt-1.5 block text-[9px] font-bold tracking-[0.31em] text-[#b58a37]">DE MILHAS</span>
@@ -119,9 +115,6 @@ export function AuthForm({ mode }: AuthFormProps) {
         </section>
 
         <section className="mx-auto w-full max-w-[480px]">
-          <div className="mb-6 lg:hidden">
-            <BrandLockup light />
-          </div>
           <div className="relative overflow-hidden rounded-[26px] border border-white/70 bg-[#fffefd] p-6 shadow-[0_28px_100px_rgba(0,0,0,0.28)] sm:p-9 lg:p-10">
             <div aria-hidden="true" className="absolute right-0 top-0 h-1 w-full bg-gradient-to-r from-[#d6b66f] via-[#f1dfad] to-transparent" />
             <div className="mb-8 flex items-start justify-between gap-4">
@@ -136,7 +129,6 @@ export function AuthForm({ mode }: AuthFormProps) {
                   {isRegister ? "Organize seus pontos e tenha mais critério para escolher quando comprar, transferir ou resgatar." : "Entre para acompanhar seus pontos, custos e próximas oportunidades."}
                 </p>
               </div>
-              <div className="hidden sm:block"><BrandMark large /></div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
