@@ -36,8 +36,8 @@ export function DashboardSidebar({ mobileOpen, route, navItems, navigate, notify
                 <SidebarMenuItem key={key}>
                   <SidebarMenuButton isActive={route === key} onClick={() => navigate(key)} title={label}>
                     <Icon size={18} strokeWidth={1.8} className="shrink-0" />
-                    <span className="min-w-0 flex-1 truncate">{label}</span>
-                    {soon && <span className="ml-auto rounded-md border border-white/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-slate-500">EM BREVE</span>}
+                    <span className="min-w-0 flex-1 whitespace-normal break-words text-left leading-tight">{label}</span>
+                    {soon && <span className="ml-auto shrink-0 rounded-md border border-white/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-slate-500">EM BREVE</span>}
                     {!soon && route === key && <ChevronRight size={14} className="ml-auto shrink-0 text-[#c6a45c]" />}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
