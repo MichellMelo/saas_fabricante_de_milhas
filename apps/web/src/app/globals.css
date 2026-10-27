@@ -2355,3 +2355,64 @@ article[class~="border-slate-200"][class~="bg-white"]:hover {
 @media(prefers-reduced-motion:reduce) {
   .flight-history-stat-card,.flight-history-stat-card:hover { transition:none; transform:none; }
 }
+
+
+/* Indicadores: ícones em badges coloridos, como no Histórico de disponibilidades. */
+.loyalty-summary-card > div:first-child svg,
+.program-summary-card > div:first-child svg {
+  box-sizing: content-box;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #eef5ff;
+  color: #3478f6;
+}
+.loyalty-summary-card:nth-child(2) > div:first-child svg { background:#fff7e6; color:#c66a00; }
+.loyalty-summary-card:nth-child(3) > div:first-child svg { background:#f3efff; color:#8054e8; }
+.program-summary-card:nth-child(2) > div:first-child svg { background:#f3efff; color:#8054e8; }
+.program-summary-card:nth-child(3) > div:first-child svg { background:#eafaf3; color:#07866a; }
+
+.mile-finance-summary-card .mile-stat-heading {
+  display:flex;
+  min-height:36px;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  color:#66758a;
+  font-size:13px;
+  font-weight:600;
+}
+.mile-finance-summary-card .mile-stat-icon {
+  display:inline-flex;
+  width:44px;
+  height:44px;
+  flex-shrink:0;
+  align-items:center;
+  justify-content:center;
+  border-radius:13px;
+}
+.mile-finance-summary-card.mile-tone-blue .mile-stat-icon { background:#eef5ff; color:#3478f6; }
+.mile-finance-summary-card.mile-tone-violet .mile-stat-icon { background:#f3efff; color:#8054e8; }
+.mile-finance-summary-card.mile-tone-amber .mile-stat-icon { background:#fff7e6; color:#c66a00; }
+.mile-finance-summary-card.mile-tone-green .mile-stat-icon { background:#eafaf3; color:#07866a; }
+
+.finance-summary-card > div:first-child > span { display:inline-flex; width:42px; height:42px; align-items:center; justify-content:center; border-radius:13px; }
+.travel-summary-card:nth-child(1) > div:first-child > span { background:#eef5ff!important; color:#3478f6!important; border-color:#dce9ff; }
+.travel-summary-card:nth-child(2) > div:first-child > span { background:#fff7e6!important; color:#c66a00!important; border-color:#f6e7c4; }
+.travel-summary-card:nth-child(3) > div:first-child > span { background:#f3efff!important; color:#8054e8!important; border-color:#e7ddff; }
+.travel-summary-card:nth-child(4) > div:first-child > span { background:#eafaf3!important; color:#07866a!important; border-color:#d1f2e4; }
+
+/* Hover compartilhado com feedback claro sem exagerar a elevação. */
+.kpi-card:hover,
+.loyalty-summary-card:hover,
+.program-summary-card:hover,
+.finance-summary-card:hover,
+.mile-finance-summary-card:hover,
+.travel-summary-card:hover,
+.flight-history-stat-card:hover {
+  transform:translateY(-3px);
+  border-color:#cbd6e4!important;
+  box-shadow:0 9px 24px rgba(23,35,55,.09)!important;
+}
