@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { ArrowDownLeft, Boxes, LoaderCircle, Plus, ShoppingCart, TrendingUp } from "lucide-react";
+import { ArrowDownLeft, Boxes, LoaderCircle, Plus, ShoppingCart, TrendingUp, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -26,6 +26,7 @@ export function MileFinanceDashboard() {
   const [error, setError] = useState("");
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [formType, setFormType] = useState<"purchase" | "sale" | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [programId, setProgramId] = useState("");
   const [miles, setMiles] = useState("");
   const [grossAmount, setGrossAmount] = useState("");
@@ -76,6 +77,7 @@ export function MileFinanceDashboard() {
   const availableForSale = selectedInventory?.miles ? selectedInventory.miles : selectedWalletBalance;
 
   function openForm(type: "purchase" | "sale") {
+    setEditingId(null);
     setFormType(type);
     setProgramId(programId || programs[0]?.id || "");
     setMiles("");
