@@ -759,6 +759,9 @@ select:focus-visible {
 .bottom-grid {
   grid-template-columns: minmax(0, 1.05fr) minmax(340px, 1fr);
 }
+.content-grid {
+  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 1fr);
+}
 .program-content {
   display: flex;
   align-items: center;
