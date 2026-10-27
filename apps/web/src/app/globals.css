@@ -2429,11 +2429,11 @@ article[class~="border-slate-200"][class~="bg-white"]:hover {
 .loyalty-summary-card:nth-child(2)::after,
 .program-summary-card:nth-child(2)::after,
 .finance-summary-card:nth-child(2)::after,
-.mile-tone-violet::after,
+.mile-tone-amber::after,
 .travel-summary-card:nth-child(2)::after { background:#c66a00; }
 .loyalty-summary-card:nth-child(3)::after,
 .program-summary-card:nth-child(3)::after,
-.mile-tone-amber::after,
+.mile-tone-violet::after,
 .travel-summary-card:nth-child(3)::after { background:#8054e8; }
 .finance-summary-card:nth-child(3)::after,
 .mile-tone-green::after,
