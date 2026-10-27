@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, ServiceUnavailableException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { createHash } from "node:crypto";
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -6,11 +7,35 @@ type ImportRecord = { dateRegistered: string; program: string; cabinClass: strin
 
 @Injectable()
 export class FlightHistoryService {
- constructor(private readonly prisma: PrismaService) {}
+ constructor(
+  private readonly prisma: PrismaService,
+  private readonly config: ConfigService,
+ ) {}
 
  async list(userId: string) {
   const records = await this.prisma.flightAvailability.findMany({ where: { userId }, orderBy: [{ dateRegistered: "desc" }, { origin: "asc" }, { destination: "asc" }], take: 2000 });
   return { records, total: records.length };
+ }
+
+ async importIntegrationRecords(rawRecords: unknown[] | undefined) {
+  const userId = this.config.get<string>("FLIGHT_HISTORY_IMPORT_USER_ID");
+  if (!userId) {
+   throw new ServiceUnavailableException(
+    "O usuário de destino da integração do histórico não está configurado.",
+   );
+  }
+
+  const user = await this.prisma.user.findUnique({
+   where: { id: userId },
+   select: { id: true, active: true },
+  });
+  if (!user || !user.active) {
+   throw new ServiceUnavailableException(
+    "O usuário de destino da integração não existe ou está inativo.",
+   );
+  }
+
+  return this.importRecords(user.id, rawRecords);
  }
 
  async importRecords(userId: string, rawRecords: unknown[] | undefined) {
