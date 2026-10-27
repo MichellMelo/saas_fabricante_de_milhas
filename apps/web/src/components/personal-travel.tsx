@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronDown, Coins, Plane, Plus, RefreshCw, Search, Trash2, Undo2, Wallet, X } from "lucide-react";
+import { CalendarDays, Coins, Plane, Plus, RefreshCw, Search, Trash2, Undo2, Wallet, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -87,9 +87,9 @@ export function PersonalTravel() {
     const normalized = query.trim().toLocaleLowerCase("pt-BR");
     return redemptions.filter(item => !normalized || [item.origin, item.destination, item.program, item.cabin, item.bookingLocator ?? "", item.trip?.title ?? ""].join(" ").toLocaleLowerCase("pt-BR").includes(normalized));
   }, [redemptions, query]);
-  const totalMiles = redemptions.reduce((sum, item) => sum + item.milesUsed, 0);
+  const totalMiles = redemptions.filter(item => item.status === "ISSUED" || item.status === "TRIP_COMPLETED").reduce((sum, item) => sum + item.milesUsed, 0);
   const totalFees = redemptions.reduce((sum, item) => sum + Number(item.feesPaid), 0);
-  const withReference = redemptions.filter(item => item.cashReferencePrice !== null && item.cashReferencePrice !== undefined);
+  const withReference = redemptions.filter(item => item.status !== "CANCELLED" && item.status !== "REFUNDED" && item.cashReferencePrice !== null && item.cashReferencePrice !== undefined);
   const totalEstimatedSavings = withReference.reduce((sum, item) => sum + Number(item.cashReferencePrice) - Number(item.feesPaid), 0);
   const referenceMiles = withReference.reduce((sum, item) => sum + item.milesUsed, 0);
   const valuePerThousand = referenceMiles > 0 ? totalEstimatedSavings * 1000 / referenceMiles : null;
@@ -181,7 +181,7 @@ export function PersonalTravel() {
     </div>
 
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {[{label:"Resgates ativos",value:String(redemptions.length),icon:Plane,foot:"Emissões fora da lixeira"},{label:"Milhas utilizadas",value:numberText(totalMiles),icon:Coins,foot:"Total dos resgates ativos"},{label:"Taxas registradas",value:moneyText(totalFees),icon:Wallet,foot:"Valores informados pelo usuário"},{label:"Economia estimada",value:withReference.length?moneyText(totalEstimatedSavings):"—",icon:CalendarDays,foot:withReference.length?"Comparação com preços de referência informados":"Informe preço e data de referência para calcular"}].map(k => <Card key={k.label} className="p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-xs text-slate-500">{k.label}</p><p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{k.value}</p></div><span className="rounded-xl bg-amber-50 p-2.5 text-amber-700"><k.icon size={19}/></span></div><p className="mt-2 text-xs text-slate-500">{k.foot}</p></Card>)}
+      {[{label:"Resgates ativos",value:String(redemptions.length),icon:Plane,foot:"Emissões fora da lixeira"},{label:"Milhas utilizadas",value:numberText(totalMiles),icon:Coins,foot:"Emitidos ou com viagem concluída; cancelados e reembolsados ficam fora"},{label:"Taxas registradas",value:moneyText(totalFees),icon:Wallet,foot:"Valores informados pelo usuário"},{label:"Economia estimada",value:withReference.length?moneyText(totalEstimatedSavings):"—",icon:CalendarDays,foot:withReference.length?"Comparação com preços de referência informados":"Informe preço e data de referência para calcular"}].map(k => <Card key={k.label} className="p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-xs text-slate-500">{k.label}</p><p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{k.value}</p></div><span className="rounded-xl bg-amber-50 p-2.5 text-amber-700"><k.icon size={19}/></span></div><p className="mt-2 text-xs text-slate-500">{k.foot}</p></Card>)}
     </div>
     {withReference.length > 0 && <p className="text-xs text-slate-500">Valor econômico estimado por milheiro: {valuePerThousand === null ? "—" : moneyText(valuePerThousand)}. É uma estimativa baseada nos preços de referência cadastrados, não o custo de compra das milhas.</p>}
 
