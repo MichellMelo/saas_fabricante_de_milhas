@@ -60,6 +60,7 @@ export function FinanceDashboard() {
   const [paymentProduct, setPaymentProduct] = useState<Payment["product"]>("GROUP_VIP");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [paymentNotes, setPaymentNotes] = useState("");
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
 
   async function load() {
