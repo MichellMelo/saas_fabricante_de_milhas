@@ -7,6 +7,7 @@ import { CalendarDays, Coins, Plane, Plus, RefreshCw, Search, Trash2, Undo2, Wal
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type Passenger = { id: string; name: string };
 type Trip = {
@@ -188,8 +189,8 @@ export function PersonalTravel() {
       {([{ id: "redemptions", label: "Meus resgates" }, { id: "trips", label: "Minhas viagens" }, { id: "trash", label: "Lixeira" }, { id: "explore", label: "Explorar oportunidades" }] as const).map(item => <button key={item.id} type="button" onClick={() => setTab(item.id)} className={"rounded-lg px-3 py-2 text-sm font-medium transition " + (tab === item.id ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100")}>{item.label}{item.id === "trash" && trash.length ? " (" + trash.length + ")" : ""}</button>)}
     </div>
 
-    {error && <div role="alert" className="flex items-start justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}<button onClick={() => setError("")} aria-label="Fechar erro"><X size={16} /></button></div>}
-    {notice && <div role="status" className="flex items-start justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{notice}<button onClick={() => setNotice("")} aria-label="Fechar aviso"><X size={16} /></button></div>}
+    {error && <Alert role="alert" className="flex items-start justify-between gap-3 border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><AlertDescription>{error}</AlertDescription><button onClick={() => setError("")} aria-label="Fechar erro" className="shrink-0"><X size={16} /></button></Alert>}
+    {notice && <Alert role="status" className="flex items-start justify-between gap-3 border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"><AlertDescription>{notice}</AlertDescription><button onClick={() => setNotice("")} aria-label="Fechar aviso" className="shrink-0"><X size={16} /></button></Alert>}
     {loading ? <Card className="p-12 text-center text-sm text-slate-500">Carregando seus resgates e viagens…</Card> : tab === "explore" ? <Card className="p-8 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-700"><Search size={23} /></div><h2 className="mt-4 font-semibold text-slate-900">Explorar oportunidades</h2><p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">O feed comunitário com publicações da administração será implementado na próxima etapa. Nenhuma oportunidade fictícia será exibida como real.</p></Card>
       : tab === "trips" ? <div className="space-y-3"><div className="flex justify-end"><Button variant="outline" onClick={() => setShowTripForm(v => !v)}><Plus size={14} /> Nova viagem</Button></div>
         {showTripForm && <Card className="p-4"><h2 className="font-semibold text-slate-900">Cadastrar viagem</h2><form onSubmit={saveTrip} className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
