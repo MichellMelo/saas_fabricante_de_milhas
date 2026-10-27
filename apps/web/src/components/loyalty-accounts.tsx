@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/page-header";
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -134,16 +135,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
 
   return (
     <section className="space-y-6">
-      <div className="welcome-row">
-        <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> PATRIMÔNIO DE PONTOS</div>
-          <h1 className="page-title">Programas e saldos</h1>
-          <p className="page-subtitle">Organize suas contas de fidelidade e registre movimentações para manter os saldos consistentes.</p>
-        </div>
-        <div className="welcome-actions">
-          <Button onClick={() => { setShowCreate((value) => !value); setError(""); }} disabled={availablePrograms.length === 0}><Plus size={16} /> Adicionar programa</Button>
-        </div>
-      </div>
+      <PageHeader eyebrow="PATRIMÔNIO DE PONTOS" title="Programas e saldos" description="Organize suas contas de fidelidade e registre movimentações para manter os saldos consistentes." actions={<Button onClick={() => { setShowCreate((value) => !value); setError(""); }} disabled={availablePrograms.length === 0}><Plus size={16} /> Adicionar programa</Button>} />
 
       {error && <div role="alert" className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
       {success && <div role="status" className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</div>}
