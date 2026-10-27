@@ -21,8 +21,8 @@ export class MileFinanceController {
   }
 
   @Get("purchases")
-  purchases(@Req() request: AuthenticatedRequest, @Query("from") from?: string, @Query("to") to?: string) {
-    return this.finance.listPurchases(request.user.id, from, to);
+  purchases(@Req() request: AuthenticatedRequest, @Query("from") from?: string, @Query("to") to?: string, @Query("page") page?: string, @Query("pageSize") pageSize?: string, @Query("loyaltyProgramId") loyaltyProgramId?: string) {
+    return this.finance.listPurchases(request.user.id, from, to, Number(page) || 1, Number(pageSize) || 10, loyaltyProgramId);
   }
 
   @Patch("purchases/:id")
@@ -41,8 +41,8 @@ export class MileFinanceController {
   }
 
   @Get("sales")
-  sales(@Req() request: AuthenticatedRequest, @Query("from") from?: string, @Query("to") to?: string) {
-    return this.finance.listSales(request.user.id, from, to);
+  sales(@Req() request: AuthenticatedRequest, @Query("from") from?: string, @Query("to") to?: string, @Query("page") page?: string, @Query("pageSize") pageSize?: string, @Query("loyaltyProgramId") loyaltyProgramId?: string) {
+    return this.finance.listSales(request.user.id, from, to, Number(page) || 1, Number(pageSize) || 10, loyaltyProgramId);
   }
 
   @Patch("sales/:id")
@@ -61,8 +61,8 @@ export class MileFinanceController {
   }
 
   @Get("movements")
-  movements(@Req() request: AuthenticatedRequest, @Query("from") from?: string, @Query("to") to?: string) {
-    return this.finance.listMovements(request.user.id, from, to);
+  movements(@Req() request: AuthenticatedRequest, @Query("from") from?: string, @Query("to") to?: string, @Query("page") page?: string, @Query("pageSize") pageSize?: string, @Query("loyaltyProgramId") loyaltyProgramId?: string, @Query("type") type?: string) {
+    return this.finance.listMovements(request.user.id, from, to, Number(page) || 1, Number(pageSize) || 20, loyaltyProgramId, type);
   }
 
   @Post("inventory/adjustments")
