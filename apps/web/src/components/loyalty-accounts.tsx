@@ -1,5 +1,6 @@
-import { PageHeader } from "@/components/page-header";
 "use client";
+
+import { PageHeader } from "@/components/page-header";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ArrowDownLeft, ArrowUpRight, Plus, WalletCards } from "lucide-react";
