@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/page-header";
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -95,10 +96,7 @@ export function FlightRecords() {
   }
 
   return <section className="space-y-5">
-    <div className="flex flex-wrap items-start justify-between gap-4">
-      <div><div className="eyebrow"><span className="eyebrow-line" /> VIAGENS E RESGATES</div><h1 className="page-title">Histórico de passagens<span className="gold-period">.</span></h1><p className="page-subtitle">Registre e acompanhe emissões feitas com milhas, dinheiro ou ambos.</p></div>
-      <Button onClick={openNew}><Plus size={16}/> Nova passagem</Button>
-    </div>
+    <PageHeader eyebrow="VIAGENS E RESGATES" title={<>Histórico de passagens<span className="gold-period">.</span></>} description="Registre e acompanhe emissões feitas com milhas, dinheiro ou ambos." actions={<Button onClick={openNew}><Plus size={16}/> Nova passagem</Button>} />
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {[{label:"Passagens registradas",value:String(records.length),icon:Ticket,tone:"bg-blue-50 text-blue-600",foot:"Registros no seu histórico"},{label:"Milhas utilizadas",value:integer(records.reduce((s,r)=>s+r.milesUsed,0)),icon:Coins,tone:"bg-amber-50 text-amber-700",foot:"Milhas informadas"},{label:"Taxas e valores pagos",value:brl(records.reduce((s,r)=>s+r.taxes+(r.emissionType==="Dinheiro"?r.cashFare:0),0)),icon:Wallet,tone:"bg-emerald-50 text-emerald-700",foot:"Valores efetivamente registrados"},{label:"Próximas viagens",value:String(upcoming),icon:CalendarDays,tone:"bg-violet-50 text-violet-600",foot:"Emissões confirmadas"}].map(k => <Card key={k.label} className="p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-xs text-slate-500">{k.label}</p><p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{k.value}</p></div><span className={"rounded-xl p-2.5 "+k.tone}><k.icon size={19}/></span></div><p className="mt-2 text-xs text-slate-500">{k.foot}</p></Card>)}
     </div>
