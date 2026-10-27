@@ -57,6 +57,7 @@ model User {
  customLoyaltyPrograms LoyaltyProgram[]
  transactions PointTransaction[]
  flights FlightRecord[]
+ flightAvailabilities FlightAvailability[]
  productAccesses UserProductAccess[]
  payments ClientPayment[]
  mileSales MileSale[]
@@ -305,4 +306,27 @@ model MileInventoryMovement {
   @@index([userId, loyaltyProgramId, occurredAt])
   @@index([purchaseId])
   @@index([saleId])
+}
+
+
+model FlightAvailability {
+ id String @id @default(cuid())
+ userId String
+ fingerprint String
+ dateRegistered DateTime
+ program String @db.VarChar(100)
+ cabinClass String @db.VarChar(50)
+ origin String @db.VarChar(3)
+ destination String @db.VarChar(3)
+ milesFloor Int
+ monthsAvailable String @db.Text
+ outboundDates String @db.Text
+ returnDates String @db.Text
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ @@unique([userId, fingerprint])
+ @@index([userId, dateRegistered])
+ @@index([userId, origin, destination])
+ @@index([userId, program])
 }
