@@ -1,7 +1,9 @@
 "use client";
 
+import { PageHeader } from "@/components/page-header";
+
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { ArrowDownLeft, ArrowUpRight, Plus, WalletCards } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Building2, Plane, Plus, WalletCards } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -34,6 +36,26 @@ const typeLabel: Record<Program["type"], string> = {
   HOTEL: "Hotel",
   OTHER: "Outro",
 };
+
+const programIcon: Record<string, string> = {
+  ESFERA: "/program-icons/esfera.png",
+  LIVELO: "/program-icons/livelo.png",
+  SMILES: "/program-icons/smiles.png",
+  LATAM_PASS: "/program-icons/latam.png",
+  AZUL_FIDELIDADE: "/program-icons/azul.png",
+};
+
+function ProgramMark({ program }: { program: Program }) {
+  const icon = programIcon[program.code.toUpperCase()];
+  return (
+    <div aria-label={program.name} title={program.name} className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-100 bg-white p-1.5">
+      {icon ? <img src={icon} alt={program.name} className="size-full object-contain" /> :
+        program.type === "AIRLINE" ? <Plane size={25} strokeWidth={1.8} className="text-slate-600" /> :
+        program.type === "HOTEL" ? <Building2 size={25} strokeWidth={1.8} className="text-slate-600" /> :
+        <WalletCards size={25} strokeWidth={1.8} className="text-slate-600" />}
+    </div>
+  );
+}
 
 function formatPoints(value: string | number) {
   return numberFormat.format(Number(value));
@@ -134,32 +156,23 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
 
   return (
     <section className="space-y-6">
-      <div className="welcome-row">
-        <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> PATRIMÔNIO DE PONTOS</div>
-          <h1 className="page-title">Programas e saldos</h1>
-          <p className="page-subtitle">Organize suas contas de fidelidade e registre movimentações para manter os saldos consistentes.</p>
-        </div>
-        <div className="welcome-actions">
-          <Button onClick={() => { setShowCreate((value) => !value); setError(""); }} disabled={availablePrograms.length === 0}><Plus size={16} /> Adicionar programa</Button>
-        </div>
-      </div>
+      <PageHeader eyebrow="PATRIMÔNIO DE PONTOS" title="Programas e saldos" description="Organize suas contas de fidelidade e registre movimentações para manter os saldos consistentes." actions={<Button onClick={() => { setShowCreate((value) => !value); setError(""); }} disabled={availablePrograms.length === 0}><Plus size={16} /> Adicionar programa</Button>} />
 
       {error && <div role="alert" className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
       {success && <div role="status" className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</div>}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <Card className="border-slate-200 bg-white p-5 shadow-none">
+        <Card className="panel loyalty-summary-card">
           <div className="flex items-center gap-3 text-slate-500"><WalletCards size={18} /><span className="text-sm">Contas cadastradas</span></div>
           <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{accounts.length}</div>
           <p className="mt-1 text-xs text-slate-500">Programas vinculados ao seu perfil</p>
         </Card>
-        <Card className="border-slate-200 bg-white p-5 shadow-none">
+        <Card className="panel loyalty-summary-card">
           <div className="flex items-center gap-3 text-slate-500"><ArrowDownLeft size={18} /><span className="text-sm">Programas disponíveis</span></div>
           <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{availablePrograms.length}</div>
           <p className="mt-1 text-xs text-slate-500">Ainda não vinculados à sua carteira</p>
         </Card>
-        <Card className="border-slate-200 bg-white p-5 shadow-none">
+        <Card className="panel loyalty-summary-card">
           <div className="flex items-center gap-3 text-slate-500"><ArrowUpRight size={18} /><span className="text-sm">Movimentações</span></div>
           <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{accounts.reduce((total, account) => total + (account._count?.transactions ?? 0), 0)}</div>
           <p className="mt-1 text-xs text-slate-500">Lançamentos registrados nas contas</p>
@@ -167,7 +180,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
       </div>
 
       {showCreate && (
-        <Card className="border-amber-200 bg-[#fffdf8] p-5 shadow-none">
+        <Card className="panel loyalty-create-card">
           <h2 className="text-lg font-semibold text-slate-900">Adicionar conta de fidelidade</h2>
           <p className="mt-1 text-sm text-slate-500">Informe o programa e, se souber, o saldo atual. O saldo inicial fica registrado como ajuste.</p>
           <form onSubmit={createAccount} className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -189,7 +202,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
       )}
 
       {accounts.length > 0 && (
-        <Card className="border-slate-200 bg-white p-5 shadow-none">
+        <Card className="panel loyalty-summary-card">
           <h2 className="text-lg font-semibold text-slate-900">Registrar movimentação</h2>
           <p className="mt-1 text-sm text-slate-500">As saídas reduzem o saldo; o sistema impede lançamentos que deixem o saldo negativo.</p>
           <form onSubmit={createTransaction} className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -229,15 +242,15 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
             <div className="mt-5"><Button onClick={() => setShowCreate(true)} disabled={availablePrograms.length === 0}><Plus size={15} /> Adicionar programa</Button></div>
             {programs.length === 0 && <p className="mt-4 text-xs text-slate-500">O catálogo ainda não tem programas. Execute a carga inicial indicada nas instruções de configuração.</p>}
           </Card> :
-          <div className="grid gap-4 lg:grid-cols-2">
-            {accounts.map((account) => <Card key={account.id} className="border-slate-200 bg-white p-5 shadow-none transition hover:border-amber-300">
-              <div className="flex items-start justify-between gap-3">
-                <div><div className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">{typeLabel[account.loyaltyProgram.type]}</div><h3 className="mt-2 text-xl font-semibold text-slate-900">{account.loyaltyProgram.name}</h3>{account.memberReference && <p className="mt-1 text-xs text-slate-500">Identificação: {account.memberReference}</p>}</div>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">{account._count?.transactions ?? 0} mov.</span>
-              </div>
-              <div className="mt-6 border-t border-slate-100 pt-4"><div className="text-sm text-slate-500">Saldo disponível</div><div className="mt-1 text-3xl font-semibold tracking-tight text-slate-900">{formatPoints(account.balance)} <span className="text-sm font-normal text-slate-500">{account.currency === "POINTS" ? "pontos/milhas" : account.currency}</span></div><p className="mt-2 text-xs text-slate-400">Atualizado em {new Date(account.updatedAt).toLocaleDateString("pt-BR")}</p></div>
-            </Card>)}
-          </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              {accounts.map((account) => <Card key={account.id} className="border-slate-200 bg-white p-5 shadow-none transition hover:border-amber-300">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-4"><ProgramMark program={account.loyaltyProgram} /><div className="min-w-0"><div className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">{typeLabel[account.loyaltyProgram.type]}</div><h3 className="mt-2 text-xl font-semibold text-slate-900">{account.loyaltyProgram.name}</h3>{account.memberReference && <p className="mt-1 text-xs text-slate-500">Identificação: {account.memberReference}</p>}</div></div>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">{account._count?.transactions ?? 0} mov.</span>
+                </div>
+                <div className="mt-6 border-t border-slate-100 pt-4"><div className="text-sm text-slate-500">Saldo disponível</div><div className="mt-1 text-3xl font-semibold tracking-tight text-slate-900">{formatPoints(account.balance)} <span className="text-sm font-normal text-slate-500">{account.currency === "POINTS" ? "pontos/milhas" : account.currency}</span></div><p className="mt-2 text-xs text-slate-400">Atualizado em {new Date(account.updatedAt).toLocaleDateString("pt-BR")}</p></div>
+              </Card>)}
+            </div>
         }
       </div>
     </section>

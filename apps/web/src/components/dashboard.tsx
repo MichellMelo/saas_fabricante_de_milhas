@@ -13,7 +13,6 @@ import {
   LayoutDashboard,
   Plane,
   Plus,
-  ShieldCheck,
   Sparkles,
   Star,
   Settings2,
@@ -43,8 +42,6 @@ import { PersonalTravel } from "@/components/personal-travel";
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
   { key: "dashboard", label: "Visão geral", icon: LayoutDashboard },
-  { key: "oportunidades", label: "Oportunidades", icon: Sparkles },
-  { key: "aprender", label: "Aprender", icon: GraduationCap },
   {
     key: "programas",
     label: "Programas e saldos",
@@ -62,18 +59,6 @@ const routeCopy: Record<
   Exclude<RouteKey, "dashboard">,
   { title: string; eyebrow: string; description: string; icon: LucideIcon }
 > = {
-  oportunidades: {
-    title: "Oportunidades",
-    eyebrow: "OFERTAS ESTRATÉGICAS",
-    description: "Consulte oportunidades publicadas, avalie as regras e acesse a fonte original antes de tomar uma decisão.",
-    icon: Sparkles,
-  },
-  aprender: {
-    title: "Aprender",
-    eyebrow: "CONTEÚDO EDUCACIONAL",
-    description: "Acesse Aulões, Mentorias e materiais liberados para seus produtos.",
-    icon: GraduationCap,
-  },
   programas: {
     title: "Programas e saldos",
     eyebrow: "PATRIMÔNIO DE PONTOS",
@@ -459,23 +444,33 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                     )}
                   </div>
                 </Card>
-                <Card className="panel">
+                <Card className="panel opportunity-preview">
                   <div className="panel-heading">
                     <div>
-                      <h2>Oportunidades em destaque</h2>
-                      <p>Somente oportunidades reais e publicadas serão exibidas aqui.</p>
+                      <span className="preview-kicker"><Sparkles size={12} /> SUGESTÃO DE RECURSO</span>
+                      <h2 className="mt-3">Antes de resgatar, compare.</h2>
+                      <p>Uma visão rápida para avaliar se uma emissão vale a pena.</p>
                     </div>
-                    <Button variant="ghost" size="icon" aria-label="Ver oportunidades" onClick={() => navigate("oportunidades")}>
-                      ···
-                    </Button>
+                    <Badge variant="secondary">Preview</Badge>
                   </div>
-                  <div className="flex min-h-64 flex-col items-center justify-center gap-3 px-5 py-8 text-center">
-                    <div className="placeholder-mark"><Sparkles size={24} /></div>
-                    <h3 className="font-semibold text-slate-800">Nenhuma oportunidade publicada</h3>
-                    <p className="max-w-md text-sm text-slate-500">A área de oportunidades ainda não possui um catálogo persistido conectado. Nenhuma oferta fictícia será apresentada como ativa.</p>
-                    <Button variant="outline" onClick={() => navigate("oportunidades")}>Consultar oportunidades <ArrowRight size={14} /></Button>
+                  <div className="preview-ticket mt-5">
+                    <div className="flex items-center gap-3">
+                      <div className="preview-plane"><Plane size={19} /></div>
+                      <div>
+                        <strong>Simulação de resgate</strong>
+                        <span>Exemplo de como a análise poderá aparecer</span>
+                      </div>
+                    </div>
+                    <div className="preview-metrics">
+                      <div><span>Custo por milheiro</span><strong>—</strong></div>
+                      <div><span>Taxas do resgate</span><strong>—</strong></div>
+                      <div><span>Preço em dinheiro</span><strong>—</strong></div>
+                    </div>
+                    <div className="preview-disclaimer">Os valores serão preenchidos a partir dos dados informados na simulação. Nenhum valor estimado é exibido neste preview.</div>
                   </div>
+                  <button className="preview-action" onClick={() => navigate("passagens")}>Explorar passagens e resgates <ArrowRight size={14} /></button>
                 </Card>
+
               </motion.section>
               <motion.section
                 className="bottom-grid"
@@ -533,19 +528,15 @@ export function Dashboard({ user }: { user: DashboardUser }) {
               </motion.section>
               <DashboardFooter reduceMotion={reduceMotion} notify={notify} />
             </>
-          ) : route === "oportunidades" ? (
-            <OpportunityCenter />
-          ) : route === "aprender" ? (
-            <LearningHub navigate={navigate} user={user} />
           ) : route === "programas" ? (
             <LoyaltyAccounts onBack={() => navigate("dashboard")} />
           ) : route === "programas-admin" ? (
             <ProgramManagement onBack={() => navigate("dashboard")} />
           ) : route === "clientes-admin" ? (
             <ClientManagement onBack={() => navigate("dashboard")} />
-           ) : route === "passagens" ? (
+          ) : route === "passagens" ? (
             <PersonalTravel />
-           ) : route === "historico" ? (
+          ) : route === "historico" ? (
             <FlightHistory />
           ) : route === "calculadoras" ? (
             <CalculatorTools />
@@ -571,8 +562,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
         <nav className="mobile-bottom-nav" aria-label="Navegação principal">
           {([
             { key: "dashboard", label: "Início", icon: LayoutDashboard },
-            { key: "oportunidades", label: "Oportunidades", icon: Sparkles },
             { key: "programas", label: "Meus Pontos", icon: CreditCard },
+            { key: "passagens", label: "Viagens", icon: Plane },
             { key: "grupo-vip", label: "Comunidade", icon: MessageCircle },
             { key: "menu", label: "Mais", icon: Plus },
           ] as const).map(({ key, label, icon: Icon }) => (
@@ -608,67 +599,6 @@ export function Dashboard({ user }: { user: DashboardUser }) {
     </div>
   );
 }
-function OpportunityCenter() {
-  return (
-    <section className="space-y-6">
-      <div className="welcome-row">
-        <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> OFERTAS ESTRATÉGICAS</div>
-          <h1 className="page-title">Oportunidades<span className="gold-period">.</span></h1>
-          <p className="page-subtitle">Avalie regras, restrições, validade e fonte original antes de agir.</p>
-        </div>
-      </div>
-      <Alert className="demo-notice">
-        <ShieldCheck size={16} className="shrink-0" />
-        <AlertDescription>
-          <strong>Somente ofertas verificadas.</strong> Esta área ainda não está conectada a um catálogo de oportunidades; nenhuma oferta fictícia será apresentada como vigente.
-        </AlertDescription>
-      </Alert>
-      <Card className="panel opportunity-empty-state">
-        <div className="placeholder-mark"><Sparkles size={25} /></div>
-        <h2>Nenhuma oportunidade publicada</h2>
-        <p>Quando houver ofertas cadastradas, você poderá abrir os detalhes, consultar regras e restrições, conferir a validade e acessar a fonte original.</p>
-        <Badge variant="gold">Aguardando publicação</Badge>
-      </Card>
-    </section>
-  );
-}
-
-function LearningHub({ navigate, user }: { navigate: (route: DashboardRoute) => void; user: DashboardUser }) {
-  const hasAccess = (product: "GROUP_VIP" | "AULAO" | "MENTORSHIP") =>
-    Boolean(user.isAdmin || user.productAccesses?.some((access) => access.product === product && access.active));
-  const cards = [
-    { product: "GROUP_VIP" as const, title: "Grupo VIP", description: "Publicações, materiais e conteúdos exclusivos da comunidade.", icon: MessageCircle, route: "grupo-vip" as const, action: "Acessar Grupo VIP" },
-    { product: "AULAO" as const, title: "Aulões", description: "Gravações, materiais e orientações dos aulões disponíveis para você.", icon: Video, route: "auloes" as const, action: "Acessar Aulões" },
-    { product: "MENTORSHIP" as const, title: "Mentorias", description: "Materiais, orientações e links liberados para sua mentoria.", icon: GraduationCap, route: "mentorias" as const, action: "Acessar Mentorias" },
-  ].filter((card) => hasAccess(card.product));
-  return (
-    <section className="space-y-6">
-      <div className="welcome-row">
-        <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> CONTEÚDO EDUCACIONAL</div>
-          <h1 className="page-title">Aprender<span className="gold-period">.</span></h1>
-          <p className="page-subtitle">Grupo VIP, Aulões e Mentorias em um só lugar. Os conteúdos exibidos respeitam os acessos liberados para sua conta.</p>
-        </div>
-      </div>
-      {cards.length ? <div className="learning-hub-grid">
-        {cards.map(({ title, description, icon: Icon, route, action }) => (
-          <Card key={route} className="panel learning-hub-card">
-            <div className="placeholder-mark"><Icon size={24} /></div>
-            <h2>{title}</h2>
-            <p>{description}</p>
-            <Button onClick={() => navigate(route)}>{action} <ArrowRight size={14} /></Button>
-          </Card>
-        ))}
-      </div> : <Card className="panel opportunity-empty-state">
-        <div className="placeholder-mark"><GraduationCap size={25} /></div>
-        <h2>Nenhum conteúdo liberado</h2>
-        <p>Quando um produto for associado à sua conta, ele aparecerá aqui.</p>
-      </Card>}
-    </section>
-  );
-}
-
 function ModulePlaceholder({
   route,
   onBack,
