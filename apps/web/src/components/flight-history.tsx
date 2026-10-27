@@ -49,16 +49,16 @@ function parseRecords(text: string): Availability[] {
   });
 }
 const PROGRAM_LOGOS: { match: RegExp; src: string; label: string }[] = [
-  { match: /azul|tudoazul/i, src: "/program-icons/logo-azul-256.svg", label: "Azul" },
-  { match: /latam|latampass/i, src: "/program-icons/logo-latam-256.svg", label: "LATAM Pass" },
-  { match: /smiles/i, src: "/program-icons/logo-smiles-1024.svg", label: "Smiles" },
-  { match: /tap|miles.?go/i, src: "/program-icons/tap.svg", label: "TAP Miles&Go" },
-  { match: /air.?canada|aeroplan/i, src: "/program-icons/aircanada.svg", label: "Aeroplan" },
-  { match: /air.?france|flying.?blue/i, src: "/program-icons/airfrance.svg", label: "Flying Blue" },
-  { match: /delta|skymiles/i, src: "/program-icons/delta.svg", label: "Delta SkyMiles" },
-  { match: /american|aadvantage/i, src: "/program-icons/AA.svg", label: "AAdvantage" },
-  { match: /qatar/i, src: "/program-icons/qatar.svg", label: "Qatar Airways" },
-  { match: /turkish|miles.?&.?smiles/i, src: "/program-icons/turkish.svg", label: "Turkish Airlines" },
+  { match: /azul|tudoazul/i, src: "/program-icons/azul.png", label: "Azul" },
+  { match: /latam|latampass/i, src: "/program-icons/latam.png", label: "LATAM Pass" },
+  { match: /smiles/i, src: "/program-icons/smiles.png", label: "Smiles" },
+  { match: /tap|miles.?go/i, src: "/program-icons/tap.png", label: "TAP Miles&Go" },
+  { match: /air.?canada|aeroplan/i, src: "/program-icons/aircanada.png", label: "Aeroplan" },
+  { match: /air.?france|flying.?blue/i, src: "/program-icons/airfrance.png", label: "Flying Blue" },
+  { match: /delta|skymiles/i, src: "/program-icons/delta.png", label: "Delta SkyMiles" },
+  { match: /american|aadvantage/i, src: "/program-icons/AA.png", label: "AAdvantage" },
+  { match: /qatar/i, src: "/program-icons/qatar.png", label: "Qatar Airways" },
+  { match: /turkish|miles.?&.?smiles/i, src: "/program-icons/turkish.png", label: "Turkish Airlines" },
 ];
 function ProgramIdentity({ program }: { program: string }) {
   const logo = PROGRAM_LOGOS.find(item => item.match.test(program));
