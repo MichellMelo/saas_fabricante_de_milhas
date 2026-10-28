@@ -8,6 +8,7 @@ import {
   Copy,
   Search,
   ShieldCheck,
+  Trash2,
   UserPlus,
   Users,
 } from "lucide-react";
@@ -740,6 +741,42 @@ export function ClientManagement({
         cause instanceof Error
           ? cause.message
           : "Não foi possível criar o convite.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteClient(client: Client) {
+    setError("");
+    setNotice("");
+    setSaving(true);
+    try {
+      const response = await fetch(
+        "/api/admin/clients/" + encodeURIComponent(client.id),
+        { method: "DELETE" },
+      );
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = result.message;
+        throw new Error(
+          Array.isArray(message)
+            ? message.join(" ")
+            : message || "Não foi possível excluir o cliente.",
+        );
+      }
+      setConfirmation(null);
+      setNotice("Cliente excluído.");
+      if (inviteClientId === client.id) {
+        setInviteClientId(null);
+        setInviteUrl("");
+      }
+      await load();
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Não foi possível excluir o cliente.",
       );
     } finally {
       setSaving(false);
@@ -1508,6 +1545,21 @@ export function ClientManagement({
                                     )
                                   ? "Reenviar convite"
                                   : "Enviar convite"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmation({
+                                title: "Excluir cliente?",
+                                description: "Excluir " + (client.name || client.email) + "? A exclusão é permanente. Clientes com histórico financeiro, viagens, milhas ou conteúdos vinculados não poderão ser excluídos; nesses casos, inative a conta.",
+                                confirmLabel: "Excluir cliente",
+                                destructive: true,
+                                onConfirm: () => { void deleteClient(client); },
+                              })}
+                              disabled={saving}
+                              className="inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-50"
+                            >
+                              <Trash2 size={13} />
+                              Excluir cliente
                             </button>
                             {inviteUrl && inviteClientId === client.id && (
                               <button
