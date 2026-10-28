@@ -1076,9 +1076,7 @@ export function ClientManagement({
   return (
     <section className="space-y-7">
       <PageHeader
-        className={
-          "mb-6 min-w-0 " + (selectedClientId ? "client-detail-welcome" : "")
-        }
+        className="mb-6 min-w-0"
         eyebrow="ADMINISTRAÇÃO · CLIENTES"
         title={
           <>
