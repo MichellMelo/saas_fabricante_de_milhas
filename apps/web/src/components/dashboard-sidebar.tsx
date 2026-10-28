@@ -2,6 +2,7 @@
 
 import {
   ChevronRight,
+  ChevronDown,
   LayoutDashboard,
   CreditCard,
   Calculator,
@@ -16,6 +17,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -73,6 +75,22 @@ export function DashboardSidebar({
   navigate: (route: DashboardRoute) => void;
   notify: (message: string) => void;
 }) {
+  const adminItems = navItems.filter(
+    (item) => item.key === "clientes-admin" || item.key === "financeiro",
+  );
+  const workspaceItems = navItems.filter(
+    (item) => item.key !== "clientes-admin" && item.key !== "financeiro",
+  );
+  const [adminOpen, setAdminOpen] = useState(
+    route === "clientes-admin" || route === "financeiro",
+  );
+
+  useEffect(() => {
+    if (route === "clientes-admin" || route === "financeiro") {
+      setAdminOpen(true);
+    }
+  }, [route]);
+
   return (
     <Sidebar
       mobileOpen={mobileOpen}
@@ -99,7 +117,7 @@ export function DashboardSidebar({
             Espaço de trabalho
           </SidebarGroupLabel>
           <SidebarMenu className="gap-2">
-            {navItems.map(({ key, label, icon: FallbackIcon, soon }) => {
+            {workspaceItems.map(({ key, label, icon: FallbackIcon, soon }) => {
               const Icon = iconByRoute[key] ?? FallbackIcon;
               return (
                 <SidebarMenuItem key={key}>
@@ -127,6 +145,45 @@ export function DashboardSidebar({
                 </SidebarMenuItem>
               );
             })}
+            {adminItems.length > 0 && (
+              <>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={adminItems.some((item) => item.key === route)}
+                    onClick={() => setAdminOpen((open) => !open)}
+                    title="Administrativo"
+                    aria-expanded={adminOpen}
+                  >
+                    <Settings2 size={18} strokeWidth={1.8} className="shrink-0" />
+                    <span className="sidebar-item-label min-w-0 flex-1 whitespace-normal break-words text-left leading-tight">
+                      Administrativo
+                    </span>
+                    <ChevronDown
+                      size={14}
+                      className={`ml-auto shrink-0 text-[#c6a45c] transition-transform ${adminOpen ? "rotate-180" : ""}`}
+                    />
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                {adminOpen && adminItems.map(({ key, label, icon: Icon }) => (
+                  <SidebarMenuItem key={key} className="pl-3">
+                    <SidebarMenuButton
+                      isActive={route === key}
+                      onClick={() => navigate(key)}
+                      title={label}
+                      className="border-l border-white/15 pl-3"
+                    >
+                      <Icon size={16} strokeWidth={1.8} className="shrink-0" />
+                      <span className="sidebar-item-label min-w-0 flex-1 whitespace-normal break-words text-left leading-tight">
+                        {label}
+                      </span>
+                      {route === key && (
+                        <ChevronRight size={14} className="ml-auto shrink-0 text-[#c6a45c]" />
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </>
+            )}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
