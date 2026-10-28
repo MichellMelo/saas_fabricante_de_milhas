@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const PRODUCTS = [
   { value: "GROUP_VIP", label: "Grupo VIP" },
@@ -571,6 +572,13 @@ export function ClientManagement({
   const [inviteClientId, setInviteClientId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [confirmation, setConfirmation] = useState<{
+    title: string;
+    description: string;
+    confirmLabel: string;
+    destructive?: boolean;
+    onConfirm: () => void;
+  } | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [clientQuery, setClientQuery] = useState("");
@@ -739,15 +747,21 @@ export function ClientManagement({
   }
 
   async function setClientStatus(client: Client, active: boolean) {
-    if (
-      !active &&
-      !window.confirm(
-        "Inativar a conta de " +
-          (client.name || client.email) +
-          "? A pessoa perderá o acesso à plataforma até ser reativada.",
-      )
-    )
+    if (!active) {
+      setConfirmation({
+        title: "Inativar esta conta?",
+        description: "Inativar " + (client.name || client.email) + "? A pessoa perderá o acesso à plataforma até ser reativada.",
+        confirmLabel: "Inativar conta",
+        destructive: true,
+        onConfirm: () => { void updateClientStatus(client, active); },
+      });
       return;
+    }
+    await updateClientStatus(client, active);
+  }
+
+  async function updateClientStatus(client: Client, active: boolean) {
+    setError("");
     setError("");
     setNotice("");
     try {
@@ -784,14 +798,17 @@ export function ClientManagement({
   }
 
   async function cancelInvitation(invitation: Invitation) {
-    if (
-      !window.confirm(
-        "Cancelar o convite de " +
-          invitation.email +
-          "? O link deixará de funcionar.",
-      )
-    )
-      return;
+    setConfirmation({
+      title: "Cancelar este convite?",
+      description: "Cancelar o convite de " + invitation.email + "? O link deixará de funcionar.",
+      confirmLabel: "Cancelar convite",
+      destructive: true,
+      onConfirm: () => { void performCancelInvitation(invitation); },
+    });
+  }
+
+  async function performCancelInvitation(invitation: Invitation) {
+    setError("");
     setError("");
     setNotice("");
     try {
@@ -1065,6 +1082,21 @@ export function ClientManagement({
           <AlertDescription>{notice}</AlertDescription>
         </Alert>
       )}
+
+      <ConfirmDialog
+        open={confirmation !== null}
+        title={confirmation?.title ?? ""}
+        description={confirmation?.description ?? ""}
+        confirmLabel={confirmation?.confirmLabel ?? "Confirmar"}
+        destructive={confirmation?.destructive}
+        busy={saving}
+        onCancel={() => setConfirmation(null)}
+        onConfirm={() => {
+          const action = confirmation?.onConfirm;
+          setConfirmation(null);
+          action?.();
+        }}
+      />
 
       <div
         className={
