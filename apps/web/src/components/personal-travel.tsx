@@ -1,6 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/page-header";
+import { AirportAutocomplete } from "@/components/airport-autocomplete";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CalendarDays, Coins, Plane, Plus, RefreshCw, Search, Trash2, Undo2, Wallet, X } from "lucide-react";
@@ -195,8 +196,8 @@ export function PersonalTravel() {
       : tab === "trips" ? <div className="space-y-3"><div className="flex justify-end"><Button variant="outline" onClick={() => setShowTripForm(v => !v)}><Plus size={14} /> Nova viagem</Button></div>
         {showTripForm && <Card className="p-4"><h2 className="font-semibold text-slate-900">Cadastrar viagem</h2><form onSubmit={saveTrip} className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Nome da viagem"><input value={tripForm.title} onChange={e => setTripForm({ ...tripForm, title: e.target.value })} placeholder="Ex.: Férias em Portugal" className={inputClass} /></Field>
-          <Field label="Origem (IATA)" required><input required maxLength={3} value={tripForm.origin} onChange={e => setTripForm({ ...tripForm, origin: e.target.value.toUpperCase() })} placeholder="GRU" className={inputClass} /></Field>
-          <Field label="Destino final (IATA)" required><input required maxLength={3} value={tripForm.destination} onChange={e => setTripForm({ ...tripForm, destination: e.target.value.toUpperCase() })} placeholder="LIS" className={inputClass} /></Field>
+          <Field label="Origem (IATA)" required><AirportAutocomplete value={tripForm.origin} onChange={value => setTripForm({ ...tripForm, origin: value })} placeholder="IATA, cidade ou aeroporto" ariaLabel="Origem da viagem" /></Field>
+          <Field label="Destino final (IATA)" required><AirportAutocomplete value={tripForm.destination} onChange={value => setTripForm({ ...tripForm, destination: value })} placeholder="IATA, cidade ou aeroporto" ariaLabel="Destino da viagem" /></Field>
           <Field label="Data de ida" required><input type="date" required value={tripForm.outboundDate} onChange={e => setTripForm({ ...tripForm, outboundDate: e.target.value })} className={inputClass} /></Field>
           <Field label="Data de volta"><input type="date" value={tripForm.returnDate} onChange={e => setTripForm({ ...tripForm, returnDate: e.target.value })} className={inputClass} /></Field>
           <Field label="Passageiros (separe por vírgula)" ><input value={tripForm.passengers} onChange={e => setTripForm({ ...tripForm, passengers: e.target.value })} placeholder="Nome 1, Nome 2" className={inputClass} /></Field>
@@ -210,8 +211,8 @@ export function PersonalTravel() {
             <Card className="p-3"><label className="relative block"><Search size={15} className="absolute left-3 top-3 text-slate-400" /><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar rota, programa, localizador ou viagem…" className="h-10 w-full rounded-lg border border-slate-200 pl-9 pr-3 text-sm outline-none focus:border-[#c6a45c]" /></label></Card>
             {showRedemptionForm && <Card className="p-4"><div className="flex items-start justify-between gap-3"><div><h2 className="font-semibold text-slate-900">Novo resgate</h2><p className="mt-1 text-xs text-slate-500">Milhas e taxas representam o total da emissão, não o valor por passageiro.</p></div><button onClick={() => setShowRedemptionForm(false)} aria-label="Fechar formulário"><X size={17} /></button></div>
               <form onSubmit={saveRedemption} className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                <Field label="Origem (IATA)" required><input required maxLength={3} value={redemptionForm.origin} onChange={e => setRedemptionForm({ ...redemptionForm, origin: e.target.value.toUpperCase() })} placeholder="GRU" className={inputClass} /></Field>
-                <Field label="Destino (IATA)" required><input required maxLength={3} value={redemptionForm.destination} onChange={e => setRedemptionForm({ ...redemptionForm, destination: e.target.value.toUpperCase() })} placeholder="LIS" className={inputClass} /></Field>
+                <Field label="Origem (IATA)" required><AirportAutocomplete value={redemptionForm.origin} onChange={value => setRedemptionForm({ ...redemptionForm, origin: value })} placeholder="IATA, cidade ou aeroporto" ariaLabel="Origem do resgate" /></Field>
+                <Field label="Destino (IATA)" required><AirportAutocomplete value={redemptionForm.destination} onChange={value => setRedemptionForm({ ...redemptionForm, destination: value })} placeholder="IATA, cidade ou aeroporto" ariaLabel="Destino do resgate" /></Field>
                 <Field label="Programa de fidelidade" required><input required value={redemptionForm.program} onChange={e => setRedemptionForm({ ...redemptionForm, program: e.target.value })} placeholder="Ex.: TAP Miles&Go" className={inputClass} /></Field>
                 <Field label="Data de emissão" required><input type="date" required value={redemptionForm.issuanceDate} onChange={e => setRedemptionForm({ ...redemptionForm, issuanceDate: e.target.value })} className={inputClass} /></Field>
                 <Field label="Data de ida" required><input type="date" required value={redemptionForm.outboundDate} onChange={e => setRedemptionForm({ ...redemptionForm, outboundDate: e.target.value })} className={inputClass} /></Field>
