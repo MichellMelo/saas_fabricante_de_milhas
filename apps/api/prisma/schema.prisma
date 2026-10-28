@@ -416,3 +416,25 @@ model PersonalRedemptionAudit {
   @@index([redemptionId, createdAt])
   @@index([actorUserId, createdAt])
 }
+
+model Airport {
+  iataCode    String   @id @db.VarChar(3)
+  name        String   @db.VarChar(255)
+  municipality String? @db.VarChar(255)
+  countryCode String?  @db.VarChar(2)
+  countryName String?  @db.VarChar(100)
+  sourceType  String   @db.VarChar(30)
+  updatedAt   DateTime @updatedAt
+  @@index([municipality])
+  @@index([name])
+}
+
+model AirportCatalogSync {
+  id            String   @id @default("ourairports")
+  lastAttemptAt DateTime?
+  lastSuccessAt DateTime?
+  recordCount   Int      @default(0)
+  status        String   @default("PENDING") @db.VarChar(20)
+  errorMessage  String?  @db.Text
+  updatedAt     DateTime @updatedAt
+}
