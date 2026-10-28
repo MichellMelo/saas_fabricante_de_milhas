@@ -2,6 +2,7 @@
 
 import { PageHeader } from "@/components/page-header";
 import { AirportAutocomplete } from "@/components/airport-autocomplete";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CalendarDays, Coins, Plane, Plus, RefreshCw, Search, Trash2, Undo2, Wallet, X } from "lucide-react";
@@ -53,6 +54,13 @@ export function PersonalTravel() {
   const [trash, setTrash] = useState<Redemption[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [confirmation, setConfirmation] = useState<{
+    title: string;
+    description: string;
+    confirmLabel: string;
+    destructive?: boolean;
+    onConfirm: () => void;
+  } | null>(null);
   const { toast } = useToast();
   const setError = (message: string) => { if (message) toast.error(message); };
   const setNotice = (message: string) => { if (message) toast.success(message); };
@@ -151,7 +159,6 @@ export function PersonalTravel() {
   }
 
   async function moveToTrash(item: Redemption) {
-    if (!window.confirm("Mover este resgate para a lixeira? Você poderá restaurá-lo por até 30 dias.")) return;
     const result = await submitJson("/api/personal-redemptions/" + item.id, "DELETE");
     if (result) setNotice("Resgate movido para a lixeira.");
   }
@@ -160,12 +167,10 @@ export function PersonalTravel() {
     if (result) setNotice("Resgate restaurado.");
   }
   async function permanentlyDelete(item: Redemption) {
-    if (!window.confirm("Excluir definitivamente este resgate? Esta ação é irreversível.")) return;
     const result = await submitJson("/api/personal-redemptions/" + item.id + "/permanent-delete", "POST");
     if (result) setNotice("Resgate excluído definitivamente.");
   }
   async function deleteTrip(trip: Trip) {
-    if (!window.confirm("Excluir esta viagem? Os resgates vinculados serão preservados e ficarão sem viagem associada.")) return;
     const result = await submitJson("/api/personal-trips/" + trip.id, "DELETE");
     if (result) setNotice("Viagem excluída. Os resgates foram preservados e desvinculados.");
   }
@@ -173,8 +178,6 @@ export function PersonalTravel() {
     if (tripId === (item.tripId ?? "")) return;
     const destination = trips.find(trip => trip.id === tripId);
     const previous = trips.find(trip => trip.id === item.tripId);
-    const confirmed = window.confirm("Mover este resgate para " + (destination?.title || (destination?.origin + " → " + destination?.destination) || "a viagem selecionada") + "? Os totais das viagens envolvidas serão atualizados e os passageiros passarão a ser os da nova viagem.");
-    if (!confirmed) return;
     const result = await submitJson("/api/personal-redemptions/" + item.id, "PATCH", { tripId: tripId || null });
     if (result) setNotice("Vínculo atualizado. " + (previous ? "A viagem anterior foi recalculada. " : "") + "Os valores do resgate foram preservados.");
   }
@@ -204,9 +207,9 @@ export function PersonalTravel() {
           <div className="sm:col-span-2 lg:col-span-3"><Field label="Observações"><textarea rows={2} value={tripForm.notes} onChange={e => setTripForm({ ...tripForm, notes: e.target.value })} className="mt-1.5 w-full rounded-lg border border-slate-200 p-3 text-sm" /></Field></div>
           <div className="flex justify-end gap-2 sm:col-span-2 lg:col-span-3"><Button type="button" variant="outline" onClick={() => setShowTripForm(false)}>Cancelar</Button><Button type="submit" disabled={saving}>{saving ? "Salvando…" : "Salvar viagem"}</Button></div>
         </form></Card>}
-        {trips.length ? trips.map(trip => <Card key={trip.id} className="p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-semibold text-slate-900">{trip.title || trip.origin + " → " + trip.destination}</h2><p className="mt-1 text-sm text-slate-500">{trip.origin} → {trip.destination} · {dateText(trip.outboundDate)}{trip.returnDate ? " a " + dateText(trip.returnDate) : ""}</p><p className="mt-2 text-xs text-slate-500">Passageiros: {trip.passengers.map(p => p.name).join(", ") || "Não informados"} · {(trip._count?.redemptions ?? 0)} resgate(s) vinculado(s)</p></div><Button size="sm" variant="outline" onClick={() => void deleteTrip(trip)}><Trash2 size={14} /> Excluir viagem</Button></div></Card>) : <Empty title="Nenhuma viagem cadastrada" description="Crie uma viagem para agrupar resgates e compartilhar a lista de passageiros entre as emissões." />}
+        {trips.length ? trips.map(trip => <Card key={trip.id} className="p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-semibold text-slate-900">{trip.title || trip.origin + " → " + trip.destination}</h2><p className="mt-1 text-sm text-slate-500">{trip.origin} → {trip.destination} · {dateText(trip.outboundDate)}{trip.returnDate ? " a " + dateText(trip.returnDate) : ""}</p><p className="mt-2 text-xs text-slate-500">Passageiros: {trip.passengers.map(p => p.name).join(", ") || "Não informados"} · {(trip._count?.redemptions ?? 0)} resgate(s) vinculado(s)</p></div><Button size="sm" variant="outline" onClick={() => setConfirmation({ title: "Excluir esta viagem?", description: "Os resgates vinculados serão preservados e ficarão sem viagem associada.", confirmLabel: "Excluir viagem", destructive: true, onConfirm: () => { void deleteTrip(trip); } })}><Trash2 size={14} /> Excluir viagem</Button></div></Card>) : <Empty title="Nenhuma viagem cadastrada" description="Crie uma viagem para agrupar resgates e compartilhar a lista de passageiros entre as emissões." />}
       </div>
-        : tab === "trash" ? <div className="space-y-3">{trash.length ? trash.map(item => <Card key={item.id} className="flex flex-wrap items-center justify-between gap-3 p-4"><div><h2 className="font-semibold text-slate-900">{item.origin} → {item.destination}</h2><p className="mt-1 text-sm text-slate-500">{item.program} · Excluído em {dateText(item.deletedAt)}</p></div><div className="flex gap-2"><Button variant="outline" size="sm" onClick={() => void restore(item)}><Undo2 size={14} /> Restaurar</Button><Button variant="outline" size="sm" className="text-red-700" onClick={() => void permanentlyDelete(item)}><Trash2 size={14} /> Excluir definitivamente</Button></div></Card>) : <Empty title="Lixeira vazia" description="Resgates excluídos aparecerão aqui e poderão ser restaurados por até 30 dias." />}</div>
+        : tab === "trash" ? <div className="space-y-3">{trash.length ? trash.map(item => <Card key={item.id} className="flex flex-wrap items-center justify-between gap-3 p-4"><div><h2 className="font-semibold text-slate-900">{item.origin} → {item.destination}</h2><p className="mt-1 text-sm text-slate-500">{item.program} · Excluído em {dateText(item.deletedAt)}</p></div><div className="flex gap-2"><Button variant="outline" size="sm" onClick={() => void restore(item)}><Undo2 size={14} /> Restaurar</Button><Button variant="outline" size="sm" className="text-red-700" onClick={() => setConfirmation({ title: "Excluir definitivamente?", description: "Este resgate será removido permanentemente. Esta ação é irreversível.", confirmLabel: "Excluir definitivamente", destructive: true, onConfirm: () => { void permanentlyDelete(item); } })}><Trash2 size={14} /> Excluir definitivamente</Button></div></Card>) : <Empty title="Lixeira vazia" description="Resgates excluídos aparecerão aqui e poderão ser restaurados por até 30 dias." />}</div>
           : <div className="space-y-3">
             <Card className="p-3"><label className="relative block"><Search size={15} className="absolute left-3 top-3 text-slate-400" /><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar rota, programa, localizador ou viagem…" className="h-10 w-full rounded-lg border border-slate-200 pl-9 pr-3 text-sm outline-none focus:border-[#c6a45c]" /></label></Card>
             {showRedemptionForm && <Card className="p-4"><div className="flex items-start justify-between gap-3"><div><h2 className="font-semibold text-slate-900">Novo resgate</h2><p className="mt-1 text-xs text-slate-500">Milhas e taxas representam o total da emissão, não o valor por passageiro.</p></div><button onClick={() => setShowRedemptionForm(false)} aria-label="Fechar formulário"><X size={17} /></button></div>
@@ -234,9 +237,29 @@ export function PersonalTravel() {
               const hasReference = item.cashReferencePrice !== null && item.cashReferencePrice !== undefined;
               const savings = hasReference ? Number(item.cashReferencePrice) - Number(item.feesPaid) : null;
               const linkedTrip = trips.find(trip => trip.id === item.tripId);
-              return <Card key={item.id} className="p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="font-semibold text-slate-900">{item.origin} <span className="text-slate-400">→</span> {item.destination}</h2><Badge variant="secondary">{statusLabel[item.status] ?? item.status}</Badge></div><p className="mt-1 text-sm text-slate-500">{item.program} · {item.cabin} · Emitido em {dateText(item.issuanceDate)}</p><p className="mt-1 text-xs text-slate-500">Viagem: {linkedTrip ? (linkedTrip.title || linkedTrip.origin + " → " + linkedTrip.destination) : "Sem agrupamento"} · Ida {dateText(item.outboundDate)}{item.returnDate ? " · Volta " + dateText(item.returnDate) : ""}</p><div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm"><span><strong>{numberText(item.milesUsed)}</strong> milhas</span><span><strong>{moneyText(Number(item.feesPaid))}</strong> em taxas</span>{hasReference && <span className={savings! >= 0 ? "text-emerald-700" : "text-red-700"}>Economia estimada: <strong>{moneyText(savings!)}</strong></span>}</div>{linkedTrip && <p className="mt-2 text-xs text-slate-500">Passageiros herdados: {linkedTrip.passengers.map(p => p.name).join(", ") || "Não informados"}</p>}</div><div className="flex min-w-[170px] flex-col gap-2 sm:items-end"><select aria-label="Agrupar em outra viagem" value={item.tripId ?? ""} onChange={e => void reassign(item, e.target.value)} className="h-9 max-w-full rounded-lg border border-slate-200 bg-white px-2 text-xs"><option value="">Sem agrupamento</option>{trips.map(trip => <option key={trip.id} value={trip.id}>{trip.title || trip.origin + " → " + trip.destination}</option>)}</select><Button variant="outline" size="sm" onClick={() => void moveToTrash(item)}><Trash2 size={14} /> Mover para lixeira</Button></div></div></Card>;
+              return <Card key={item.id} className="p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="font-semibold text-slate-900">{item.origin} <span className="text-slate-400">→</span> {item.destination}</h2><Badge variant="secondary">{statusLabel[item.status] ?? item.status}</Badge></div><p className="mt-1 text-sm text-slate-500">{item.program} · {item.cabin} · Emitido em {dateText(item.issuanceDate)}</p><p className="mt-1 text-xs text-slate-500">Viagem: {linkedTrip ? (linkedTrip.title || linkedTrip.origin + " → " + linkedTrip.destination) : "Sem agrupamento"} · Ida {dateText(item.outboundDate)}{item.returnDate ? " · Volta " + dateText(item.returnDate) : ""}</p><div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm"><span><strong>{numberText(item.milesUsed)}</strong> milhas</span><span><strong>{moneyText(Number(item.feesPaid))}</strong> em taxas</span>{hasReference && <span className={savings! >= 0 ? "text-emerald-700" : "text-red-700"}>Economia estimada: <strong>{moneyText(savings!)}</strong></span>}</div>{linkedTrip && <p className="mt-2 text-xs text-slate-500">Passageiros herdados: {linkedTrip.passengers.map(p => p.name).join(", ") || "Não informados"}</p>}</div><div className="flex min-w-[170px] flex-col gap-2 sm:items-end"><select aria-label="Agrupar em outra viagem" value={item.tripId ?? ""} onChange={e => {
+              const nextTripId = e.target.value;
+              if (nextTripId === (item.tripId ?? "")) return;
+              const destination = trips.find(trip => trip.id === nextTripId);
+              const targetName = destination?.title || (destination ? destination.origin + " → " + destination.destination : "Sem agrupamento");
+              setConfirmation({ title: "Alterar viagem do resgate?", description: "Mover este resgate para " + targetName + "? Os totais das viagens envolvidas serão atualizados e os passageiros passarão a ser os da nova viagem.", confirmLabel: "Confirmar alteração", onConfirm: () => { void reassign(item, nextTripId); } });
+            }} className="h-9 max-w-full rounded-lg border border-slate-200 bg-white px-2 text-xs"><option value="">Sem agrupamento</option>{trips.map(trip => <option key={trip.id} value={trip.id}>{trip.title || trip.origin + " → " + trip.destination}</option>)}</select><Button variant="outline" size="sm" onClick={() => setConfirmation({ title: "Mover resgate para a lixeira?", description: "O resgate sairá dos registros ativos, mas poderá ser restaurado por até 30 dias.", confirmLabel: "Mover para lixeira", destructive: true, onConfirm: () => { void moveToTrash(item); } })}><Trash2 size={14} /> Mover para lixeira</Button></div></div></Card>;
             }) : <Empty title={redemptions.length ? "Nenhum resgate encontrado" : "Seus resgates começam aqui"} description={redemptions.length ? "Altere a busca para encontrar outros registros." : "Registre uma emissão para acompanhar milhas, taxas, datas e referências financeiras. Os dados ficam vinculados à sua conta."} />}
           </div>}
+    <ConfirmDialog
+      open={confirmation !== null}
+      title={confirmation?.title ?? ""}
+      description={confirmation?.description ?? ""}
+      confirmLabel={confirmation?.confirmLabel ?? "Confirmar"}
+      destructive={confirmation?.destructive}
+      busy={saving}
+      onCancel={() => setConfirmation(null)}
+      onConfirm={() => {
+        const action = confirmation?.onConfirm;
+        setConfirmation(null);
+        action?.();
+      }}
+    />
   </section>;
 }
 
