@@ -9,11 +9,9 @@ import {
   FileSpreadsheet,
   LoaderCircle,
   MapPin,
-  Plane,
   RefreshCw,
   Upload,
   X,
-  ArrowUpDown,
   ChevronRight,
   Coins,
   Route,
@@ -170,7 +168,7 @@ const PROGRAM_LOGOS: { match: RegExp; src: string; label: string }[] = [
   {
     match: /air.?france|flying.?blue/i,
     src: "/program-icons/airfrance.png",
-    label: "Flying Blue",
+    label: "Air France",
   },
   {
     match: /delta|skymiles/i,
@@ -180,7 +178,7 @@ const PROGRAM_LOGOS: { match: RegExp; src: string; label: string }[] = [
   {
     match: /american|aadvantage/i,
     src: "/program-icons/AA.png",
-    label: "AAdvantage",
+    label: "American Airlines",
   },
   { match: /qatar/i, src: "/program-icons/qatar.png", label: "Qatar Airways" },
   {
@@ -401,7 +399,7 @@ export function FlightHistory() {
     );
     const a = document.createElement("a");
     a.href = url;
-    a.download = "historico-de-disponibilidades.csv";
+    a.download = "historico-de-oportunidades.csv";
     a.click();
     URL.revokeObjectURL(url);
   }
