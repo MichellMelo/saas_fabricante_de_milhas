@@ -1,7 +1,9 @@
 CREATE TABLE "Airport" (
   "iataCode" VARCHAR(3) NOT NULL,
   "name" VARCHAR(255) NOT NULL,
+  "searchName" VARCHAR(255) NOT NULL,
   "municipality" VARCHAR(255),
+  "searchMunicipality" VARCHAR(255),
   "countryCode" VARCHAR(2),
   "countryName" VARCHAR(100),
   "sourceType" VARCHAR(30) NOT NULL,
@@ -10,6 +12,8 @@ CREATE TABLE "Airport" (
 );
 CREATE INDEX "Airport_municipality_idx" ON "Airport"("municipality");
 CREATE INDEX "Airport_name_idx" ON "Airport"("name");
+CREATE INDEX "Airport_searchName_idx" ON "Airport"("searchName");
+CREATE INDEX "Airport_searchMunicipality_idx" ON "Airport"("searchMunicipality");
 CREATE TABLE "AirportCatalogSync" (
   "id" TEXT NOT NULL DEFAULT 'ourairports',
   "lastAttemptAt" TIMESTAMP(3),
