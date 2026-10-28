@@ -126,14 +126,14 @@ export class AirportCatalogService implements OnModuleInit, OnModuleDestroy {
       if (selected.size < 1000) throw new Error("A validação de cobertura falhou: menos de 1.000 aeroportos elegíveis.");
 
       await this.prisma.$transaction(async (tx) => {
-        for (const row of selected.values()) {
-          await tx.airport.upsert({
-            where: { iataCode: row.iataCode },
-            create: { ...row },
-            update: { ...row },
-          });
+        // Replace the catalog atomically in batches. If any batch fails, the
+        // transaction rolls back and the previously committed catalog remains.
+        await tx.airport.deleteMany();
+        const rows = [...selected.values()];
+        const batchSize = 1000;
+        for (let offset = 0; offset < rows.length; offset += batchSize) {
+          await tx.airport.createMany({ data: rows.slice(offset, offset + batchSize) });
         }
-        await tx.airport.deleteMany({ where: { iataCode: { notIn: [...selected.keys()] } } });
         await tx.airportCatalogSync.upsert({
           where: { id: "ourairports" },
           create: { id: "ourairports", lastAttemptAt: now, lastSuccessAt: now, recordCount: selected.size, status: "SUCCESS" },
