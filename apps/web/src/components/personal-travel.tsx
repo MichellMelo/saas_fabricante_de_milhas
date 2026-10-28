@@ -176,7 +176,6 @@ export function PersonalTravel() {
   }
   async function reassign(item: Redemption, tripId: string) {
     if (tripId === (item.tripId ?? "")) return;
-    const destination = trips.find(trip => trip.id === tripId);
     const previous = trips.find(trip => trip.id === item.tripId);
     const result = await submitJson("/api/personal-redemptions/" + item.id, "PATCH", { tripId: tripId || null });
     if (result) setNotice("Vínculo atualizado. " + (previous ? "A viagem anterior foi recalculada. " : "") + "Os valores do resgate foram preservados.");
