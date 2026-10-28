@@ -105,6 +105,12 @@ export class ClientsController {
     return this.clients.listClients();
   }
 
+  @Delete("clients/:id")
+  deleteClient(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
+    this.assertAdmin(request);
+    return this.clients.deleteClient(id);
+  }
+
   @Post("clients/:id/status")
   setClientStatus(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() body: { active?: boolean }) {
     this.assertAdmin(request);
