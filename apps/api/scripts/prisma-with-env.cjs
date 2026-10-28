@@ -20,12 +20,15 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-const prismaCli = require.resolve("prisma");
-const result = spawnSync(
-  process.execPath,
-  [prismaCli, ...process.argv.slice(2)],
-  { stdio: "inherit", env: process.env, cwd: process.cwd() },
-);
+// Resolve Prisma through npm's local executable PATH. On Windows, npm exposes
+// CLI tools as .cmd shims, which cannot reliably be loaded with require.resolve.
+const command = process.platform === "win32" ? "prisma.cmd" : "prisma";
+const result = spawnSync(command, process.argv.slice(2), {
+  stdio: "inherit",
+  env: process.env,
+  cwd: process.cwd(),
+  shell: process.platform === "win32",
+});
 
 if (result.error) {
   console.error(result.error);
