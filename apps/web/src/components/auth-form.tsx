@@ -159,7 +159,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             </p>
 
             <div className="mt-5 flex items-center justify-center gap-2 border-t sm:mt-7 border-[#eceef1] pt-5 text-[10px] text-[#9aa2ae]">
-              <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 7V4.8a3 3 0 0 1 6 0V7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+              <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.3" /><path d="M5 7V4.8a3 3 0 0 1 6 0V7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /></svg>
               Proteção de conta com sessão segura
             </div>
           </div>

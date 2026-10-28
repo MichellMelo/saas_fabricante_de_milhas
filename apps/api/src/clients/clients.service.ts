@@ -81,6 +81,78 @@ export class ClientsService {
     return clients.map(({ passwordHash, ...client }) => ({ ...client, hasAccount: Boolean(passwordHash) }));
   }
 
+  async deleteClient(id: string) {
+    const client = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, email: true },
+    });
+    if (!client) throw new NotFoundException("Cliente não encontrado.");
+
+    const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean);
+    if (adminEmails.includes(client.email.trim().toLowerCase())) {
+      throw new BadRequestException("Não é permitido excluir uma conta administrativa.");
+    }
+
+    const [
+      payments,
+      transactions,
+      loyaltyAccounts,
+      flights,
+      trips,
+      redemptions,
+      audits,
+      availabilities,
+      mileSales,
+      milePurchases,
+      mileInventories,
+      mileMovements,
+      authoredPosts,
+      authoredContent,
+    ] = await Promise.all([
+      this.prisma.clientPayment.count({ where: { userId: id } }),
+      this.prisma.pointTransaction.count({ where: { userId: id } }),
+      this.prisma.loyaltyAccount.count({ where: { userId: id } }),
+      this.prisma.flightRecord.count({ where: { userId: id } }),
+      this.prisma.personalTrip.count({ where: { userId: id } }),
+      this.prisma.personalRedemption.count({ where: { userId: id } }),
+      this.prisma.personalRedemptionAudit.count({ where: { actorUserId: id } }),
+      this.prisma.flightAvailability.count({ where: { userId: id } }),
+      this.prisma.mileSale.count({ where: { userId: id } }),
+      this.prisma.milePurchase.count({ where: { userId: id } }),
+      this.prisma.mileInventory.count({ where: { userId: id } }),
+      this.prisma.mileInventoryMovement.count({ where: { userId: id } }),
+      this.prisma.groupVipPost.count({ where: { authorId: id } }),
+      this.prisma.productContent.count({ where: { authorId: id } }),
+    ]);
+
+    if (
+      payments + transactions + loyaltyAccounts + flights + trips + redemptions +
+      audits + availabilities + mileSales + milePurchases + mileInventories +
+      mileMovements + authoredPosts + authoredContent > 0
+    ) {
+      throw new BadRequestException(
+        "Este cliente possui histórico financeiro, viagens, milhas ou conteúdos vinculados. Para preservar o histórico, inative a conta em vez de excluí-la.",
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.clientInvitation.updateMany({
+        where: {
+          email: client.email,
+          acceptedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        data: { expiresAt: new Date() },
+      });
+      await tx.user.delete({ where: { id } });
+    });
+
+    return { id, deleted: true };
+  }
+
   async setClientStatus(id: string, active: boolean) {
     const client = await this.prisma.user.findUnique({
       where: { id },

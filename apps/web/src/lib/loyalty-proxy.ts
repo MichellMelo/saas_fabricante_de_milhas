@@ -10,7 +10,10 @@ export async function proxyLoyalty(
 ) {
   const token = (await cookies()).get("fm_session")?.value;
   if (!token) {
-    return NextResponse.json({ message: "Sessão expirada. Entre novamente." }, { status: 401 });
+    return NextResponse.json(
+      { message: "Sessão expirada. Entre novamente." },
+      { status: 401 },
+    );
   }
 
   let body: string | undefined;
@@ -18,7 +21,10 @@ export async function proxyLoyalty(
     try {
       body = JSON.stringify(await request.json());
     } catch {
-      return NextResponse.json({ message: "Corpo da requisição inválido." }, { status: 400 });
+      return NextResponse.json(
+        { message: "Corpo da requisição inválido." },
+        { status: 400 },
+      );
     }
   }
 
@@ -34,7 +40,10 @@ export async function proxyLoyalty(
       cache: "no-store",
     });
   } catch {
-    return NextResponse.json({ message: "Não foi possível conectar à API." }, { status: 503 });
+    return NextResponse.json(
+      { message: "Não foi possível conectar à API." },
+      { status: 503 },
+    );
   }
 
   const payload = await upstream.json().catch(() => ({}));

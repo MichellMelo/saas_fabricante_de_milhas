@@ -26,12 +26,12 @@ export function PageHeader({
           {showEyebrowLine && <span className="eyebrow-line" />}
           {eyebrow}
         </div>
-        <h1 className="page-title">
-          {title}
-        </h1>
+        <h1 className="page-title">{title}</h1>
         <p className="page-subtitle">{description}</p>
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && (
+        <div className="flex flex-wrap items-center gap-2">{actions}</div>
+      )}
     </header>
   );
 }

@@ -1,11 +1,17 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from "@nestjs/common";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { PersonalTravelService } from "./personal-travel.service";
+import { AirportCatalogService } from "./airport-catalog.service";
 
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class PersonalTravelController {
-  constructor(private readonly service: PersonalTravelService) {}
+  constructor(private readonly service: PersonalTravelService, private readonly airports: AirportCatalogService) {}
+
+  @Get("airports")
+  searchAirports(@Query("q") query = "") {
+    return this.airports.search(query);
+  }
 
   @Get("personal-trips")
   listTrips(@Req() request: AuthenticatedRequest) {
