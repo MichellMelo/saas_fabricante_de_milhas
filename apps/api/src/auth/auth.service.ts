@@ -5,6 +5,8 @@ import { createHash } from "node:crypto";
 import { hash, compare } from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
 import { AcceptInvitationDto } from "./dto/accept-invitation.dto";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 import { LoginDto } from "./dto/login.dto";
 
 @Injectable()
@@ -76,6 +78,28 @@ export class AuthService {
    user: { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt },
    accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email })
   };
+ }
+
+
+ async updateProfile(userId: string, dto: UpdateProfileDto) {
+  const name = dto.name.trim();
+  if (!name) throw new BadRequestException("Informe seu nome.");
+  return this.prisma.user.update({
+   where: { id: userId },
+   data: { name },
+   select: { id: true, email: true, name: true, createdAt: true },
+  });
+ }
+
+ async changePassword(userId: string, dto: ChangePasswordDto) {
+  const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, passwordHash: true } });
+  if (!user?.passwordHash || !(await compare(dto.currentPassword, user.passwordHash))) {
+   throw new UnauthorizedException("A senha atual está incorreta.");
+  }
+  if (dto.newPassword.length < 8) throw new BadRequestException("A nova senha deve ter pelo menos 8 caracteres.");
+  const passwordHash = await hash(dto.newPassword, 12);
+  await this.prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+  return { success: true };
  }
 
  async getPublicUser(userId: string) {

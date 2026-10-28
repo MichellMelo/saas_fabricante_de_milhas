@@ -1,5 +1,7 @@
 "use client";
 
+import { PageHeader } from "@/components/page-header";
+
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ChevronDown, Copy, Search, ShieldCheck, UserPlus, Users } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -198,9 +200,10 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
   const [notice, setNotice] = useState("");
   const [clientQuery, setClientQuery] = useState("");
   const [accessFilter, setAccessFilter] = useState<"all" | "active" | "none">("all");
+  const [productFilter, setProductFilter] = useState<Product | "all">("all");
+  const [pageSize, setPageSize] = useState(5);
   const [clientPage, setClientPage] = useState(1);
   const [detailTab, setDetailTab] = useState<"overview" | "access" | "finance">("overview");
-  const pageSize = 10;
   const [expandedClientId, setExpandedClientId] = useState<string | null>(selectedClientId ?? null);
 
   useEffect(() => {
@@ -409,23 +412,18 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
     const matchesQuery = !normalizedQuery || [client.name ?? "", client.email].some((value) => value.toLocaleLowerCase("pt-BR").includes(normalizedQuery));
     const hasActiveAccess = client.productAccesses.some((access) => isAccessActive(access));
     const matchesAccess = accessFilter === "all" || (accessFilter === "active" ? hasActiveAccess : !hasActiveAccess);
-    return matchesQuery && matchesAccess;
+    const matchesProduct = productFilter === "all" || client.productAccesses.some((access) => access.product === productFilter);
+    return matchesQuery && matchesAccess && matchesProduct;
   });
   const pageCount = Math.max(1, Math.ceil(filteredClients.length / pageSize));
   const paginatedClients = filteredClients.slice((clientPage - 1) * pageSize, clientPage * pageSize);
 
-  useEffect(() => { setClientPage(1); }, [clientQuery, accessFilter]);
+  useEffect(() => { setClientPage(1); }, [clientQuery, accessFilter, productFilter, pageSize]);
   useEffect(() => { if (clientPage > pageCount) setClientPage(pageCount); }, [clientPage, pageCount]);
 
   return (
     <section className="space-y-7">
-      <section className={"welcome-row mb-6 min-w-0 " + (selectedClientId ? "client-detail-welcome" : "")}>
-        <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> ADMINISTRAÇÃO · CLIENTES</div>
-          <h1 className="page-title">{selectedClientId ? "Ficha do cliente" : "Clientes e produtos"}<span className="gold-period">.</span></h1>
-          <p className="page-subtitle">{selectedClientId ? "Consulte e gerencie os dados, acessos e pagamentos deste cliente." : "Crie convites e controle o acesso de cada cliente ao Grupo VIP, aulões e mentorias."}</p>
-        </div>
-      </section>
+      <PageHeader className={"mb-6 min-w-0 " + (selectedClientId ? "client-detail-welcome" : "")} eyebrow="ADMINISTRAÇÃO · CLIENTES" title={<>{selectedClientId ? "Ficha do cliente" : "Clientes e produtos"}<span className="gold-period">.</span></>} description={selectedClientId ? "Consulte e gerencie os dados, acessos e pagamentos deste cliente." : "Crie convites e controle o acesso de cada cliente ao Grupo VIP, aulões e mentorias."} actions={selectedClientId ? <a href="/#clientes-admin" className="inline-flex min-h-10 items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">← Voltar à lista</a> : undefined} />
 
       {error && <Alert role="alert" className="fixed right-4 top-4 z-[100] w-[calc(100%-2rem)] max-w-md border-red-200 bg-red-50 px-4 py-3 text-red-800 shadow-lg"><AlertDescription>{error}</AlertDescription></Alert>}
       {notice && <Alert role="status" className="fixed right-4 top-4 z-[100] w-[calc(100%-2rem)] max-w-md border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 shadow-lg"><AlertDescription>{notice}</AlertDescription></Alert>}
@@ -459,7 +457,7 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-slate-700"><Users size={19} /></span>
             <div><h2 className="font-semibold text-slate-900">Base de clientes</h2><p className="mt-1 text-xs text-slate-500">{clients.length} contas cadastradas · {clients.filter((client) => client.hasAccount && client.active).length} {clients.filter((client) => client.hasAccount && client.active).length === 1 ? "conta ativa" : "contas ativas"}</p></div>
           </div>}
-          {!selectedClientId && !loading && clients.length > 0 && <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
+          {!selectedClientId && !loading && clients.length > 0 && <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_180px_190px]">
             <label className="relative block">
               <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input value={clientQuery} onChange={(event) => setClientQuery(event.target.value)} placeholder="Buscar por nome ou e-mail" aria-label="Buscar clientes por nome ou e-mail" className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none focus:border-[#b58a37] focus:ring-2 focus:ring-[#d6b66f]/20" />
@@ -468,6 +466,10 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
               <option value="all">Todos os clientes</option>
               <option value="active">Com acesso ativo</option>
               <option value="none">Sem acesso ativo</option>
+            </select>
+            <select value={productFilter} onChange={(event) => setProductFilter(event.target.value as Product | "all")} aria-label="Filtrar clientes por produto" className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#b58a37]">
+              <option value="all">Todos os produtos</option>
+              {PRODUCTS.map((product) => <option key={product.value} value={product.value}>{product.label}</option>)}
             </select>
           </div>}
           {loading ? <p className="py-10 text-sm text-slate-500">Carregando clientes...</p> : clients.length === 0 ? <p className="py-10 text-sm text-slate-500">Nenhum usuário cadastrado ainda.</p> : filteredClients.length === 0 ? <p className="py-10 text-sm text-slate-500">{selectedClientId ? "Cliente não encontrado ou sem permissão para visualizar a ficha." : "Nenhum cliente corresponde aos filtros selecionados."}</p> : <div className="mt-5 space-y-4">
@@ -521,8 +523,8 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
               </article>;
             })}
             {!selectedClientId && pageCount > 1 && <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
-              <p className="text-xs text-slate-500">Mostrando {(clientPage - 1) * pageSize + 1}–{Math.min(clientPage * pageSize, filteredClients.length)} de {filteredClients.length} clientes</p>
-              <div className="flex items-center gap-2"><button type="button" onClick={() => setClientPage((page) => Math.max(1, page - 1))} disabled={clientPage === 1} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-40">Anterior</button><span className="text-xs text-slate-500">Página {clientPage} de {pageCount}</span><button type="button" onClick={() => setClientPage((page) => Math.min(pageCount, page + 1))} disabled={clientPage === pageCount} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-40">Próxima</button></div>
+              <div className="flex flex-wrap items-center gap-3"><label className="flex items-center gap-2 text-xs text-slate-500">Por página<select value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))} className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-700"><option value={5}>5</option><option value={10}>10</option><option value={25}>25</option><option value={50}>50</option></select></label><p className="text-xs text-slate-500">Mostrando {filteredClients.length ? (clientPage - 1) * pageSize + 1 : 0}–{Math.min(clientPage * pageSize, filteredClients.length)} de {filteredClients.length} clientes</p></div>
+              <div className="flex items-center gap-2"><button type="button" onClick={() => setClientPage((page) => Math.max(1, page - 1))} disabled={clientPage === 1} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-40">Anterior</button><span className="text-xs text-slate-500">Página {clientPage} de {pageCount}</span><button type="button" onClick={() => setClientPage((page) => Math.min(pageCount, page + 1))} disabled={clientPage === pageCount} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-40">Próxima</button></div>
             </div>}
           </div>}
         </div>
@@ -538,7 +540,6 @@ export function ClientManagement({ onBack, selectedClientId }: { onBack?: () => 
         </div>}
       </div>}
       {!selectedClientId && <button onClick={() => onBack?.()} className="text-sm font-semibold text-slate-600 hover:text-slate-900">← Voltar ao painel</button>}
-      {selectedClientId && <button onClick={() => window.location.assign("/#clientes-admin")} className="text-sm font-semibold text-slate-600 hover:text-slate-900">← Voltar à lista de clientes</button>}
     </section>
   );
 }

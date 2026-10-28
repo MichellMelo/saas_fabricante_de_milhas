@@ -19,3 +19,5 @@ apps/api/src/**/*.d.ts
 
 # Arquivos gerados pelo Next.js
 apps/web/next-env.d.ts
+
+*.txt

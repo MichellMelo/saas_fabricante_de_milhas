@@ -1,5 +1,7 @@
 "use client";
 
+import { PageHeader } from "@/components/page-header";
+
 import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, CheckCircle2, Clock3 } from "lucide-react";
 
@@ -178,13 +180,7 @@ export function FinanceDashboard() {
 
   return <section className="space-y-6">
     {toast && <div role={toast.type === "error" ? "alert" : "status"} aria-live={toast.type === "error" ? "assertive" : "polite"} className={`fixed right-5 top-5 z-[100] max-w-[min(420px,calc(100vw-2.5rem))] rounded-xl border px-4 py-3 text-sm font-medium shadow-xl ${toast.type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-rose-200 bg-rose-50 text-rose-900"}`}>{toast.message}<button type="button" onClick={() => setToast(null)} aria-label="Fechar aviso" className="ml-4 font-bold">×</button></div>}
-    <div className="welcome-row">
-      <div>
-        <div className="eyebrow"><span className="eyebrow-line" /> CONTROLE DE RECEBIMENTOS</div>
-        <h1 className="page-title">Financeiro</h1>
-        <p className="page-subtitle">Acompanhe cobranças, recebimentos e valores vencidos a partir dos lançamentos registrados.</p>
-      </div>
-    </div>
+    <PageHeader eyebrow="CONTROLE DE RECEBIMENTOS" title="Financeiro" description="Acompanhe cobranças, recebimentos e valores vencidos a partir dos lançamentos registrados." />
     {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
     <div className="flex flex-wrap items-center justify-between gap-3">
       <p className="text-xs text-slate-500">O período considera a data de pagamento para recebidos e o vencimento para cobranças em aberto.</p>
@@ -195,20 +191,20 @@ export function FinanceDashboard() {
       </label>
     </div>
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex items-center justify-between"><p className="text-sm font-medium text-slate-600">Recebido</p><span className="rounded-xl bg-emerald-50 p-2 text-emerald-700"><CheckCircle2 size={19}/></span></div>
+      <article className="finance-summary-card">
+        <div className="flex items-center justify-between"><p className="text-sm font-medium text-slate-600">Recebido</p><span className="rounded-xl bg-emerald-50 p-2 text-emerald-700"><CheckCircle2 size={19} /></span></div>
         <p className="mt-4 text-2xl font-semibold tracking-tight text-slate-900">{money(received)}</p><p className="mt-1 text-xs text-slate-500">Pagamentos marcados como pagos</p>
       </article>
-      <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex items-center justify-between"><p className="text-sm font-medium text-slate-600">A receber</p><span className="rounded-xl bg-amber-50 p-2 text-amber-700"><Clock3 size={19}/></span></div>
+      <article className="finance-summary-card">
+        <div className="flex items-center justify-between"><p className="text-sm font-medium text-slate-600">A receber</p><span className="rounded-xl bg-amber-50 p-2 text-amber-700"><Clock3 size={19} /></span></div>
         <p className="mt-4 text-2xl font-semibold tracking-tight text-slate-900">{money(pending)}</p><p className="mt-1 text-xs text-slate-500">Cobranças pendentes ainda no prazo</p>
       </article>
-      <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex items-center justify-between"><p className="text-sm font-medium text-slate-600">Em atraso</p><span className="rounded-xl bg-rose-50 p-2 text-rose-700"><AlertCircle size={19}/></span></div>
+      <article className="finance-summary-card">
+        <div className="flex items-center justify-between"><p className="text-sm font-medium text-slate-600">Em atraso</p><span className="rounded-xl bg-rose-50 p-2 text-rose-700"><AlertCircle size={19} /></span></div>
         <p className="mt-4 text-2xl font-semibold tracking-tight text-slate-900">{money(overdue)}</p><p className="mt-1 text-xs text-slate-500">Cobranças pendentes após o vencimento</p>
       </article>
     </div>
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <div className="finance-list-card">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><h2 className="font-semibold text-slate-900">Lançamentos financeiros</h2><p className="mt-1 text-xs text-slate-500">{loading ? "Atualizando dados…" : `${filtered.length} lançamento(s) no filtro`}</p></div>
         <div className="flex flex-wrap items-center gap-3">
