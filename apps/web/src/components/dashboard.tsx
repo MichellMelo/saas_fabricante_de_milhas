@@ -57,7 +57,7 @@ const navItems: SidebarNavItem[] = [
   { key: "mile-finance", label: "Financeiro de Milhas", icon: TrendingUp },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator },
   { key: "passagens", label: "Passagens e resgates", icon: Plane },
-  { key: "historico", label: "Histórico de disponibilidades", icon: Clock3 },
+  { key: "historico", label: "Histórico de oportunidades", icon: Clock3 },
 ];
 const routeCopy: Record<
   Exclude<RouteKey, "dashboard">,
@@ -134,10 +134,10 @@ const routeCopy: Record<
     icon: Plane,
   },
   historico: {
-    title: "Histórico de disponibilidades",
+    title: "Histórico de oportunidades",
     eyebrow: "DISPONIBILIDADES PESQUISADAS",
     description:
-      "Mantenha um histórico das disponibilidades encontradas por programa, rota, classe, piso de milhas e datas, como base para futuras emissões.",
+      "Consulte e organize oportunidades identificadas por programa, rota, classe, quantidade de milhas e datas, como base para futuras emissões.",
     icon: Clock3,
   },
 };
