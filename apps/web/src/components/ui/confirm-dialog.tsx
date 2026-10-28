@@ -47,7 +47,9 @@ export function ConfirmDialog({
         type="button"
         aria-label="Fechar confirmação"
         className="absolute inset-0 cursor-default bg-slate-950/55 backdrop-blur-[2px]"
-        onClick={() => { if (!busy) onCancel(); }}
+        onClick={() => {
+          if (!busy) onCancel();
+        }}
       />
       <section
         role="alertdialog"
@@ -57,21 +59,43 @@ export function ConfirmDialog({
         className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
       >
         <div className="flex items-start gap-3">
-          <span className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${destructive ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-700"}`}>
+          <span
+            className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${destructive ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-700"}`}
+          >
             <AlertTriangle size={19} aria-hidden="true" />
           </span>
           <div className="min-w-0">
-            <h2 id="confirm-dialog-title" className="text-base font-semibold text-slate-900">{title}</h2>
-            <p id="confirm-dialog-description" className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+            <h2
+              id="confirm-dialog-title"
+              className="text-base font-semibold text-slate-900"
+            >
+              {title}
+            </h2>
+            <p
+              id="confirm-dialog-description"
+              className="mt-2 text-sm leading-6 text-slate-600"
+            >
+              {description}
+            </p>
           </div>
         </div>
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button ref={cancelRef} type="button" variant="outline" onClick={onCancel} disabled={busy}>{cancelLabel}</Button>
+          <Button
+            ref={cancelRef}
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={busy}
+          >
+            {cancelLabel}
+          </Button>
           <Button
             type="button"
             onClick={onConfirm}
             disabled={busy}
-            className={destructive ? "bg-red-600 text-white hover:bg-red-700" : undefined}
+            className={
+              destructive ? "bg-red-600 text-white hover:bg-red-700" : undefined
+            }
           >
             {busy ? "Processando…" : confirmLabel}
           </Button>

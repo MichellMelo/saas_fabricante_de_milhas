@@ -2,7 +2,13 @@
 
 import { motion } from "motion/react";
 
-export function DashboardFooter({ reduceMotion, notify }: { reduceMotion: boolean | null; notify: (message: string) => void }) {
+export function DashboardFooter({
+  reduceMotion,
+  notify,
+}: {
+  reduceMotion: boolean | null;
+  notify: (message: string) => void;
+}) {
   return (
     <motion.footer
       className="page-footer"
@@ -14,9 +20,7 @@ export function DashboardFooter({ reduceMotion, notify }: { reduceMotion: boolea
       <span>Construído para decisões mais inteligentes.</span>
       <button
         onClick={() =>
-          notify(
-            "Esta versão não coleta nem armazena dados pessoais.",
-          )
+          notify("Esta versão não coleta nem armazena dados pessoais.")
         }
       >
         Privacidade e segurança
