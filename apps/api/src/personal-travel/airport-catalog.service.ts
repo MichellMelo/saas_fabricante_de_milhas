@@ -132,7 +132,7 @@ export class AirportCatalogService implements OnModuleInit, OnModuleDestroy {
         const rows = [...selected.values()];
         const batchSize = 1000;
         for (let offset = 0; offset < rows.length; offset += batchSize) {
-          await tx.airport.createMany({ data: rows.slice(offset, offset + batchSize) });
+          await tx.airport.createMany({ data: rows.slice(offset, offset + batchSize).map((row) => ({ ...row, updatedAt: now })) });
         }
         await tx.airportCatalogSync.upsert({
           where: { id: "ourairports" },
