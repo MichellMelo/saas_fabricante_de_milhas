@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 
-type AirportRow = { iataCode: string; name: string; municipality: string | null; countryCode: string | null; countryName: string | null; sourceType: string };
+type AirportRow = { iataCode: string; name: string; searchName: string; municipality: string | null; searchMunicipality: string | null; countryCode: string | null; countryName: string | null; sourceType: string };
 const AIRPORTS_URL = "https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/airports.csv";
 const COUNTRIES_URL = "https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/countries.csv";
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -51,8 +51,8 @@ export class AirportCatalogService implements OnModuleInit, OnModuleDestroy {
     const rows = await this.prisma.airport.findMany({ take: 500, where: {
       OR: [
         { iataCode: { startsWith: term.toUpperCase() } },
-        { municipality: { contains: term, mode: "insensitive" } },
-        { name: { contains: term, mode: "insensitive" } },
+        { searchMunicipality: { contains: term } },
+        { searchName: { contains: term } },
       ],
     }});
     const score = (airport: AirportRow) => {
@@ -113,8 +113,9 @@ export class AirportCatalogService implements OnModuleInit, OnModuleDestroy {
         const name = cols[index("name")] ?? "";
         if (!(type in typeRank) || !/^[A-Z]{3}$/.test(code) || !name) continue;
         const row: AirportRow = {
-          iataCode: code, name: name.slice(0, 255),
+          iataCode: code, name: name.slice(0, 255), searchName: normalize(name).slice(0, 255),
           municipality: (cols[index("municipality")] || null)?.slice(0, 255) ?? null,
+          searchMunicipality: (cols[index("municipality")] ? normalize(cols[index("municipality")]).slice(0, 255) : null),
           countryCode: (cols[index("iso_country")] || null)?.slice(0, 2) ?? null,
           countryName: countries.get(cols[index("iso_country")] ?? "")?.slice(0, 100) ?? null,
           sourceType: type,
@@ -138,7 +139,7 @@ export class AirportCatalogService implements OnModuleInit, OnModuleDestroy {
           create: { id: "ourairports", lastAttemptAt: now, lastSuccessAt: now, recordCount: selected.size, status: "SUCCESS" },
           update: { lastAttemptAt: now, lastSuccessAt: now, recordCount: selected.size, status: "SUCCESS", errorMessage: null },
         });
-      });
+      }, { maxWait: 10000, timeout: 120000 });
       this.logger.log("Catálogo de aeroportos atualizado: " + selected.size + " códigos IATA.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Erro desconhecido na importação.";
