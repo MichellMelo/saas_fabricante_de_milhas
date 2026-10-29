@@ -13,11 +13,7 @@ export class LoyaltyController {
   constructor(private readonly loyalty: LoyaltyService) {}
 
   private canManageCatalog(request: AuthenticatedRequest) {
-    const admins = (process.env.ADMIN_EMAILS ?? "")
-      .split(",")
-      .map((email) => email.trim().toLowerCase())
-      .filter(Boolean);
-    return admins.includes(request.user.email.trim().toLowerCase());
+    return request.user.isAdmin;
   }
 
   private assertCatalogAdmin(request: AuthenticatedRequest) {
