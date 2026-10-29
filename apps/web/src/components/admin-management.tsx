@@ -248,7 +248,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="relative overflow-hidden border-b-4 border-b-amber-500 p-5 transition-shadow hover:shadow-md">
+        <Card className="group relative overflow-hidden border-b-4 border-b-amber-500 p-5 transition-all duration-200 ease-out hover:-translate-y-1 hover:border-b-amber-600 hover:shadow-lg">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-slate-500">Administradores</p>
@@ -256,7 +256,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
                 {snapshot.administrators.length}
               </p>
             </div>
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700 transition-colors duration-200 group-hover:bg-amber-100">
               <Users size={21} strokeWidth={1.8} />
             </div>
           </div>
@@ -264,7 +264,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
             Acesso completo às ferramentas administrativas
           </p>
         </Card>
-        <Card className="relative overflow-hidden border-b-4 border-b-sky-500 p-5 transition-shadow hover:shadow-md">
+        <Card className="group relative overflow-hidden border-b-4 border-b-sky-500 p-5 transition-all duration-200 ease-out hover:-translate-y-1 hover:border-b-sky-600 hover:shadow-lg">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-slate-500">Convites pendentes</p>
@@ -272,7 +272,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
                 {snapshot.invitations.length}
               </p>
             </div>
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700 transition-colors duration-200 group-hover:bg-sky-100">
               <MailCheck size={21} strokeWidth={1.8} />
             </div>
           </div>
@@ -280,7 +280,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
             Acesso ativado somente após aceitação
           </p>
         </Card>
-        <Card className="relative overflow-hidden border-b-4 border-b-violet-500 p-5 transition-shadow hover:shadow-md">
+        <Card className="group relative overflow-hidden border-b-4 border-b-violet-500 p-5 transition-all duration-200 ease-out hover:-translate-y-1 hover:border-b-violet-600 hover:shadow-lg">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-slate-500">Registros de auditoria</p>
@@ -288,7 +288,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
                 {audit.length}
               </p>
             </div>
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700 transition-colors duration-200 group-hover:bg-violet-100">
               <ClipboardList size={21} strokeWidth={1.8} />
             </div>
           </div>
