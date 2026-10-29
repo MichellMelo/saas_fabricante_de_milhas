@@ -788,7 +788,7 @@ export function CalculatorTools() {
               </div>
             </>
           )}
-        </div>
+        </Card>
 
         <aside className="space-y-4">
           <div className="rounded-2xl bg-[#111b2b] p-5 text-white md:p-6">
