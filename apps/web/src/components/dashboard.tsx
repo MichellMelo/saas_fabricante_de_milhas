@@ -19,6 +19,7 @@ import {
   Plus,
   Sparkles,
   Star,
+  ShieldCheck,
   Settings2,
   Users,
   MessageCircle,
@@ -42,6 +43,7 @@ import { MileFinanceDashboard } from "@/components/mile-finance-dashboard";
 import { CalculatorTools } from "@/components/calculator-tools";
 import { FlightHistory } from "@/components/flight-history";
 import { PersonalTravel } from "@/components/personal-travel";
+import { AdminManagement } from "@/components/admin-management";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -53,6 +55,7 @@ const navItems: SidebarNavItem[] = [
   },
   { key: "programas-admin", label: "Cadastro de programas", icon: Settings2 },
   { key: "clientes-admin", label: "Clientes e produtos", icon: Users },
+  { key: "administradores-admin", label: "Administradores", icon: ShieldCheck },
   { key: "financeiro", label: "Financeiro", icon: Wallet },
   { key: "mile-finance", label: "Financeiro de Milhas", icon: TrendingUp },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator },
@@ -76,6 +79,12 @@ const routeCopy: Record<
     description:
       "Gerencie programas do catálogo geral (com permissão administrativa) e crie programas personalizados para sua carteira.",
     icon: Settings2,
+  },
+  "administradores-admin": {
+    title: "Gestão de administradores",
+    eyebrow: "SEGURANÇA E ACESSOS",
+    description: "Gerencie administradores, convites e auditoria de acesso.",
+    icon: ShieldCheck,
   },
   "clientes-admin": {
     title: "Clientes e produtos",
@@ -796,6 +805,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <ProgramManagement onBack={() => navigate("dashboard")} />
           ) : route === "clientes-admin" ? (
             <ClientManagement onBack={() => navigate("dashboard")} />
+          ) : route === "administradores-admin" ? (
+            <AdminManagement onBack={() => navigate("dashboard")} />
           ) : route === "passagens" ? (
             <PersonalTravel />
           ) : route === "historico" ? (
