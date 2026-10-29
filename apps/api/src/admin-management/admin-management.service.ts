@@ -284,6 +284,50 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     return { id: targetUserId, email: target.email, isAdmin: false, accountPreserved: true };
   }
 
+  async createPasswordResetLink(actorUserId: string, targetUserId: string) {
+    const target = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true, email: true, name: true, active: true, passwordHash: true, authVersion: true },
+    });
+    if (!target) throw new NotFoundException("Conta não encontrada.");
+    if (!target.passwordHash) throw new BadRequestException("Esta conta ainda não possui senha. Envie um convite para ativá-la.");
+    const token = await this.jwt.signAsync(
+      { sub: target.id, email: target.email, authVersion: target.authVersion, purpose: "password-reset" },
+      { expiresIn: "30m" },
+    );
+    const baseUrl = (process.env.WEB_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+    const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`;
+    let delivery: "sent" | "manual" = "manual";
+    const apiKey = process.env.RESEND_API_KEY;
+    const from = process.env.EMAIL_FROM;
+    if (apiKey && from) {
+      try {
+        const response = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from,
+            to: [target.email],
+            subject: "Redefinição de senha — Fabricante de Milhas",
+            html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#172033"><h2>Redefina sua senha</h2><p>Foi solicitado um link para redefinir a senha da sua conta no Fabricante de Milhas.</p><p><a href="${resetUrl}" style="display:inline-block;padding:12px 18px;background:#101a2b;color:#fff;text-decoration:none;border-radius:8px">Definir nova senha</a></p><p>O link é válido por 30 minutos e só pode ser usado uma vez. Se você não solicitou esta alteração, ignore esta mensagem.</p></div>`,
+          }),
+        });
+        if (response.ok) delivery = "sent";
+        else this.logger.warn(`Não foi possível enviar redefinição de senha para ${target.email}: HTTP ${response.status}`);
+      } catch (error) {
+        this.logger.warn(`Falha no envio de redefinição de senha para ${target.email}: ${String(error)}`);
+      }
+    }
+    await this.writeAudit(actorUserId, target.id, target.email, "PASSWORD_RESET_REQUESTED", { delivery, expiresInMinutes: 30 });
+    return {
+      resetUrl,
+      delivery,
+      message: delivery === "sent"
+        ? "Link de redefinição enviado por e-mail. O link também está disponível para cópia por 30 minutos."
+        : "Envio automático indisponível. Copie o link e envie ao destinatário por um canal seguro. Ele expira em 30 minutos.",
+    };
+  }
+
   async audit() {
     return this.prisma.adminAuditLog.findMany({
       orderBy: { createdAt: "desc" },
