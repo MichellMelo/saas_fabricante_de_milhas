@@ -82,6 +82,8 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
     label: string;
   } | null>(null);
   const [inviteLink, setInviteLink] = useState("");
+  const [resetLink, setResetLink] = useState("");
+  const [resetTarget, setResetTarget] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -203,6 +205,33 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
       );
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function requestPasswordReset(id: string, label: string) {
+    setBusy(true);
+    setResetLink("");
+    setError("");
+    try {
+      const response = await fetch("/api/admin/users/" + encodeURIComponent(id) + "/password-reset", { method: "POST" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || "Não foi possível gerar o link de redefinição.");
+      setResetLink(data.resetUrl || "");
+      setResetTarget(label);
+      toast.success(data.message || "Link de redefinição gerado.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao gerar link de redefinição.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function copyResetLink() {
+    try {
+      await navigator.clipboard.writeText(resetLink);
+      toast.success("Link de redefinição copiado.");
+    } catch {
+      toast.error("Não foi possível copiar. Selecione e copie o link manualmente.");
     }
   }
 
@@ -332,6 +361,16 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
             <UserRoundPlus size={15} className="mr-2" /> Enviar convite
           </Button>
         </form>
+        {resetLink && (
+          <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3">
+            <p className="text-sm font-medium text-rose-950">Link para redefinir a senha · {resetTarget}</p>
+            <p className="mt-1 break-all text-xs text-rose-900">{resetLink}</p>
+            <p className="mt-1 text-xs text-rose-800">Válido por 30 minutos e utilizável uma única vez. Envie apenas ao destinatário correto.</p>
+            <Button variant="outline" size="sm" className="mt-2" onClick={() => void copyResetLink()}>
+              <Copy size={14} className="mr-2" /> Copiar link de redefinição
+            </Button>
+          </div>
+        )}
         {inviteLink && (
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
             <p className="text-sm font-medium text-amber-950">
