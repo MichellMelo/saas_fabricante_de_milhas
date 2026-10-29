@@ -1,6 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/page-header";
+import { Card } from "@/components/ui/card";
 
 import { useMemo, useState } from "react";
 import {
@@ -293,7 +294,7 @@ export function CalculatorTools() {
         aria-labelledby={`calculator-tab-${active}`}
         className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,.8fr)]"
       >
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 md:p-7">
+        <Card className="rounded-2xl border border-slate-200 bg-white p-5 md:p-7">
           {active === "milheiro" ? (
             <>
               <div className="mb-6">
@@ -613,7 +614,7 @@ export function CalculatorTools() {
                   }
                 />
               </div>
-              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+              <Card className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <span className="text-sm text-slate-600">
                     Valor do resgate versus seu custo:
@@ -664,7 +665,7 @@ export function CalculatorTools() {
                   com seu custo efetivo informado. Considere também a economia
                   líquida, disponibilidade e regras da passagem.
                 </p>
-              </div>
+              </Card>
             </>
           ) : (
             <>
@@ -821,7 +822,7 @@ export function CalculatorTools() {
               </p>
             )}
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <Card className="rounded-2xl border border-slate-200 bg-white p-5">
             <h3 className="font-semibold text-slate-900">
               Premissas importantes
             </h3>
@@ -835,7 +836,7 @@ export function CalculatorTools() {
                 valores numéricos inseridos.
               </li>
             </ul>
-          </div>
+          </Card>
           <button
             type="button"
             onClick={reset}
