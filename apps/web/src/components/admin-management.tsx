@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { ShieldCheck, UserRoundPlus, RefreshCw, Ban, Copy, Clock3, AlertCircle } from "lucide-react";
+import { ArrowLeft, ShieldCheck, UserRoundPlus, RefreshCw, Ban, Copy, Clock3, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
@@ -116,7 +116,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <button onClick={onBack} className="mb-3 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900">Voltar ao painel</button>
+          <button onClick={onBack} className="mb-3 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900"><ArrowLeft size={15} /> Voltar ao painel</button>
           <PageHeader
             eyebrow="Segurança e acessos"
             title="Gestão de administradores"
