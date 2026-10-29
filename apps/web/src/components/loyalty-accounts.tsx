@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 type Program = {
   id: string;
@@ -113,6 +114,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingAccountId, setDeletingAccountId] = useState("");
+  const [accountPendingDeletion, setAccountPendingDeletion] = useState<Account | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [programId, setProgramId] = useState("");
@@ -187,11 +189,8 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
   }
 
   async function deleteAccount(account: Account) {
-    const confirmed = window.confirm(
-      `Excluir a conta de fidelidade ${account.loyaltyProgram.name}? Esta ação não pode ser desfeita.`,
-    );
-    if (!confirmed) return;
     setDeletingAccountId(account.id);
+    setAccountPendingDeletion(null);
     setError("");
     setSuccess("");
     try {
@@ -473,6 +472,29 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
         </Card>
       )}
 
+      <ConfirmDialog
+        open={accountPendingDeletion !== null}
+        title="Excluir conta de fidelidade?"
+        description={
+          accountPendingDeletion
+            ? `Deseja excluir a conta de fidelidade ${accountPendingDeletion.loyaltyProgram.name}? Esta ação não pode ser desfeita. Contas com movimentações registradas não podem ser excluídas.`
+            : ""
+        }
+        confirmLabel="Excluir conta"
+        cancelLabel="Manter conta"
+        destructive
+        busy={Boolean(
+          accountPendingDeletion &&
+            deletingAccountId === accountPendingDeletion.id,
+        )}
+        onCancel={() => setAccountPendingDeletion(null)}
+        onConfirm={() => {
+          if (accountPendingDeletion) {
+            void deleteAccount(accountPendingDeletion);
+          }
+        }}
+      />
+
       <div>
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="text-xl font-semibold text-slate-900">Sua carteira</h2>
@@ -536,7 +558,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
                       title="Excluir conta"
                       className="border-red-200 text-red-700 hover:border-red-300 hover:bg-red-50 hover:text-red-800"
                       disabled={saving || deletingAccountId !== ""}
-                      onClick={() => void deleteAccount(account)}
+                      onClick={() => setAccountPendingDeletion(account)}
                     >
                       {deletingAccountId === account.id ? (
                         "Excluindo..."
