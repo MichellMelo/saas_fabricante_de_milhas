@@ -1,0 +1,485 @@
+generator client {
+ provider = "prisma-client-js"
+}
+datasource db {
+ provider = "postgresql"
+ url = env("DATABASE_URL")
+}
+enum LoyaltyProgramType {
+ BANK
+ AIRLINE
+ HOTEL
+ OTHER
+}
+enum TransactionType {
+ EARN
+ TRANSFER_IN
+ TRANSFER_OUT
+ REDEMPTION
+ PURCHASE
+ EXPIRATION
+ ADJUSTMENT
+}
+enum ProductType {
+ GROUP_VIP
+ AULAO
+ MENTORSHIP
+}
+enum SubscriptionPeriod {
+ MONTHLY
+ SEMIANNUAL
+ ANNUAL
+ CUSTOM
+}
+enum PaymentStatus {
+ PENDING
+ PAID
+ CANCELLED
+}
+enum PaymentMethod {
+ PIX
+ BANK_TRANSFER
+ CREDIT_CARD
+ CASH
+ OTHER
+}
+model User {
+ id String @id @default(cuid())
+ email String @unique
+ passwordHash String?
+ active Boolean @default(true)
+ isAdmin Boolean @default(false)
+ authVersion Int @default(0)
+ lastLoginAt DateTime?
+ name String?
+ phone String?
+ notes String? @db.Text
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ loyaltyAccounts LoyaltyAccount[]
+ customLoyaltyPrograms LoyaltyProgram[]
+ transactions PointTransaction[]
+ flights FlightRecord[]
+ personalTrips PersonalTrip[]
+ personalRedemptions PersonalRedemption[]
+ personalRedemptionAudit PersonalRedemptionAudit[] @relation("RedemptionAuditActor")
+ flightAvailabilities FlightAvailability[]
+ productAccesses UserProductAccess[]
+ payments ClientPayment[]
+ mileSales MileSale[]
+ milePurchases MilePurchase[]
+ mileInventories MileInventory[]
+ mileInventoryMovements MileInventoryMovement[]
+ sentInvitations ClientInvitation[] @relation("InvitationSender")
+ adminInvitationsSent AdminInvitation[] @relation("AdminInvitationSender")
+ adminAuditEvents AdminAuditLog[] @relation("AdminAuditActor")
+ authoredGroupVipPosts GroupVipPost[]
+ authoredProductContent ProductContent[]
+}
+model LoyaltyProgram {
+ id String @id @default(cuid())
+ name String
+ code String @unique
+ type LoyaltyProgramType @default(OTHER)
+ active Boolean @default(true)
+ ownerUserId String?
+ createdAt DateTime @default(now())
+ owner User? @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+ accounts LoyaltyAccount[]
+ milePurchases MilePurchase[]
+ mileInventories MileInventory[]
+ mileInventoryMovements MileInventoryMovement[]
+ mileSales MileSale[]
+ @@index([ownerUserId])
+}
+model LoyaltyAccount {
+ id String @id @default(cuid())
+ userId String
+ loyaltyProgramId String
+ memberReference String?
+ balance Decimal @default(0) @db.Decimal(18, 2)
+ currency String @default("POINTS")
+ lastBalanceAt DateTime?
+ archivedAt DateTime?
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ loyaltyProgram LoyaltyProgram @relation(fields: [loyaltyProgramId], references: [id], onDelete: Restrict)
+ transactions PointTransaction[]
+ @@index([userId])
+ @@index([loyaltyProgramId])
+ @@index([userId, loyaltyProgramId])
+}
+model PointTransaction {
+ id String @id @default(cuid())
+ userId String
+ loyaltyAccountId String?
+ type TransactionType
+ points Decimal @db.Decimal(18, 2)
+ unitCostBrl Decimal? @db.Decimal(12, 4)
+ cashValueBrl Decimal? @db.Decimal(12, 2)
+ occurredAt DateTime @default(now())
+ notes String?
+ createdAt DateTime @default(now())
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ loyaltyAccount LoyaltyAccount? @relation(fields: [loyaltyAccountId], references: [id], onDelete: SetNull)
+ @@index([userId, occurredAt])
+ @@index([loyaltyAccountId, occurredAt])
+}
+model FlightRecord {
+ id String @id @default(cuid())
+ userId String
+ airline String
+ flightNumber String?
+ origin String
+ destination String
+ departureAt DateTime?
+ arrivalAt DateTime?
+ bookingReference String?
+ pointsRedeemed Decimal? @db.Decimal(18, 2)
+ taxesBrl Decimal? @db.Decimal(12, 2)
+ createdAt DateTime @default(now())
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ @@index([userId, departureAt])
+}
+model UserProductAccess {
+ id String @id @default(cuid())
+ userId String
+ product ProductType
+ period SubscriptionPeriod @default(MONTHLY)
+ active Boolean @default(true)
+ startsAt DateTime @default(now())
+ expiresAt DateTime?
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ @@unique([userId, product])
+ @@index([product, active])
+ @@index([userId, active])
+}
+model ClientInvitation {
+ id String @id @default(cuid())
+ email String
+ name String?
+ tokenHash String @unique
+ productTypes ProductType[]
+ invitedByUserId String
+ expiresAt DateTime
+ acceptedAt DateTime?
+ createdAt DateTime @default(now())
+ invitedBy User @relation("InvitationSender", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+ @@index([email, acceptedAt])
+ @@index([expiresAt])
+}
+
+model GroupVipPost {
+ id String @id @default(cuid())
+ title String @db.VarChar(180)
+ summary String? @db.VarChar(300)
+ body String @db.Text
+ externalUrl String? @db.VarChar(2048)
+ isPublished Boolean @default(false)
+ publishedAt DateTime?
+ authorId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ author User @relation(fields: [authorId], references: [id], onDelete: Restrict)
+ @@index([isPublished, publishedAt])
+ @@index([authorId, createdAt])
+}
+
+model ClientPayment {
+ id String @id @default(cuid())
+ userId String
+ product ProductType
+ amount Decimal @db.Decimal(12, 2)
+ dueAt DateTime
+ status PaymentStatus @default(PENDING)
+ method PaymentMethod?
+ paidAt DateTime?
+ notes String? @db.Text
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ @@index([userId, dueAt])
+ @@index([status, dueAt])
+}
+
+model ProductContent {
+ id String @id @default(cuid())
+ product ProductType
+ title String @db.VarChar(180)
+ summary String? @db.VarChar(300)
+ body String @db.Text
+ externalUrl String? @db.VarChar(2048)
+ isPublished Boolean @default(false)
+ publishedAt DateTime?
+ authorId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ author User @relation(fields: [authorId], references: [id], onDelete: Restrict)
+ @@index([product, isPublished, publishedAt])
+ @@index([authorId, createdAt])
+}
+
+
+enum MileSaleStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+model MileSale {
+  id String @id @default(cuid())
+  userId String
+  buyerName String?
+  miles Int
+  acquisitionCpm Decimal @db.Decimal(12, 4)
+  grossAmount Decimal @db.Decimal(12, 2)
+  fees Decimal @default(0) @db.Decimal(12, 2)
+  soldAt DateTime
+  status MileSaleStatus @default(COMPLETED)
+  notes String? @db.Text
+  loyaltyProgramId String?
+  costOfGoodsSold Decimal? @db.Decimal(14, 2)
+  inventoryManaged Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loyaltyProgram LoyaltyProgram? @relation(fields: [loyaltyProgramId], references: [id], onDelete: Restrict)
+  inventoryMovements MileInventoryMovement[]
+  @@index([userId, soldAt])
+  @@index([userId, loyaltyProgramId, soldAt])
+  @@index([userId, status])
+}
+
+
+enum MileInventoryMovementType {
+  PURCHASE
+  SALE
+  ADJUSTMENT_IN
+  ADJUSTMENT_OUT
+}
+
+model MilePurchase {
+  id String @id @default(cuid())
+  userId String
+  loyaltyProgramId String
+  miles Int
+  acquisitionCpm Decimal @db.Decimal(12, 4)
+  grossAmount Decimal @db.Decimal(14, 2)
+  fees Decimal @default(0) @db.Decimal(14, 2)
+  purchasedAt DateTime
+  notes String? @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loyaltyProgram LoyaltyProgram @relation(fields: [loyaltyProgramId], references: [id], onDelete: Restrict)
+  movements MileInventoryMovement[]
+  @@index([userId, purchasedAt])
+  @@index([userId, loyaltyProgramId, purchasedAt])
+}
+
+model MileInventory {
+  id String @id @default(cuid())
+  userId String
+  loyaltyProgramId String
+  miles Int @default(0)
+  totalCost Decimal @default(0) @db.Decimal(14, 2)
+  averageCpm Decimal @default(0) @db.Decimal(12, 4)
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loyaltyProgram LoyaltyProgram @relation(fields: [loyaltyProgramId], references: [id], onDelete: Restrict)
+  @@unique([userId, loyaltyProgramId])
+  @@index([userId])
+}
+
+model MileInventoryMovement {
+  id String @id @default(cuid())
+  userId String
+  loyaltyProgramId String
+  type MileInventoryMovementType
+  miles Int
+  unitCostCpm Decimal @db.Decimal(12, 4)
+  totalCost Decimal @db.Decimal(14, 2)
+  purchaseId String?
+  saleId String?
+  reason String? @db.Text
+  occurredAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loyaltyProgram LoyaltyProgram @relation(fields: [loyaltyProgramId], references: [id], onDelete: Restrict)
+  purchase MilePurchase? @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
+  sale MileSale? @relation(fields: [saleId], references: [id], onDelete: SetNull)
+  @@index([userId, occurredAt])
+  @@index([userId, loyaltyProgramId, occurredAt])
+  @@index([purchaseId])
+  @@index([saleId])
+}
+
+
+model FlightAvailability {
+ id String @id @default(cuid())
+ userId String
+ fingerprint String
+ dateRegistered DateTime
+ program String @db.VarChar(100)
+ cabinClass String @db.VarChar(50)
+ origin String @db.VarChar(3)
+ destination String @db.VarChar(3)
+ milesFloor Int
+ monthsAvailable String @db.Text
+ outboundDates String @db.Text
+ returnDates String @db.Text
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ @@unique([userId, fingerprint])
+ @@index([userId, dateRegistered])
+ @@index([userId, origin, destination])
+ @@index([userId, program])
+}
+
+
+enum PersonalRedemptionStatus {
+  PLANNED
+  ISSUED
+  TRIP_COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+model PersonalTrip {
+  id String @id @default(cuid())
+  userId String
+  title String? @db.VarChar(180)
+  origin String @db.VarChar(3)
+  destination String @db.VarChar(3)
+  outboundDate DateTime
+  returnDate DateTime?
+  notes String? @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  passengers PersonalTripPassenger[]
+  redemptions PersonalRedemption[]
+  @@index([userId, outboundDate])
+  @@index([userId, origin, destination])
+}
+
+model PersonalTripPassenger {
+  id String @id @default(cuid())
+  tripId String
+  name String @db.VarChar(180)
+  createdAt DateTime @default(now())
+  trip PersonalTrip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  @@index([tripId])
+}
+
+model PersonalRedemption {
+  id String @id @default(cuid())
+  userId String
+  tripId String?
+  origin String @db.VarChar(3)
+  destination String @db.VarChar(3)
+  issuanceDate DateTime
+  outboundDate DateTime
+  returnDate DateTime?
+  program String @db.VarChar(100)
+  cabin String @db.VarChar(40)
+  milesUsed Int
+  feesPaid Decimal @db.Decimal(12, 2)
+  cashReferencePrice Decimal? @db.Decimal(12, 2)
+  cashReferenceDate DateTime?
+  cashReferenceSource String? @db.VarChar(2048)
+  bookingLocator String? @db.VarChar(100)
+  status PersonalRedemptionStatus @default(ISSUED)
+  notes String? @db.Text
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trip PersonalTrip? @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  auditEntries PersonalRedemptionAudit[]
+  @@index([userId, deletedAt, issuanceDate])
+  @@index([userId, status])
+  @@index([userId, origin, destination])
+  @@index([tripId])
+}
+
+model PersonalRedemptionAudit {
+  id String @id @default(cuid())
+  redemptionId String?
+  redemptionLabel String @db.VarChar(400)
+  actorUserId String
+  action String @db.VarChar(40)
+  fieldName String? @db.VarChar(100)
+  oldValue String? @db.Text
+  newValue String? @db.Text
+  createdAt DateTime @default(now())
+  redemption PersonalRedemption? @relation(fields: [redemptionId], references: [id], onDelete: SetNull)
+  actor User @relation("RedemptionAuditActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+  @@index([redemptionId, createdAt])
+  @@index([actorUserId, createdAt])
+}
+
+model Airport {
+  iataCode    String   @id @db.VarChar(3)
+  name        String   @db.VarChar(255)
+  searchName  String   @db.VarChar(255)
+  municipality String? @db.VarChar(255)
+  searchMunicipality String? @db.VarChar(255)
+  countryCode String?  @db.VarChar(2)
+  countryName String?  @db.VarChar(100)
+  sourceType  String   @db.VarChar(30)
+  updatedAt   DateTime @updatedAt
+  @@index([municipality])
+  @@index([name])
+  @@index([searchName])
+  @@index([searchMunicipality])
+}
+
+model AirportCatalogSync {
+  id            String   @id @default("ourairports")
+  lastAttemptAt DateTime?
+  lastSuccessAt DateTime?
+  recordCount   Int      @default(0)
+  status        String   @default("PENDING") @db.VarChar(20)
+  errorMessage  String?  @db.Text
+  updatedAt     DateTime @updatedAt
+}
+
+
+model AdminInvitation {
+ id String @id @default(cuid())
+ email String
+ name String?
+ tokenHash String @unique
+ invitedByUserId String
+ expiresAt DateTime
+ acceptedAt DateTime?
+ emailStatus String @default("PENDING")
+ emailAttempts Int @default(0)
+ nextEmailAttemptAt DateTime?
+ lastEmailError String? @db.Text
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ invitedBy User @relation("AdminInvitationSender", fields: [invitedByUserId], references: [id], onDelete: Restrict)
+ @@index([email, acceptedAt])
+ @@index([emailStatus, nextEmailAttemptAt])
+ @@index([expiresAt])
+}
+
+model AdminAuditLog {
+ id String @id @default(cuid())
+ actorUserId String?
+ targetUserId String?
+ targetEmail String
+ action String
+ details Json?
+ createdAt DateTime @default(now())
+ actor User? @relation("AdminAuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+ @@index([createdAt])
+ @@index([targetEmail, createdAt])
+ @@index([actorUserId, createdAt])
+}

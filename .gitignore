@@ -1,0 +1,23 @@
+node_modules/
+.next/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+apps/api/src/generated/
+apps/api/prisma/*.db
+apps/api/prisma/*.db-journal
+
+# Artefatos TypeScript gerados
+*.tsbuildinfo
+apps/api/src/**/*.js
+apps/api/src/**/*.js.map
+apps/api/src/**/*.d.ts
+
+# Arquivos gerados pelo Next.js
+apps/web/next-env.d.ts
+
+*.txt
