@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { ArrowLeft, ShieldCheck, UserRoundPlus, RefreshCw, Ban, Copy, Clock3, AlertCircle } from "lucide-react";
+import { ShieldCheck, UserRoundPlus, RefreshCw, Ban, Copy, Clock3, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
+import { useToast } from "@/components/ui/toast";
 
 type Admin = { id: string; email: string; name: string | null; active: boolean; source: "environment" | "database"; createdAt: string; lastLoginAt: string | null };
 type Client = { id: string; email: string; name: string | null; active: boolean; hasAccount: boolean; createdAt: string; lastLoginAt: string | null };
@@ -12,12 +14,12 @@ type Audit = { id: string; targetEmail: string; action: string; createdAt: strin
 type Snapshot = { administrators: Admin[]; clients: Client[]; invitations: Invitation[] };
 
 export function AdminManagement({ onBack }: { onBack: () => void }) {
+  const { toast } = useToast();
   const [snapshot, setSnapshot] = useState<Snapshot>({ administrators: [], clients: [], invitations: [] });
   const [audit, setAudit] = useState<Audit[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [clientSearch, setClientSearch] = useState("");
@@ -49,7 +51,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
 
   async function createInvitation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setBusy(true); setError(""); setNotice(""); setInviteLink("");
+    setBusy(true); setError(""); setInviteLink("");
     try {
       const response = await fetch("/api/admin/administrators/invitations", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -58,17 +60,17 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Não foi possível criar o convite.");
       setInviteLink(data.inviteUrl || "");
-      setNotice(data.message || "Convite administrativo criado.");
+      toast.success(data.message || "Convite administrativo criado.");
       setEmail(""); setName("");
       await load();
-    } catch (e) { setError(e instanceof Error ? e.message : "Erro ao criar convite."); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro ao criar convite."); }
     finally { setBusy(false); }
   }
 
   async function confirmAction(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!action) return;
-    setBusy(true); setError(""); setNotice("");
+    setBusy(true); setError("");
     try {
       const response = await fetch(`/api/admin/administrators/${action.id}/${action.type}`, {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -76,24 +78,33 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Não foi possível concluir a alteração.");
-      setNotice(action.type === "promote" ? "Privilégio administrativo concedido." : "Privilégio administrativo revogado. A conta e o histórico foram preservados.");
+      toast.success(action.type === "promote" ? "Privilégio administrativo concedido." : "Privilégio administrativo revogado. A conta e o histórico foram preservados.");
       setPassword(""); setAction(null);
       await load();
-    } catch (e) { setError(e instanceof Error ? e.message : "Erro ao atualizar privilégio."); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro ao atualizar privilégio."); }
     finally { setBusy(false); }
   }
 
   async function invitationAction(id: string, operation: "cancel" | "resend") {
-    setBusy(true); setError(""); setNotice("");
+    setBusy(true); setError("");
     try {
       const response = await fetch(`/api/admin/administrators/invitations/${id}/${operation}`, { method: "POST" });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Não foi possível atualizar o convite.");
       setInviteLink(data.inviteUrl || "");
-      setNotice(data.message || (operation === "cancel" ? "Convite cancelado." : "Reenvio solicitado."));
+      toast.success(data.message || (operation === "cancel" ? "Convite cancelado." : "Reenvio solicitado."));
       await load();
-    } catch (e) { setError(e instanceof Error ? e.message : "Erro ao atualizar convite."); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro ao atualizar convite."); }
     finally { setBusy(false); }
+  }
+
+  async function copyInviteLink() {
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      toast.success("Link do convite copiado.");
+    } catch {
+      toast.error("Não foi possível copiar o link. Selecione e copie o endereço manualmente.");
+    }
   }
 
   const filteredClients = snapshot.clients.filter((client) => {
@@ -104,17 +115,19 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <button onClick={onBack} className="mb-3 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900"><ArrowLeft size={15} /> Voltar ao painel</button>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a6792d]">Segurança e acessos</p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">Gestão de administradores</h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-600">Conceda ou revogue acesso administrativo completo. As alterações críticas exigem confirmação da sua senha.</p>
+        <div className="min-w-0">
+          <button onClick={onBack} className="mb-3 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900">Voltar ao painel</button>
+          <PageHeader
+            eyebrow="Segurança e acessos"
+            title="Gestão de administradores"
+            description="Conceda ou revogue acesso administrativo completo. As alterações críticas exigem confirmação da sua senha."
+            showEyebrowLine={false}
+            actions={<Button variant="outline" onClick={() => void load()} disabled={loading}><RefreshCw size={15} className="mr-2" /> Atualizar</Button>}
+          />
         </div>
-        <Button variant="outline" onClick={() => void load()} disabled={loading}><RefreshCw size={15} className="mr-2" /> Atualizar</Button>
       </div>
 
       {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
-      {notice && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</div>}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="p-5"><p className="text-sm text-slate-500">Administradores</p><p className="mt-2 text-3xl font-semibold">{snapshot.administrators.length}</p><p className="mt-1 text-xs text-slate-500">Acesso completo às ferramentas administrativas</p></Card>
@@ -130,7 +143,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
           <input type="text" maxLength={100} placeholder="Nome (opcional)" value={name} onChange={(e) => setName(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#b58a37]" />
           <Button type="submit" disabled={busy}><UserRoundPlus size={15} className="mr-2" /> Enviar convite</Button>
         </form>
-        {inviteLink && <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3"><p className="text-sm font-medium text-amber-950">Link de convite de uso único</p><p className="mt-1 break-all text-xs text-amber-900">{inviteLink}</p><Button variant="outline" size="sm" className="mt-2" onClick={() => void navigator.clipboard.writeText(inviteLink)}><Copy size={14} className="mr-2" /> Copiar link</Button></div>}
+        {inviteLink && <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3"><p className="text-sm font-medium text-amber-950">Link de convite de uso único</p><p className="mt-1 break-all text-xs text-amber-900">{inviteLink}</p><Button variant="outline" size="sm" className="mt-2" onClick={() => void copyInviteLink()}><Copy size={14} className="mr-2" /> Copiar link</Button></div>}
       </Card>
 
       <Card className="p-5 sm:p-6">
