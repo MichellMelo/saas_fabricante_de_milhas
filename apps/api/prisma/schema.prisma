@@ -48,6 +48,9 @@ model User {
  email String @unique
  passwordHash String?
  active Boolean @default(true)
+ isAdmin Boolean @default(false)
+ authVersion Int @default(0)
+ lastLoginAt DateTime?
  name String?
  phone String?
  notes String? @db.Text
@@ -68,6 +71,8 @@ model User {
  mileInventories MileInventory[]
  mileInventoryMovements MileInventoryMovement[]
  sentInvitations ClientInvitation[] @relation("InvitationSender")
+ adminInvitationsSent AdminInvitation[] @relation("AdminInvitationSender")
+ adminAuditEvents AdminAuditLog[] @relation("AdminAuditActor")
  authoredGroupVipPosts GroupVipPost[]
  authoredProductContent ProductContent[]
 }
@@ -441,4 +446,39 @@ model AirportCatalogSync {
   status        String   @default("PENDING") @db.VarChar(20)
   errorMessage  String?  @db.Text
   updatedAt     DateTime @updatedAt
+}
+
+
+model AdminInvitation {
+ id String @id @default(cuid())
+ email String
+ name String?
+ tokenHash String @unique
+ invitedByUserId String
+ expiresAt DateTime
+ acceptedAt DateTime?
+ emailStatus String @default("PENDING")
+ emailAttempts Int @default(0)
+ nextEmailAttemptAt DateTime?
+ lastEmailError String? @db.Text
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ invitedBy User @relation("AdminInvitationSender", fields: [invitedByUserId], references: [id], onDelete: Restrict)
+ @@index([email, acceptedAt])
+ @@index([emailStatus, nextEmailAttemptAt])
+ @@index([expiresAt])
+}
+
+model AdminAuditLog {
+ id String @id @default(cuid())
+ actorUserId String?
+ targetUserId String?
+ targetEmail String
+ action String
+ details Json?
+ createdAt DateTime @default(now())
+ actor User? @relation("AdminAuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+ @@index([createdAt])
+ @@index([targetEmail, createdAt])
+ @@index([actorUserId, createdAt])
 }
