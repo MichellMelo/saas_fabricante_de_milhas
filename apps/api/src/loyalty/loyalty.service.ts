@@ -96,7 +96,7 @@ export class LoyaltyService {
 
   listAccounts(userId: string) {
     return this.prisma.loyaltyAccount.findMany({
-      where: { userId },
+      where: { userId, archivedAt: null },
       orderBy: { updatedAt: "desc" },
       include: {
         loyaltyProgram: { select: { id: true, name: true, code: true, type: true } },
@@ -147,23 +147,18 @@ export class LoyaltyService {
     }
   }
 
-  async deleteAccount(userId: string, accountId: string) {
-    const account = await this.prisma.loyaltyAccount.findFirst({
-      where: { id: accountId, userId },
-      select: {
-        id: true,
-        loyaltyProgram: { select: { name: true } },
-        _count: { select: { transactions: true } },
-      },
+  async archiveAccount(userId: string, accountId: string) {
+    const result = await this.prisma.loyaltyAccount.updateMany({
+      where: { id: accountId, userId, archivedAt: null },
+      data: { archivedAt: new Date() },
     });
-    if (!account) throw new NotFoundException("Conta de fidelidade não encontrada.");
-    if (account._count.transactions > 0) {
-      throw new ConflictException(
-        "Esta conta possui movimentações registradas e não pode ser excluída. Preserve o histórico financeiro.",
-      );
+    if (result.count !== 1) {
+      throw new NotFoundException("Conta de fidelidade não encontrada ou já arquivada.");
     }
-    await this.prisma.loyaltyAccount.delete({ where: { id: account.id } });
-    return { success: true, message: "Conta de fidelidade excluída." };
+    return {
+      success: true,
+      message: "Conta de fidelidade arquivada. O saldo e o histórico financeiro foram preservados.",
+    };
   }
 
   async createTransaction(userId: string, accountId: string, dto: CreateTransactionDto) {
