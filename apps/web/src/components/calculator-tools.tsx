@@ -1,6 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/page-header";
+import { Card } from "@/components/ui/card";
 
 import { useMemo, useState } from "react";
 import {
@@ -23,16 +24,16 @@ type ProgramKey =
   | "aeroplan"
   | "american";
 const MILEIRO_REFERENCES: Record<ProgramKey, { label: string; good: number }> =
-{
-  latam: { label: "LATAM Pass", good: 25 },
-  smiles: { label: "Smiles", good: 15 },
-  azul: { label: "Azul Fidelidade", good: 13 },
-  tap: { label: "TAP Miles&Go", good: 50 },
-  iberia: { label: "Iberia Plus", good: 80 },
-  qatar: { label: "Qatar Privilege Club", good: 60 },
-  aeroplan: { label: "Aeroplan", good: 80 },
-  american: { label: "American Airlines (AAdvantage)", good: 100 },
-};
+  {
+    latam: { label: "LATAM Pass", good: 25 },
+    smiles: { label: "Smiles", good: 15 },
+    azul: { label: "Azul Fidelidade", good: 13 },
+    tap: { label: "TAP Miles&Go", good: 50 },
+    iberia: { label: "Iberia Plus", good: 80 },
+    qatar: { label: "Qatar Privilege Club", good: 60 },
+    aeroplan: { label: "Aeroplan", good: 80 },
+    american: { label: "American Airlines (AAdvantage)", good: 100 },
+  };
 
 const currency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
@@ -213,35 +214,35 @@ export function CalculatorTools() {
     icon: typeof Calculator;
     description: string;
   }[] = [
-      {
-        key: "milheiro",
-        label: "Custo por milheiro",
-        icon: Calculator,
-        description:
-          "Calcule quanto você efetivamente paga a cada mil pontos ou milhas.",
-      },
-      {
-        key: "transferencia",
-        label: "Transferência bonificada",
-        icon: ArrowLeftRight,
-        description:
-          "Estime o saldo final e o custo efetivo após aplicar o bônus de transferência.",
-      },
-      {
-        key: "resgate",
-        label: "Resgate com Dinheiro ou Milhas",
-        icon: Plane,
-        description:
-          "Compare o valor extraído no resgate com o custo que você atribui às suas milhas.",
-      },
-      {
-        key: "venda",
-        label: "Venda de milhas",
-        icon: Wallet,
-        description:
-          "Calcule custo final e percentual de ganho na venda de milhas.",
-      },
-    ];
+    {
+      key: "milheiro",
+      label: "Custo por milheiro",
+      icon: Calculator,
+      description:
+        "Calcule quanto você efetivamente paga a cada mil pontos ou milhas.",
+    },
+    {
+      key: "transferencia",
+      label: "Transferência bonificada",
+      icon: ArrowLeftRight,
+      description:
+        "Estime o saldo final e o custo efetivo após aplicar o bônus de transferência.",
+    },
+    {
+      key: "resgate",
+      label: "Resgate com Dinheiro ou Milhas",
+      icon: Plane,
+      description:
+        "Compare o valor extraído no resgate com o custo que você atribui às suas milhas.",
+    },
+    {
+      key: "venda",
+      label: "Venda de milhas",
+      icon: Wallet,
+      description:
+        "Calcule custo final e percentual de ganho na venda de milhas.",
+    },
+  ];
 
   return (
     <section className="space-y-6">
@@ -293,7 +294,7 @@ export function CalculatorTools() {
         aria-labelledby={`calculator-tab-${active}`}
         className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,.8fr)]"
       >
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 md:p-7">
+        <Card className="rounded-2xl border border-slate-200 bg-white p-5 md:p-7">
           {active === "milheiro" ? (
             <>
               <div className="mb-6">
@@ -613,7 +614,7 @@ export function CalculatorTools() {
                   }
                 />
               </div>
-              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+              <Card className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <span className="text-sm text-slate-600">
                     Valor do resgate versus seu custo:
@@ -664,7 +665,7 @@ export function CalculatorTools() {
                   com seu custo efetivo informado. Considere também a economia
                   líquida, disponibilidade e regras da passagem.
                 </p>
-              </div>
+              </Card>
             </>
           ) : (
             <>
@@ -721,8 +722,8 @@ export function CalculatorTools() {
                   label="Ganho por milheiro"
                   value={
                     sale.miles > 0 &&
-                      sale.acquisitionCpm > 0 &&
-                      sale.grossSale > 0
+                    sale.acquisitionCpm > 0 &&
+                    sale.grossSale > 0
                       ? currency(sale.gainPerThousand)
                       : "—"
                   }
@@ -741,8 +742,8 @@ export function CalculatorTools() {
                   label="Percentual de ganho sobre o custo"
                   value={
                     sale.miles > 0 &&
-                      sale.acquisitionCost > 0 &&
-                      sale.grossSale > 0
+                    sale.acquisitionCost > 0 &&
+                    sale.grossSale > 0
                       ? number(sale.gainPercent) + "%"
                       : "—"
                   }
@@ -775,10 +776,10 @@ export function CalculatorTools() {
                   {sale.acquisitionCost <= 0 || sale.miles <= 0
                     ? "Preencha custo por milheiro e quantidade de milhas para avaliar o resultado."
                     : "Resultado após taxas: " +
-                    currency(sale.profit) +
-                    " (" +
-                    number(sale.gainPercent) +
-                    "% sobre o custo de aquisição)."}
+                      currency(sale.profit) +
+                      " (" +
+                      number(sale.gainPercent) +
+                      "% sobre o custo de aquisição)."}
                 </p>
                 <p className="mt-2 text-xs leading-5 opacity-80">
                   O percentual é calculado sobre o custo de aquisição. Inclua
@@ -787,7 +788,7 @@ export function CalculatorTools() {
               </div>
             </>
           )}
-        </div>
+        </Card>
 
         <aside className="space-y-4">
           <div className="rounded-2xl bg-[#111b2b] p-5 text-white md:p-6">
@@ -821,7 +822,7 @@ export function CalculatorTools() {
               </p>
             )}
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <Card className="rounded-2xl border border-slate-200 bg-white p-5">
             <h3 className="font-semibold text-slate-900">
               Premissas importantes
             </h3>
@@ -835,7 +836,7 @@ export function CalculatorTools() {
                 valores numéricos inseridos.
               </li>
             </ul>
-          </div>
+          </Card>
           <button
             type="button"
             onClick={reset}

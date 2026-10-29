@@ -30,8 +30,12 @@ export class ClientsService {
   }
 
   async updateClient(id: string, dto: UpdateClientDto) {
-    const existing = await this.prisma.user.findUnique({ where: { id }, select: { id: true, email: true } });
+    const existing = await this.prisma.user.findUnique({ where: { id }, select: { id: true, email: true, isAdmin: true } });
     if (!existing) throw new NotFoundException("Cliente não encontrado.");
+    const protectedAdminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
+    if (existing.isAdmin || protectedAdminEmails.includes(existing.email.trim().toLowerCase())) {
+      throw new BadRequestException("Administradores devem ser gerenciados pela tela de Gestão de Administradores.");
+    }
     const email = dto.email?.trim().toLowerCase();
     if (email && email !== existing.email) {
       await this.prisma.clientInvitation.updateMany({
@@ -61,7 +65,7 @@ export class ClientsService {
       .map((email) => email.trim().toLowerCase())
       .filter(Boolean);
     const clients = await this.prisma.user.findMany({
-      where: adminEmails.length ? { email: { notIn: adminEmails } } : undefined,
+      where: { isAdmin: false, ...(adminEmails.length ? { email: { notIn: adminEmails } } : {}) },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -81,14 +85,90 @@ export class ClientsService {
     return clients.map(({ passwordHash, ...client }) => ({ ...client, hasAccount: Boolean(passwordHash) }));
   }
 
+  async deleteClient(id: string) {
+    const client = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, email: true, isAdmin: true },
+    });
+    if (!client) throw new NotFoundException("Cliente não encontrado.");
+
+    const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean);
+    if (client.isAdmin || adminEmails.includes(client.email.trim().toLowerCase())) {
+      throw new BadRequestException("Não é permitido excluir uma conta administrativa.");
+    }
+
+    const [
+      payments,
+      transactions,
+      loyaltyAccounts,
+      flights,
+      trips,
+      redemptions,
+      audits,
+      availabilities,
+      mileSales,
+      milePurchases,
+      mileInventories,
+      mileMovements,
+      authoredPosts,
+      authoredContent,
+      adminInvitations,
+      adminAuditEvents,
+    ] = await Promise.all([
+      this.prisma.clientPayment.count({ where: { userId: id } }),
+      this.prisma.pointTransaction.count({ where: { userId: id } }),
+      this.prisma.loyaltyAccount.count({ where: { userId: id } }),
+      this.prisma.flightRecord.count({ where: { userId: id } }),
+      this.prisma.personalTrip.count({ where: { userId: id } }),
+      this.prisma.personalRedemption.count({ where: { userId: id } }),
+      this.prisma.personalRedemptionAudit.count({ where: { actorUserId: id } }),
+      this.prisma.flightAvailability.count({ where: { userId: id } }),
+      this.prisma.mileSale.count({ where: { userId: id } }),
+      this.prisma.milePurchase.count({ where: { userId: id } }),
+      this.prisma.mileInventory.count({ where: { userId: id } }),
+      this.prisma.mileInventoryMovement.count({ where: { userId: id } }),
+      this.prisma.groupVipPost.count({ where: { authorId: id } }),
+      this.prisma.productContent.count({ where: { authorId: id } }),
+      this.prisma.adminInvitation.count({ where: { invitedByUserId: id } }),
+      this.prisma.adminAuditLog.count({ where: { OR: [{ actorUserId: id }, { targetUserId: id }] } }),
+    ]);
+
+    if (
+      payments + transactions + loyaltyAccounts + flights + trips + redemptions +
+      audits + availabilities + mileSales + milePurchases + mileInventories +
+      mileMovements + authoredPosts + authoredContent + adminInvitations + adminAuditEvents > 0
+    ) {
+      throw new BadRequestException(
+        "Este cliente possui histórico financeiro, viagens, milhas, conteúdos ou auditoria administrativa vinculados. Para preservar o histórico, inative a conta em vez de excluí-la.",
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.clientInvitation.updateMany({
+        where: {
+          email: client.email,
+          acceptedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        data: { expiresAt: new Date() },
+      });
+      await tx.user.delete({ where: { id } });
+    });
+
+    return { id, deleted: true };
+  }
+
   async setClientStatus(id: string, active: boolean) {
     const client = await this.prisma.user.findUnique({
       where: { id },
-      select: { id: true, email: true, passwordHash: true },
+      select: { id: true, email: true, passwordHash: true, isAdmin: true },
     });
     if (!client) throw new NotFoundException("Cliente não encontrado.");
     const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
-    if (adminEmails.includes(client.email.trim().toLowerCase())) {
+    if (client.isAdmin || adminEmails.includes(client.email.trim().toLowerCase())) {
       throw new BadRequestException("Não é permitido alterar o status de uma conta administrativa por esta tela.");
     }
     if (active && !client.passwordHash) {
@@ -104,7 +184,7 @@ export class ClientsService {
   async listPayments() {
     const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
     return this.prisma.clientPayment.findMany({
-      where: adminEmails.length ? { user: { email: { notIn: adminEmails } } } : undefined,
+      where: { user: { isAdmin: false, ...(adminEmails.length ? { email: { notIn: adminEmails } } : {}) } },
       orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
       select: {
         id: true, userId: true, product: true, amount: true, dueAt: true, status: true,
@@ -115,10 +195,10 @@ export class ClientsService {
   }
 
   async createPayment(dto: CreateClientPaymentDto) {
-    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, select: { id: true, email: true } });
+    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, select: { id: true, email: true, isAdmin: true } });
     if (!user) throw new NotFoundException("Cliente não encontrado.");
     const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
-    if (adminEmails.includes(user.email.trim().toLowerCase())) {
+    if (user.isAdmin || adminEmails.includes(user.email.trim().toLowerCase())) {
       throw new BadRequestException("Não é permitido registrar cobranças para uma conta administrativa.");
     }
     const amount = Number(dto.amount);
@@ -144,10 +224,10 @@ export class ClientsService {
   async updatePayment(id: string, dto: CreateClientPaymentDto) {
     const payment = await this.prisma.clientPayment.findUnique({ where: { id }, select: { id: true, status: true } });
     if (!payment) throw new NotFoundException("Lançamento financeiro não encontrado.");
-    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, select: { id: true, email: true } });
+    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, select: { id: true, email: true, isAdmin: true } });
     if (!user) throw new NotFoundException("Cliente não encontrado.");
     const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
-    if (adminEmails.includes(user.email.trim().toLowerCase())) throw new BadRequestException("Não é permitido registrar cobranças para uma conta administrativa.");
+    if (user.isAdmin || adminEmails.includes(user.email.trim().toLowerCase())) throw new BadRequestException("Não é permitido registrar cobranças para uma conta administrativa.");
     const amount = Number(dto.amount);
     if (!Number.isFinite(amount) || amount <= 0) throw new BadRequestException("O valor deve ser maior que zero.");
     const dueAt = new Date(dto.dueAt);
@@ -173,10 +253,10 @@ export class ClientsService {
   }
 
   async setPaymentPaid(id: string, paid: boolean) {
-    const payment = await this.prisma.clientPayment.findUnique({ where: { id }, select: { id: true, user: { select: { email: true } } } });
+    const payment = await this.prisma.clientPayment.findUnique({ where: { id }, select: { id: true, user: { select: { email: true, isAdmin: true } } } });
     if (!payment) throw new NotFoundException("Lançamento financeiro não encontrado.");
     const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
-    if (adminEmails.includes(payment.user.email.trim().toLowerCase())) {
+    if (payment.user.isAdmin || adminEmails.includes(payment.user.email.trim().toLowerCase())) {
       throw new BadRequestException("Não é permitido alterar cobranças de uma conta administrativa.");
     }
     return this.prisma.clientPayment.update({

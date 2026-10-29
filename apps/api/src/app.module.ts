@@ -3,6 +3,7 @@ import { APP_PIPE } from "@nestjs/core";
 import { ConfigModule } from "@nestjs/config";
 import { resolve } from "node:path";
 import { AuthModule } from "./auth/auth.module";
+import { AdminManagementModule } from "./admin-management/admin-management.module";
 import { ClientsModule } from "./clients/clients.module";
 import { GroupVipModule } from "./group-vip/group-vip.module";
 import { HealthController } from "./health.controller";
@@ -21,6 +22,7 @@ import { ProductContentModule } from "./product-content/product-content.module";
     }),
     PrismaModule,
     AuthModule,
+    AdminManagementModule,
     ClientsModule,
     GroupVipModule,
     ProductContentModule,

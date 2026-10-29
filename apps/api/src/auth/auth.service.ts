@@ -43,11 +43,11 @@ export class AuthService {
     ? await tx.user.update({
        where: { id: existing.id },
        data: { passwordHash, name: emailName || invitation.name || undefined },
-       select: { id: true, email: true, name: true, createdAt: true },
+       select: { id: true, email: true, name: true, createdAt: true, authVersion: true },
       })
     : await tx.user.create({
        data: { email, passwordHash, name: emailName || invitation.name },
-       select: { id: true, email: true, name: true, createdAt: true },
+       select: { id: true, email: true, name: true, createdAt: true, authVersion: true },
       });
 
    await tx.userProductAccess.createMany({
@@ -62,7 +62,7 @@ export class AuthService {
    return created;
   });
 
-  return { user, accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email }) };
+  return { user, accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email, authVersion: user.authVersion }) };
  }
 
  async login(dto: LoginDto) {
@@ -74,12 +74,50 @@ export class AuthService {
   if (!user.active) {
    throw new UnauthorizedException("Sua conta está inativa. Entre em contato com o administrador para solicitar a reativação.");
   }
+  await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   return {
    user: { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt },
-   accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email })
+   accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email, authVersion: user.authVersion })
   };
  }
 
+
+ async resetPassword(dto: { token?: string; password?: string }) {
+  const token = typeof dto.token === "string" ? dto.token : "";
+  const password = typeof dto.password === "string" ? dto.password : "";
+  if (!token) throw new BadRequestException("O link de redefinição está incompleto.");
+  if (password.length < 8) throw new BadRequestException("A nova senha deve ter pelo menos 8 caracteres.");
+  let payload: { sub: string; email: string; authVersion: number; purpose: string };
+  try {
+   payload = await this.jwt.verifyAsync(token);
+  } catch {
+   throw new BadRequestException("Link inválido ou expirado. Solicite uma nova redefinição.");
+  }
+  if (payload.purpose !== "password-reset" || !payload.sub || !payload.email || typeof payload.authVersion !== "number") {
+   throw new BadRequestException("Link de redefinição inválido. Solicite um novo link.");
+  }
+  const user = await this.prisma.user.findUnique({
+   where: { id: payload.sub },
+   select: { id: true, email: true, authVersion: true },
+  });
+  if (!user || user.email !== payload.email || user.authVersion !== payload.authVersion) {
+   throw new BadRequestException("Este link já foi utilizado ou não é mais válido. Solicite uma nova redefinição.");
+  }
+  const passwordHash = await hash(password, 12);
+  await this.prisma.$transaction(async (tx) => {
+   const changed = await tx.user.updateMany({
+    where: { id: user.id, email: user.email, authVersion: payload.authVersion },
+    data: { passwordHash, authVersion: { increment: 1 } },
+   });
+   if (changed.count !== 1) {
+    throw new BadRequestException("Este link já foi utilizado ou não é mais válido. Solicite uma nova redefinição.");
+   }
+   await tx.adminAuditLog.create({
+    data: { targetUserId: user.id, targetEmail: user.email, action: "PASSWORD_RESET_COMPLETED" },
+   });
+  });
+  return { success: true, message: "Senha redefinida. Entre novamente com sua nova senha." };
+ }
 
  async updateProfile(userId: string, dto: UpdateProfileDto) {
   const name = dto.name.trim();
@@ -98,7 +136,7 @@ export class AuthService {
   }
   if (dto.newPassword.length < 8) throw new BadRequestException("A nova senha deve ter pelo menos 8 caracteres.");
   const passwordHash = await hash(dto.newPassword, 12);
-  await this.prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+  await this.prisma.user.update({ where: { id: userId }, data: { passwordHash, authVersion: { increment: 1 } } });
   return { success: true };
  }
 
@@ -106,7 +144,7 @@ export class AuthService {
   const user = await this.prisma.user.findUnique({
    where: { id: userId },
    select: {
-    id: true, email: true, name: true, active: true, createdAt: true,
+    id: true, email: true, name: true, active: true, isAdmin: true, createdAt: true,
     productAccesses: { select: { product: true, active: true, startsAt: true, expiresAt: true } },
    }
   });
@@ -115,7 +153,7 @@ export class AuthService {
   const now = new Date();
   return {
    ...user,
-   isAdmin: admins.includes(user.email.trim().toLowerCase()),
+   isAdmin: user.isAdmin || admins.includes(user.email.trim().toLowerCase()),
    productAccesses: user.productAccesses.filter((access) =>
     access.active && access.startsAt <= now && (!access.expiresAt || access.expiresAt > now)
    ),

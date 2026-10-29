@@ -11,8 +11,7 @@ export class GroupVipController {
   constructor(private readonly groupVip: GroupVipService) {}
 
   private isAdmin(request: AuthenticatedRequest) {
-    const admins = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
-    return admins.includes(request.user.email.trim().toLowerCase());
+    return request.user.isAdmin;
   }
 
   private assertAdmin(request: AuthenticatedRequest) {

@@ -96,7 +96,7 @@ export class LoyaltyService {
 
   listAccounts(userId: string) {
     return this.prisma.loyaltyAccount.findMany({
-      where: { userId },
+      where: { userId, archivedAt: null },
       orderBy: { updatedAt: "desc" },
       include: {
         loyaltyProgram: { select: { id: true, name: true, code: true, type: true } },
@@ -145,6 +145,20 @@ export class LoyaltyService {
       }
       throw error;
     }
+  }
+
+  async archiveAccount(userId: string, accountId: string) {
+    const result = await this.prisma.loyaltyAccount.updateMany({
+      where: { id: accountId, userId, archivedAt: null },
+      data: { archivedAt: new Date() },
+    });
+    if (result.count !== 1) {
+      throw new NotFoundException("Conta de fidelidade não encontrada ou já arquivada.");
+    }
+    return {
+      success: true,
+      message: "Conta de fidelidade arquivada. O saldo e o histórico financeiro foram preservados.",
+    };
   }
 
   async createTransaction(userId: string, accountId: string, dto: CreateTransactionDto) {

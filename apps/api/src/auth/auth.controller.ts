@@ -20,6 +20,11 @@ export class AuthController {
   return this.auth.acceptInvitation(dto);
  }
 
+ @Post("reset-password")
+ resetPassword(@Body() body: { token?: string; password?: string }) {
+  return this.auth.resetPassword(body);
+ }
+
  @Post("login")
  login(@Body() dto: LoginDto) {
   return this.auth.login(dto);

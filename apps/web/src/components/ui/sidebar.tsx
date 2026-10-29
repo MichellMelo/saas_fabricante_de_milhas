@@ -3,10 +3,18 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-type SidebarContextValue = { mobileOpen: boolean; setMobileOpen: (open: boolean) => void };
+type SidebarContextValue = {
+  mobileOpen: boolean;
+  setMobileOpen: (open: boolean) => void;
+};
 const SidebarContext = React.createContext<SidebarContextValue | null>(null);
 
-export function SidebarProvider({ children, mobileOpen = false, setMobileOpen = () => undefined, className }: {
+export function SidebarProvider({
+  children,
+  mobileOpen = false,
+  setMobileOpen = () => undefined,
+  className,
+}: {
   children: React.ReactNode;
   mobileOpen?: boolean;
   setMobileOpen?: (open: boolean) => void;
@@ -14,12 +22,22 @@ export function SidebarProvider({ children, mobileOpen = false, setMobileOpen = 
 }) {
   return (
     <SidebarContext.Provider value={{ mobileOpen, setMobileOpen }}>
-      <div data-sidebar="provider" className={cn("flex min-h-svh w-full", className)}>{children}</div>
+      <div
+        data-sidebar="provider"
+        className={cn("flex min-h-svh w-full", className)}
+      >
+        {children}
+      </div>
     </SidebarContext.Provider>
   );
 }
 
-export function Sidebar({ children, className, mobileOpen, ...props }: React.HTMLAttributes<HTMLElement> & { mobileOpen?: boolean }) {
+export function Sidebar({
+  children,
+  className,
+  mobileOpen,
+  ...props
+}: React.HTMLAttributes<HTMLElement> & { mobileOpen?: boolean }) {
   const context = React.useContext(SidebarContext);
   const isMobileOpen = mobileOpen ?? context?.mobileOpen ?? false;
   return (
@@ -38,35 +56,109 @@ export function Sidebar({ children, className, mobileOpen, ...props }: React.HTM
   );
 }
 
-export function SidebarHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div data-sidebar="header" className={cn("flex flex-col gap-2 px-5 pb-7 pt-6", className)} {...props} />;
+export function SidebarHeader({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      data-sidebar="header"
+      className={cn("flex flex-col gap-2 px-5 pb-7 pt-6", className)}
+      {...props}
+    />
+  );
 }
 
-export function SidebarContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div data-sidebar="content" className={cn("flex min-h-0 flex-col gap-5 overflow-y-visible px-3 py-1", className)} {...props} />;
+export function SidebarContent({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      data-sidebar="content"
+      className={cn(
+        "flex min-h-0 flex-col gap-5 overflow-y-visible px-3 py-1",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
-export function SidebarFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div data-sidebar="footer" className={cn("mt-auto flex flex-col gap-3 p-3", className)} {...props} />;
+export function SidebarFooter({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      data-sidebar="footer"
+      className={cn("mt-auto flex flex-col gap-3 p-3", className)}
+      {...props}
+    />
+  );
 }
 
-export function SidebarGroup({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <section data-sidebar="group" className={cn("flex min-w-0 flex-col gap-2", className)} {...props} />;
+export function SidebarGroup({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <section
+      data-sidebar="group"
+      className={cn("flex min-w-0 flex-col gap-2", className)}
+      {...props}
+    />
+  );
 }
 
-export function SidebarGroupLabel({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div data-sidebar="group-label" className={cn("px-3 text-[10px] font-semibold uppercase tracking-[.18em] text-slate-500", className)} {...props} />;
+export function SidebarGroupLabel({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      data-sidebar="group-label"
+      className={cn(
+        "px-3 text-[10px] font-semibold uppercase tracking-[.18em] text-slate-500",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
-export function SidebarMenu({ className, ...props }: React.HTMLAttributes<HTMLUListElement>) {
-  return <ul data-sidebar="menu" className={cn("flex w-full min-w-0 flex-col gap-1.5", className)} {...props} />;
+export function SidebarMenu({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLUListElement>) {
+  return (
+    <ul
+      data-sidebar="menu"
+      className={cn("flex w-full min-w-0 flex-col gap-1.5", className)}
+      {...props}
+    />
+  );
 }
 
-export function SidebarMenuItem({ className, ...props }: React.LiHTMLAttributes<HTMLLIElement>) {
-  return <li data-sidebar="menu-item" className={cn("group/menu-item relative min-w-0", className)} {...props} />;
+export function SidebarMenuItem({
+  className,
+  ...props
+}: React.LiHTMLAttributes<HTMLLIElement>) {
+  return (
+    <li
+      data-sidebar="menu-item"
+      className={cn("group/menu-item relative min-w-0", className)}
+      {...props}
+    />
+  );
 }
 
-export function SidebarMenuButton({ children, isActive = false, className, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { isActive?: boolean }) {
+export function SidebarMenuButton({
+  children,
+  isActive = false,
+  className,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { isActive?: boolean }) {
   return (
     <button
       data-sidebar="menu-button"
@@ -86,6 +178,16 @@ export function SidebarMenuButton({ children, isActive = false, className, ...pr
   );
 }
 
-export function SidebarSeparator({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div data-sidebar="separator" role="separator" className={cn("mx-1 h-px bg-white/10", className)} {...props} />;
+export function SidebarSeparator({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      data-sidebar="separator"
+      role="separator"
+      className={cn("mx-1 h-px bg-white/10", className)}
+      {...props}
+    />
+  );
 }
