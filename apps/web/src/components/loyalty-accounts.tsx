@@ -9,6 +9,7 @@ import {
   Building2,
   Plane,
   Plus,
+  Trash2,
   WalletCards,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -111,6 +112,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deletingAccountId, setDeletingAccountId] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [programId, setProgramId] = useState("");
@@ -181,6 +183,31 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
       );
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function deleteAccount(account: Account) {
+    const confirmed = window.confirm(
+      `Excluir a conta de fidelidade ${account.loyaltyProgram.name}? Esta ação não pode ser desfeita.`,
+    );
+    if (!confirmed) return;
+    setDeletingAccountId(account.id);
+    setError("");
+    setSuccess("");
+    try {
+      await readResponse(
+        await fetch(`/api/loyalty-accounts/${encodeURIComponent(account.id)}`, {
+          method: "DELETE",
+        }),
+      );
+      setSuccess("Conta de fidelidade excluída.");
+      await loadData();
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "Não foi possível excluir a conta.",
+      );
+    } finally {
+      setDeletingAccountId("");
     }
   }
 
@@ -498,9 +525,26 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
                       )}
                     </div>
                   </div>
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
-                    {account._count?.transactions ?? 0} mov.
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+                      {account._count?.transactions ?? 0} mov.
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      aria-label={`Excluir conta ${account.loyaltyProgram.name}`}
+                      title="Excluir conta"
+                      disabled={saving || deletingAccountId !== ""}
+                      onClick={() => void deleteAccount(account)}
+                    >
+                      {deletingAccountId === account.id ? (
+                        <span className="text-xs">...</span>
+                      ) : (
+                        <Trash2 size={15} />
+                      )}
+                    </Button>
+                  </div>
                 </div>
                 <div className="mt-6 border-t border-slate-100 pt-4">
                   <div className="text-sm text-slate-500">Saldo disponível</div>
