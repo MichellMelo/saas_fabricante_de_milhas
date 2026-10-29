@@ -145,9 +145,50 @@ export function AuthForm({ mode }: AuthFormProps) {
 
               {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[12px] leading-5 text-red-700">{error}</p>}
 
-              <button type="submit" disabled={loading} className="group flex w-full items-center justify-between rounded-xl bg-[#101a2b] px-5 py-[15px] text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(16,26,43,0.14)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#1b2a41] hover:shadow-[0_12px_26px_rgba(16,26,43,0.2)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#d6b66f]/30 disabled:translate-y-0 disabled:cursor-wait disabled:opacity-60">
-                <span>{loading ? "Preparando seu acesso..." : isRegister ? "Criar minha conta" : "Entrar no meu espaço"}</span>
-                <span className="text-[#d6b66f] transition-transform group-hover:translate-x-1" aria-hidden="true">↗</span>
+              <button
+                type="submit"
+                disabled={loading}
+                aria-busy={loading}
+                className="group flex w-full items-center justify-between rounded-xl bg-[#101a2b] px-5 py-[15px] text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(16,26,43,0.14)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#1b2a41] hover:shadow-[0_12px_26px_rgba(16,26,43,0.2)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#d6b66f]/30 disabled:translate-y-0 disabled:cursor-wait disabled:opacity-60"
+              >
+                <span className="inline-flex items-center gap-2.5">
+                  {loading && (
+                    <svg
+                      className="h-4 w-4 animate-spin"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="9"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                      />
+                      <path
+                        className="opacity-90"
+                        d="M21 12a9 9 0 0 0-9-9"
+                        stroke="#d6b66f"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  )}
+                  <span>
+                    {loading
+                      ? isRegister
+                        ? "Criando sua conta..."
+                        : "Entrando..."
+                      : isRegister
+                        ? "Criar minha conta"
+                        : "Entrar no meu espaço"}
+                  </span>
+                </span>
+                {!loading && (
+                  <span className="text-[#d6b66f] transition-transform group-hover:translate-x-1" aria-hidden="true">↗</span>
+                )}
               </button>
             </form>
 
