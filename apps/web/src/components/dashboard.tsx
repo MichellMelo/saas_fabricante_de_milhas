@@ -811,7 +811,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           ) : route === "passagens" ? (
             <PersonalTravel />
           ) : route === "historico" ? (
-            <FlightHistory />
+            <FlightHistory isAdmin={Boolean(user.isAdmin)} />
           ) : route === "calculadoras" ? (
             <CalculatorTools />
           ) : route === "mile-finance" ? (
