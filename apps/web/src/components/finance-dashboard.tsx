@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/page-header";
 
 import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, CheckCircle2, Clock3 } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 type Payment = {
   id: string;
@@ -326,7 +327,7 @@ export function FinanceDashboard() {
         </label>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <article className="finance-summary-card">
+        <Card className="finance-summary-card">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-slate-600">Recebido</p>
             <span className="rounded-xl bg-emerald-50 p-2 text-emerald-700">
@@ -339,8 +340,8 @@ export function FinanceDashboard() {
           <p className="mt-1 text-xs text-slate-500">
             Pagamentos marcados como pagos
           </p>
-        </article>
-        <article className="finance-summary-card">
+        </Card>
+        <Card className="finance-summary-card">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-slate-600">A receber</p>
             <span className="rounded-xl bg-amber-50 p-2 text-amber-700">
@@ -353,8 +354,8 @@ export function FinanceDashboard() {
           <p className="mt-1 text-xs text-slate-500">
             Cobranças pendentes ainda no prazo
           </p>
-        </article>
-        <article className="finance-summary-card">
+        </Card>
+        <Card className="finance-summary-card">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-slate-600">Em atraso</p>
             <span className="rounded-xl bg-rose-50 p-2 text-rose-700">
@@ -367,9 +368,9 @@ export function FinanceDashboard() {
           <p className="mt-1 text-xs text-slate-500">
             Cobranças pendentes após o vencimento
           </p>
-        </article>
+        </Card>
       </div>
-      <div className="finance-list-card">
+      <Card className="finance-list-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold text-slate-900">
@@ -693,7 +694,7 @@ export function FinanceDashboard() {
             </div>
           </div>
         )}
-      </div>
+      </Card>
     </section>
   );
 }
