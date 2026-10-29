@@ -259,12 +259,7 @@ type DashboardUser = {
 
 export function Dashboard({ user }: { user: DashboardUser }) {
   const reduceMotion = useReducedMotion();
-  const [route, setRoute] = useState<RouteKey>(
-    !user.isAdmin &&
-      !(user.productAccesses?.some((access) => access.active) ?? false)
-      ? "calculadoras"
-      : "dashboard",
-  );
+  const [route, setRoute] = useState<RouteKey>("dashboard");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopSidebarCollapsed, setDesktopSidebarHidden] = useState(false);
   const [toast, setToast] = useState("");
@@ -274,48 +269,12 @@ export function Dashboard({ user }: { user: DashboardUser }) {
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [dashboardError, setDashboardError] = useState("");
 
-  const hasAnyProduct = Boolean(
-    user.productAccesses?.some((access) => access.active),
-  );
   const allowedNavItems = useMemo(
     () =>
       user.isAdmin
         ? navItems
-        : navItems.filter((item) => {
-            if (
-              item.key === "clientes-admin" ||
-              item.key === "administradores-admin" ||
-              item.key === "financeiro" ||
-              item.key === "programas-admin"
-            )
-              return false;
-            if (!hasAnyProduct)
-              return (
-                item.key === "calculadoras" ||
-                item.key === "programas" ||
-                item.key === "mile-finance"
-              );
-            if (item.key === "grupo-vip")
-              return (
-                user.productAccesses?.some(
-                  (access) => access.product === "GROUP_VIP",
-                ) ?? false
-              );
-            if (item.key === "auloes")
-              return (
-                user.productAccesses?.some(
-                  (access) => access.product === "AULAO",
-                ) ?? false
-              );
-            if (item.key === "mentorias")
-              return (
-                user.productAccesses?.some(
-                  (access) => access.product === "MENTORSHIP",
-                ) ?? false
-              );
-            return true;
-          }),
-    [user.isAdmin, hasAnyProduct, user.productAccesses],
+        : navItems.filter((item) => item.key !== "administradores-admin"),
+    [user.isAdmin],
   );
 
   useEffect(() => {
@@ -361,26 +320,15 @@ export function Dashboard({ user }: { user: DashboardUser }) {
       const allowed = allowedNavItems.some((item) => item.key === hash);
       if (allowed) {
         setRoute(hash as RouteKey);
-      } else if (!user.isAdmin && !hasAnyProduct) {
-        setRoute("calculadoras");
-        window.history.replaceState(
-          null,
-          "",
-          window.location.pathname + "#calculadoras",
-        );
       } else if (hash) {
-        setRoute("calculadoras");
-        window.history.replaceState(
-          null,
-          "",
-          window.location.pathname + "#calculadoras",
-        );
+        setRoute("dashboard");
+        window.history.replaceState(null, "", window.location.pathname);
       }
     };
     syncRouteFromHash();
     window.addEventListener("hashchange", syncRouteFromHash);
     return () => window.removeEventListener("hashchange", syncRouteFromHash);
-  }, [user.isAdmin, hasAnyProduct, allowedNavItems]);
+  }, [user.isAdmin, allowedNavItems]);
   function notify(message: string) {
     setToast(message);
     window.setTimeout(() => setToast(""), 3200);
@@ -817,14 +765,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           ) : route === "mile-finance" ? (
             <MileFinanceDashboard />
           ) : route === "financeiro" ? (
-            user.isAdmin ? (
-              <FinanceDashboard />
-            ) : (
-              <ModulePlaceholder
-                route="historico"
-                onBack={() => navigate("dashboard")}
-              />
-            )
+            <FinanceDashboard />
           ) : route === "grupo-vip" ? (
             <GroupVipContent isAdmin={Boolean(user.isAdmin)} />
           ) : route === "auloes" ? (
