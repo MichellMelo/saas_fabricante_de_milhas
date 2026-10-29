@@ -119,6 +119,18 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [programId, setProgramId] = useState("");
+
+  useEffect(() => {
+    if (!error) return;
+    const timeoutId = window.setTimeout(() => setError(""), 5000);
+    return () => window.clearTimeout(timeoutId);
+  }, [error]);
+
+  useEffect(() => {
+    if (!success) return;
+    const timeoutId = window.setTimeout(() => setSuccess(""), 5000);
+    return () => window.clearTimeout(timeoutId);
+  }, [success]);
   const [memberReference, setMemberReference] = useState("");
   const [initialBalance, setInitialBalance] = useState("0");
   const [transactionAccount, setTransactionAccount] = useState("");
@@ -273,21 +285,25 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
         description="Organize suas contas de fidelidade e registre movimentações para manter os saldos consistentes."
       />
 
-      {error && (
-        <Alert
-          role="alert"
-          className="border-red-200 bg-red-50 text-red-800"
-        >
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {success && (
-        <Alert
-          role="status"
-          className="border-emerald-200 bg-emerald-50 text-emerald-800"
-        >
-          <AlertDescription>{success}</AlertDescription>
-        </Alert>
+      {(error || success) && (
+        <div className="pointer-events-none fixed right-4 top-4 z-[200] w-[calc(100%-2rem)] max-w-md space-y-2">
+          {error && (
+            <Alert
+              role="alert"
+              className="pointer-events-auto border-red-200 bg-red-50 text-red-800 shadow-lg"
+            >
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          {success && (
+            <Alert
+              role="status"
+              className="pointer-events-auto border-emerald-200 bg-emerald-50 text-emerald-800 shadow-lg"
+            >
+              <AlertDescription>{success}</AlertDescription>
+            </Alert>
+          )}
+        </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
