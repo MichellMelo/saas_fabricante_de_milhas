@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   ArrowDownLeft,
   ArrowUpRight,
+  Archive,
   Building2,
   Plane,
   Plus,
@@ -114,7 +115,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [deletingAccountId, setDeletingAccountId] = useState("");
+  const [archivingAccountId, setArchivingAccountId] = useState("");
   const [accountPendingDeletion, setAccountPendingDeletion] = useState<Account | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -202,7 +203,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
   }
 
   async function deleteAccount(account: Account) {
-    setDeletingAccountId(account.id);
+    setArchivingAccountId(account.id);
     setAccountPendingDeletion(null);
     setError("");
     setSuccess("");
@@ -212,14 +213,14 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
           method: "DELETE",
         }),
       );
-      setSuccess("Conta de fidelidade excluída.");
+      setSuccess("Conta arquivada. O saldo e o histórico financeiro foram preservados.");
       await loadData();
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : "Não foi possível excluir a conta.",
+        e instanceof Error ? e.message : "Não foi possível arquivar a conta.",
       );
     } finally {
-      setDeletingAccountId("");
+      setArchivingAccountId("");
     }
   }
 
@@ -491,18 +492,18 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
 
       <ConfirmDialog
         open={accountPendingDeletion !== null}
-        title="Excluir conta de fidelidade?"
+        title="Arquivar conta de fidelidade?"
         description={
           accountPendingDeletion
-            ? `Deseja excluir a conta de fidelidade ${accountPendingDeletion.loyaltyProgram.name}? Esta ação não pode ser desfeita. Contas com movimentações registradas não podem ser excluídas para preservar o histórico financeiro.`
+            ? `Deseja arquivar a conta de fidelidade ${accountPendingDeletion.loyaltyProgram.name}? Ela sairá da carteira ativa, mas o saldo e todas as movimentações serão preservados.`
             : ""
         }
-        confirmLabel="Excluir conta"
-        cancelLabel="Manter conta"
+        confirmLabel="Arquivar conta"
+        cancelLabel="Manter ativa"
         destructive
         busy={Boolean(
           accountPendingDeletion &&
-            deletingAccountId === accountPendingDeletion.id,
+            archivingAccountId === accountPendingDeletion.id,
         )}
         onCancel={() => setAccountPendingDeletion(null)}
         onConfirm={() => {
@@ -571,17 +572,17 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
                     <Button
                       type="button"
                       variant="outline"
-                      aria-label={`Excluir conta ${account.loyaltyProgram.name}`}
-                      title="Excluir conta"
-                      className="border-red-200 text-red-700 hover:border-red-300 hover:bg-red-50 hover:text-red-800"
-                      disabled={saving || deletingAccountId !== ""}
+                      aria-label={`Arquivar conta ${account.loyaltyProgram.name}`}
+                      title="Arquivar conta"
+                      className="border-amber-200 text-amber-800 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-900"
+                      disabled={saving || archivingAccountId !== ""}
                       onClick={() => setAccountPendingDeletion(account)}
                     >
-                      {deletingAccountId === account.id ? (
-                        "Excluindo..."
+                      {archivingAccountId === account.id ? (
+                        "Arquivando..."
                       ) : (
                         <>
-                          <Trash2 size={15} /> Excluir conta
+                          <Archive size={15} /> Arquivar conta
                         </>
                       )}
                     </Button>
