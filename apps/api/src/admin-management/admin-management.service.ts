@@ -9,7 +9,7 @@ import {
   OnModuleInit,
   UnauthorizedException,
 } from "@nestjs/common";
-import { Prisma, ProductType } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { JwtService } from "@nestjs/jwt";
 import { compare, hash } from "bcryptjs";
 import { createHash, randomBytes } from "node:crypto";
@@ -117,7 +117,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
       select: { id: true, email: true, name: true, expiresAt: true, createdAt: true },
     });
     await this.audit(actorUserId, existing?.id ?? null, email, "ADMIN_INVITATION_CREATED", { invitationId: invitation.id });
-    await this.deliverInvitation(invitation.id);
+    await this.deliverInvitation(invitation.id, token);
     const updated = await this.prisma.adminInvitation.findUnique({
       where: { id: invitation.id },
       select: { id: true, emailStatus: true, emailAttempts: true, lastEmailError: true },
@@ -125,13 +125,13 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     const baseUrl = (process.env.WEB_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
     return {
       invitation: { ...invitation, emailStatus: updated?.emailStatus, emailAttempts: updated?.emailAttempts },
-      inviteUrl: process.env.RESEND_API_KEY && process.env.EMAIL_FROM ? undefined : `${baseUrl}/accept-admin-invite?token=${token}`,
+      inviteUrl: `${baseUrl}/accept-admin-invite?token=${token}`,
       delivery: updated?.emailStatus === "SENT" ? "sent" : updated?.emailStatus === "MANUAL" ? "manual" : "queued",
       message: updated?.emailStatus === "SENT" ? "Convite enviado por e-mail." : "Convite criado; configure RESEND_API_KEY e EMAIL_FROM para envio automático.",
     };
   }
 
-  private async deliverInvitation(id: string) {
+  private async deliverInvitation(id: string, initialToken?: string) {
     const invitation = await this.prisma.adminInvitation.findUnique({ where: { id } });
     if (!invitation || invitation.acceptedAt || invitation.expiresAt <= new Date()) return;
     const apiKey = process.env.RESEND_API_KEY;
@@ -141,21 +141,53 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
       return;
     }
     const claimed = await this.prisma.adminInvitation.updateMany({
-      where: { id, acceptedAt: null, expiresAt: { gt: new Date() }, emailStatus: { in: ["PENDING", "RETRY", "FAILED"] }, emailAttempts: { lt: MAX_EMAIL_ATTEMPTS } },
+      where: { id, acceptedAt: null, expiresAt: { gt: new Date() }, emailStatus: { in: ["PENDING", "RETRY"] }, emailAttempts: { lt: MAX_EMAIL_ATTEMPTS } },
       data: { emailStatus: "SENDING" },
     });
     if (!claimed.count) return;
-    const token = ""; // Only the hash is persisted; raw tokens are never recoverable for retries.
-    void token;
-    await this.prisma.adminInvitation.update({
-      where: { id },
-      data: {
-        emailStatus: "FAILED",
-        emailAttempts: { increment: 1 },
-        lastEmailError: "O link seguro não pode ser reconstruído após a criação. Gere um novo convite para reenviar.",
-        nextEmailAttemptAt: null,
-      },
-    });
+
+    const token = initialToken ?? randomBytes(32).toString("hex");
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+    if (!initialToken) {
+      await this.prisma.adminInvitation.update({ where: { id }, data: { tokenHash } });
+    }
+    const baseUrl = (process.env.WEB_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+    const inviteUrl = `${baseUrl}/accept-admin-invite?token=${token}`;
+    const attempt = invitation.emailAttempts + 1;
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from,
+          to: [invitation.email],
+          subject: "Convite administrativo — Fabricante de Milhas",
+          html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#172033"><h2>Você foi convidado para administrar o Fabricante de Milhas</h2><p>Conclua seu cadastro para ativar o acesso administrativo completo.</p><p><a href="${inviteUrl}" style="display:inline-block;padding:12px 18px;background:#101a2b;color:#fff;text-decoration:none;border-radius:8px">Aceitar convite</a></p><p>Este link expira em sete dias e só pode ser utilizado uma vez.</p></div>`,
+        }),
+      });
+      if (!response.ok) {
+        const body = await response.text().catch(() => "");
+        throw new Error(`Resend retornou HTTP ${response.status}: ${body.slice(0, 500)}`);
+      }
+      await this.prisma.adminInvitation.update({
+        where: { id },
+        data: { emailStatus: "SENT", emailAttempts: attempt, lastEmailError: null, nextEmailAttemptAt: null },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const retry = attempt < MAX_EMAIL_ATTEMPTS;
+      const delayMinutes = attempt === 1 ? 5 : 15;
+      await this.prisma.adminInvitation.update({
+        where: { id },
+        data: {
+          emailStatus: retry ? "RETRY" : "FAILED",
+          emailAttempts: attempt,
+          lastEmailError: message.slice(0, 2000),
+          nextEmailAttemptAt: retry ? new Date(Date.now() + delayMinutes * 60_000) : null,
+        },
+      });
+      this.logger.warn(`Falha no envio do convite administrativo ${id} (tentativa ${attempt}/${MAX_EMAIL_ATTEMPTS}): ${message}`);
+    }
   }
 
   private async retryPendingEmails() {
