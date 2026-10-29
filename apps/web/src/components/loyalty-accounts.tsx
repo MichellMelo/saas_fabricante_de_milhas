@@ -116,7 +116,6 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
   const [programId, setProgramId] = useState("");
   const [memberReference, setMemberReference] = useState("");
   const [initialBalance, setInitialBalance] = useState("0");
-  const [showCreate, setShowCreate] = useState(false);
   const [transactionAccount, setTransactionAccount] = useState("");
   const [transactionType, setTransactionType] =
     useState<TransactionType>("EARN");
@@ -172,7 +171,6 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
         }),
       );
       setSuccess("Programa adicionado à sua carteira.");
-      setShowCreate(false);
       setProgramId("");
       setMemberReference("");
       setInitialBalance("0");
@@ -246,17 +244,6 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
         eyebrow="PATRIMÔNIO DE PONTOS"
         title="Programas e saldos"
         description="Organize suas contas de fidelidade e registre movimentações para manter os saldos consistentes."
-        actions={
-          <Button
-            onClick={() => {
-              setShowCreate((value) => !value);
-              setError("");
-            }}
-            disabled={availablePrograms.length === 0}
-          >
-            <Plus size={16} /> Adicionar programa
-          </Button>
-        }
       />
 
       {error && (
@@ -318,8 +305,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
         </Card>
       </div>
 
-      {showCreate && (
-        <Card className="panel loyalty-create-card">
+      <Card className="panel loyalty-create-card">
           <h2 className="text-lg font-semibold text-slate-900">
             Adicionar conta de fidelidade
           </h2>
@@ -373,17 +359,9 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
               <Button type="submit" disabled={saving}>
                 {saving ? "Salvando..." : "Salvar conta"}
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowCreate(false)}
-              >
-                Cancelar
-              </Button>
             </div>
           </form>
         </Card>
-      )}
 
       {accounts.length > 0 && (
         <Card className="panel loyalty-summary-card">
@@ -489,14 +467,6 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
               Cadastre a primeira conta para acompanhar saldos e registrar
               acúmulos, compras, transferências e resgates.
             </p>
-            <div className="mt-5">
-              <Button
-                onClick={() => setShowCreate(true)}
-                disabled={availablePrograms.length === 0}
-              >
-                <Plus size={15} /> Adicionar programa
-              </Button>
-            </div>
             {programs.length === 0 && (
               <p className="mt-4 text-xs text-slate-500">
                 O catálogo ainda não tem programas. Execute a carga inicial
