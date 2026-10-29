@@ -89,6 +89,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
       const response = await fetch(`/api/admin/administrators/invitations/${id}/${operation}`, { method: "POST" });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Não foi possível atualizar o convite.");
+      setInviteLink(data.inviteUrl || "");
       setNotice(data.message || (operation === "cancel" ? "Convite cancelado." : "Reenvio solicitado."));
       await load();
     } catch (e) { setError(e instanceof Error ? e.message : "Erro ao atualizar convite."); }
@@ -129,7 +130,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
           <input type="text" maxLength={100} placeholder="Nome (opcional)" value={name} onChange={(e) => setName(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#b58a37]" />
           <Button type="submit" disabled={busy}><UserRoundPlus size={15} className="mr-2" /> Enviar convite</Button>
         </form>
-        {inviteLink && <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3"><p className="text-sm font-medium text-amber-950">Link de convite para envio manual</p><p className="mt-1 break-all text-xs text-amber-900">{inviteLink}</p><Button variant="outline" size="sm" className="mt-2" onClick={() => void navigator.clipboard.writeText(inviteLink)}><Copy size={14} className="mr-2" /> Copiar link</Button></div>}
+        {inviteLink && <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3"><p className="text-sm font-medium text-amber-950">Link de convite de uso único</p><p className="mt-1 break-all text-xs text-amber-900">{inviteLink}</p><Button variant="outline" size="sm" className="mt-2" onClick={() => void navigator.clipboard.writeText(inviteLink)}><Copy size={14} className="mr-2" /> Copiar link</Button></div>}
       </Card>
 
       <Card className="p-5 sm:p-6">
