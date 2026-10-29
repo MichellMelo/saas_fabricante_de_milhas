@@ -215,7 +215,7 @@ const dateFormat = (value: string) =>
   new Date(value.slice(0, 10) + "T12:00:00").toLocaleDateString("pt-BR");
 const PAGE_SIZE = 10;
 
-export function FlightHistory() {
+export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
   const [records, setRecords] = useState<Availability[]>([]),
     [preview, setPreview] = useState<Availability[]>([]);
   const [search, setSearch] = useState(""),
@@ -457,16 +457,20 @@ export function FlightHistory() {
             >
               <Download size={15} /> Exportar CSV
             </Button>
-            <Button onClick={() => fileRef.current?.click()}>
-              <Upload size={15} /> Importar CSV
-            </Button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".csv,text/csv"
-              className="hidden"
-              onChange={(e) => void chooseFile(e.target.files?.[0])}
-            />
+            {isAdmin && (
+              <>
+                <Button onClick={() => fileRef.current?.click()}>
+                  <Upload size={15} /> Importar CSV
+                </Button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".csv,text/csv"
+                  className="hidden"
+                  onChange={(e) => void chooseFile(e.target.files?.[0])}
+                />
+              </>
+            )}
           </>
         }
       />
@@ -486,7 +490,7 @@ export function FlightHistory() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      {preview.length > 0 && (
+      {isAdmin && preview.length > 0 && (
         <Card className="space-y-3 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
