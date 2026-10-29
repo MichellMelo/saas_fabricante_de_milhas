@@ -2444,3 +2444,67 @@ label select { margin-top: 4px; }
     display: none !important;
   }
 }
+
+
+/* Standard PageHeader variant for internal management pages */
+.welcome-row.page-header-standard {
+  align-items: flex-end;
+  margin: 0 0 23px;
+  padding: 0;
+  min-height: 0;
+  color: inherit;
+  background: transparent;
+  overflow: visible;
+}
+.welcome-row.page-header-standard::before {
+  display: none;
+}
+.welcome-row.page-header-standard > * {
+  position: static;
+}
+.welcome-row.page-header-standard .eyebrow {
+  color: #9b824d;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  margin-bottom: 10px;
+}
+.welcome-row.page-header-standard .eyebrow-line {
+  display: inline-block !important;
+  width: 17px;
+  background: #c6a45c;
+}
+.welcome-row.page-header-standard .page-title {
+  margin: 0 0 7px;
+  color: #142137;
+  font-family: var(--font-inter), Inter, Arial, sans-serif;
+  font-size: clamp(28px, 2.5vw, 34px);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 1.2;
+}
+.welcome-row.page-header-standard .page-subtitle {
+  margin: 0;
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 760px;
+}
+.welcome-row.page-header-standard > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.welcome-row.page-header-standard button {
+  color: #142137;
+}
+@media (max-width: 640px) {
+  .welcome-row.page-header-standard {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .welcome-row.page-header-standard > div:last-child {
+    width: 100%;
+  }
+}
