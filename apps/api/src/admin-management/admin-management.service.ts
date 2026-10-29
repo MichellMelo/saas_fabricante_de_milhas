@@ -208,9 +208,22 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     if (!invitation) throw new NotFoundException("Convite administrativo não encontrado.");
     if (invitation.acceptedAt) throw new BadRequestException("Este convite já foi aceito.");
     if (invitation.expiresAt <= new Date()) throw new BadRequestException("Este convite expirou; crie um novo convite.");
+    const token = randomBytes(32).toString("hex");
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+    await this.prisma.adminInvitation.update({
+      where: { id },
+      data: { tokenHash, emailStatus: "PENDING", emailAttempts: 0, lastEmailError: null, nextEmailAttemptAt: new Date() },
+    });
     await this.audit(actorUserId, null, invitation.email, "ADMIN_INVITATION_RESEND_REQUESTED", { invitationId: id });
-    await this.prisma.adminInvitation.update({ where: { id }, data: { emailStatus: "MANUAL", nextEmailAttemptAt: null } });
-    return { id, emailStatus: "MANUAL", message: "Por segurança, gere um novo convite para criar um novo link de uso único." };
+    await this.deliverInvitation(id, token);
+    const updated = await this.prisma.adminInvitation.findUnique({ where: { id }, select: { emailStatus: true, emailAttempts: true } });
+    const baseUrl = (process.env.WEB_BASE_URL ?? "http://localhost:3000").replace(/\\/$/, "");
+    return {
+      id,
+      emailStatus: updated?.emailStatus ?? "PENDING",
+      inviteUrl: `${baseUrl}/accept-admin-invite?token=${token}`,
+      message: updated?.emailStatus === "SENT" ? "Convite reenviado por e-mail." : "O link foi renovado; se o envio automático não estiver configurado, copie o link para enviar manualmente.",
+    };
   }
 
   async cancelInvitation(actorUserId: string, id: string) {
