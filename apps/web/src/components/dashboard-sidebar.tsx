@@ -10,6 +10,7 @@ import {
   Clock3,
   Settings2,
   Users,
+  ShieldCheck,
   MessageCircle,
   Video,
   GraduationCap,
@@ -37,6 +38,7 @@ export type DashboardRoute =
   | "historico"
   | "programas-admin"
   | "clientes-admin"
+  | "administradores-admin"
   | "grupo-vip"
   | "auloes"
   | "mentorias"
@@ -54,6 +56,7 @@ const iconByRoute: Partial<Record<DashboardRoute, LucideIcon>> = {
   programas: CreditCard,
   "programas-admin": Settings2,
   "clientes-admin": Users,
+  "administradores-admin": ShieldCheck,
   financeiro: Wallet,
   calculadoras: Calculator,
   passagens: Plane,
@@ -76,17 +79,17 @@ export function DashboardSidebar({
   notify: (message: string) => void;
 }) {
   const adminItems = navItems.filter(
-    (item) => item.key === "clientes-admin" || item.key === "financeiro",
+    (item) => item.key === "clientes-admin" || item.key === "financeiro" || item.key === "administradores-admin",
   );
   const workspaceItems = navItems.filter(
-    (item) => item.key !== "clientes-admin" && item.key !== "financeiro",
+    (item) => item.key !== "clientes-admin" && item.key !== "financeiro" && item.key !== "administradores-admin",
   );
   const [adminOpen, setAdminOpen] = useState(
-    route === "clientes-admin" || route === "financeiro",
+    route === "clientes-admin" || route === "financeiro" || route === "administradores-admin",
   );
 
   useEffect(() => {
-    if (route === "clientes-admin" || route === "financeiro") {
+    if (route === "clientes-admin" || route === "financeiro" || route === "administradores-admin") {
       setAdminOpen(true);
     }
   }, [route]);
