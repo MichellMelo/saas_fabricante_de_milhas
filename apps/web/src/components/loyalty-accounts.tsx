@@ -10,7 +10,6 @@ import {
   Building2,
   Plane,
   Plus,
-  Trash2,
   WalletCards,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
