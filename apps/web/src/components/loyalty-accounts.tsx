@@ -532,16 +532,18 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
                     <Button
                       type="button"
                       variant="outline"
-                      size="icon"
                       aria-label={`Excluir conta ${account.loyaltyProgram.name}`}
                       title="Excluir conta"
+                      className="border-red-200 text-red-700 hover:border-red-300 hover:bg-red-50 hover:text-red-800"
                       disabled={saving || deletingAccountId !== ""}
                       onClick={() => void deleteAccount(account)}
                     >
                       {deletingAccountId === account.id ? (
-                        <span className="text-xs">...</span>
+                        "Excluindo..."
                       ) : (
-                        <Trash2 size={15} />
+                        <>
+                          <Trash2 size={15} /> Excluir conta
+                        </>
                       )}
                     </Button>
                   </div>
