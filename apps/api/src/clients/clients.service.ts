@@ -32,7 +32,10 @@ export class ClientsService {
   async updateClient(id: string, dto: UpdateClientDto) {
     const existing = await this.prisma.user.findUnique({ where: { id }, select: { id: true, email: true, isAdmin: true } });
     if (!existing) throw new NotFoundException("Cliente não encontrado.");
-    if (existing.isAdmin) throw new BadRequestException("Administradores devem ser gerenciados pela tela de Gestão de Administradores.");
+    const protectedAdminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
+    if (existing.isAdmin || protectedAdminEmails.includes(existing.email.trim().toLowerCase())) {
+      throw new BadRequestException("Administradores devem ser gerenciados pela tela de Gestão de Administradores.");
+    }
     const email = dto.email?.trim().toLowerCase();
     if (email && email !== existing.email) {
       await this.prisma.clientInvitation.updateMany({
