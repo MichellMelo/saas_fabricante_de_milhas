@@ -43,7 +43,7 @@ export class AuthService {
     ? await tx.user.update({
        where: { id: existing.id },
        data: { passwordHash, name: emailName || invitation.name || undefined },
-       select: { id: true, email: true, name: true, createdAt: true },
+       select: { id: true, email: true, name: true, createdAt: true, authVersion: true },
       })
     : await tx.user.create({
        data: { email, passwordHash, name: emailName || invitation.name },
@@ -62,7 +62,7 @@ export class AuthService {
    return created;
   });
 
-  return { user, accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email }) };
+  return { user, accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email, authVersion: user.authVersion }) };
  }
 
  async login(dto: LoginDto) {
@@ -74,9 +74,10 @@ export class AuthService {
   if (!user.active) {
    throw new UnauthorizedException("Sua conta está inativa. Entre em contato com o administrador para solicitar a reativação.");
   }
+  await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   return {
    user: { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt },
-   accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email })
+   accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email, authVersion: user.authVersion })
   };
  }
 
@@ -106,7 +107,7 @@ export class AuthService {
   const user = await this.prisma.user.findUnique({
    where: { id: userId },
    select: {
-    id: true, email: true, name: true, active: true, createdAt: true,
+    id: true, email: true, name: true, active: true, isAdmin: true, createdAt: true,
     productAccesses: { select: { product: true, active: true, startsAt: true, expiresAt: true } },
    }
   });
@@ -115,7 +116,7 @@ export class AuthService {
   const now = new Date();
   return {
    ...user,
-   isAdmin: admins.includes(user.email.trim().toLowerCase()),
+   isAdmin: user.isAdmin || admins.includes(user.email.trim().toLowerCase()),
    productAccesses: user.productAccesses.filter((access) =>
     access.active && access.startsAt <= now && (!access.expiresAt || access.expiresAt > now)
    ),
