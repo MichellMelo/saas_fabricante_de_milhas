@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   ChevronDown,
   Copy,
+  KeyRound,
   Search,
   ShieldCheck,
   Trash2,
@@ -572,6 +573,9 @@ export function ClientManagement({
   const [inviteUrl, setInviteUrl] = useState("");
   const [inviteCopied, setInviteCopied] = useState(false);
   const [inviteClientId, setInviteClientId] = useState<string | null>(null);
+  const [resetUrl, setResetUrl] = useState("");
+  const [resetClientId, setResetClientId] = useState<string | null>(null);
+  const [resetCopied, setResetCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [confirmation, setConfirmation] = useState<{
@@ -745,6 +749,39 @@ export function ClientManagement({
       );
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function requestPasswordReset(client: Client) {
+    setSaving(true);
+    setError("");
+    setNotice("");
+    setResetUrl("");
+    setResetCopied(false);
+    try {
+      const response = await fetch("/api/admin/users/" + encodeURIComponent(client.id) + "/password-reset", { method: "POST" });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = result.message;
+        throw new Error(Array.isArray(message) ? message.join(" ") : message || "Não foi possível gerar o link de redefinição.");
+      }
+      setResetUrl(result.resetUrl || "");
+      setResetClientId(client.id);
+      setNotice(result.message || "Link de redefinição gerado. Envie por um canal seguro; expira em 30 minutos.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível gerar o link de redefinição.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function copyResetUrl() {
+    try {
+      await navigator.clipboard.writeText(resetUrl);
+      setResetCopied(true);
+      setNotice("Link de redefinição copiado.");
+    } catch {
+      setError("Não foi possível copiar. Selecione e copie o link manualmente.");
     }
   }
 
@@ -1529,6 +1566,16 @@ export function ClientManagement({
                                   : "Ativar conta"}
                               </button>
                             )}
+                            {client.hasAccount && (
+                              <button
+                                type="button"
+                                onClick={() => void requestPasswordReset(client)}
+                                disabled={saving || !client.active}
+                                className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <KeyRound size={13} /> Redefinir senha
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={() => void sendInvitation(client)}
@@ -1560,6 +1607,15 @@ export function ClientManagement({
                               <Trash2 size={13} />
                               Excluir cliente
                             </button>
+                            {resetUrl && resetClientId === client.id && (
+                              <div className="w-full rounded-lg border border-rose-200 bg-rose-50 p-3">
+                                <p className="text-xs font-semibold text-rose-900">Link de redefinição · válido por 30 minutos</p>
+                                <input readOnly value={resetUrl} onFocus={(event) => event.currentTarget.select()} className="mt-2 w-full rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs text-slate-700" />
+                                <button type="button" onClick={() => void copyResetUrl()} className="mt-2 inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-rose-800 hover:bg-rose-100">
+                                  <Copy size={13} /> {resetCopied ? "Copiado" : "Copiar link de redefinição"}
+                                </button>
+                              </div>
+                            )}
                             {inviteUrl && inviteClientId === client.id && (
                               <button
                                 type="button"
