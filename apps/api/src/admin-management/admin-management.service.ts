@@ -266,7 +266,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
 
     await this.prisma.$transaction(async (tx) => {
       const admins = await tx.user.count({
-        where: { active: true, OR: [{ isAdmin: true }, { email: { in: this.envAdminEmails() } }] },
+        where: { active: true, passwordHash: { not: null }, OR: [{ isAdmin: true }, { email: { in: this.envAdminEmails() } }] },
       });
       if (admins <= 1) throw new BadRequestException("Não é possível revogar o último administrador ativo.");
       await tx.user.update({ where: { id: targetUserId }, data: { isAdmin: false, authVersion: { increment: 1 } } });
@@ -301,8 +301,8 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
       });
       if (claimed.count !== 1) throw new BadRequestException("Este convite já foi utilizado ou expirou.");
       const user = existing
-        ? await tx.user.update({ where: { id: existing.id }, data: { name: dto.name.trim(), passwordHash, active: true, isAdmin: true, authVersion: { increment: 1 } } })
-        : await tx.user.create({ data: { email, name: dto.name.trim(), passwordHash, active: true, isAdmin: true } });
+        ? await tx.user.update({ where: { id: existing.id }, data: { name: dto.name.trim(), passwordHash, active: true, isAdmin: true, lastLoginAt: now, authVersion: { increment: 1 } } })
+        : await tx.user.create({ data: { email, name: dto.name.trim(), passwordHash, active: true, isAdmin: true, lastLoginAt: now } });
       await tx.adminAuditLog.create({ data: { actorUserId: invitation.invitedByUserId, targetUserId: user.id, targetEmail: email, action: "ADMIN_INVITATION_ACCEPTED", details: { invitationId: invitation.id } } });
       return user;
     });
