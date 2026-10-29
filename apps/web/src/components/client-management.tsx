@@ -1,6 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/page-header";
+import { Card } from "@/components/ui/card";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
@@ -1142,7 +1143,7 @@ export function ClientManagement({
         }
       >
         {!selectedClientId && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <Card className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-center gap-3">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f6f0e2] text-[#9a7129]">
                 <UserPlus size={19} />
@@ -1210,10 +1211,10 @@ export function ClientManagement({
                 {saving ? "Cadastrando..." : "Cadastrar cliente"}
               </button>
             </form>
-          </div>
+          </Card>
         )}
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <Card className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           {!selectedClientId && (
             <div className="flex items-center gap-3">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-slate-700">
@@ -1439,7 +1440,7 @@ export function ClientManagement({
                                 : "Conta inativa";
                             return (
                               <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                                <div className="rounded-xl border border-slate-200 bg-white p-4">
+                                <Card className="rounded-xl border border-slate-200 bg-white p-4">
                                   <p className="text-xs font-medium text-slate-500">
                                     Status da conta
                                   </p>
@@ -1452,8 +1453,8 @@ export function ClientManagement({
                                       client.createdAt,
                                     ).toLocaleDateString("pt-BR")}
                                   </p>
-                                </div>
-                                <div className="rounded-xl border border-slate-200 bg-white p-4">
+                                </Card>
+                                <Card className="rounded-xl border border-slate-200 bg-white p-4">
                                   <p className="text-xs font-medium text-slate-500">
                                     Produtos ativos
                                   </p>
@@ -1474,8 +1475,8 @@ export function ClientManagement({
                                           .join(" · ")
                                       : "Nenhum produto ativo"}
                                   </p>
-                                </div>
-                                <div className="rounded-xl border border-slate-200 bg-white p-4">
+                                </Card>
+                                <Card className="rounded-xl border border-slate-200 bg-white p-4">
                                   <p className="text-xs font-medium text-slate-500">
                                     Pagamentos recebidos
                                   </p>
@@ -1485,8 +1486,8 @@ export function ClientManagement({
                                   <p className="mt-1 text-xs text-slate-500">
                                     {paidPayments.length} lançamento(s) pago(s)
                                   </p>
-                                </div>
-                                <div className="rounded-xl border border-slate-200 bg-white p-4">
+                                </Card>
+                                <Card className="rounded-xl border border-slate-200 bg-white p-4">
                                   <p className="text-xs font-medium text-slate-500">
                                     Em aberto
                                   </p>
@@ -1497,7 +1498,7 @@ export function ClientManagement({
                                     {pendingPayments.length} lançamento(s)
                                     pendente(s)
                                   </p>
-                                </div>
+                                </Card>
                               </div>
                             );
                           })()}
@@ -1691,7 +1692,7 @@ export function ClientManagement({
       </div>
 
       {!selectedClientId && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <Card className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-center gap-3">
             <ShieldCheck size={19} className="text-[#a6792d]" />
             <div>
@@ -1748,7 +1749,7 @@ export function ClientManagement({
               ))}
             </div>
           )}
-        </div>
+        </Card>
       )}
       {!selectedClientId && (
         <button
