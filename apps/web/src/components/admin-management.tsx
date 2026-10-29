@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { ArrowLeft, ShieldCheck, UserRoundPlus, RefreshCw, Ban, Copy, Clock3, CheckCircle2, AlertCircle } from "lucide-react";
+import { ArrowLeft, ShieldCheck, UserRoundPlus, RefreshCw, Ban, Copy, Clock3, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
