@@ -214,7 +214,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
       where: { id },
       data: { tokenHash, emailStatus: "PENDING", emailAttempts: 0, lastEmailError: null, nextEmailAttemptAt: new Date() },
     });
-    await this.audit(actorUserId, null, invitation.email, "ADMIN_INVITATION_RESEND_REQUESTED", { invitationId: id });
+    await this.writeAudit(actorUserId, null, invitation.email, "ADMIN_INVITATION_RESEND_REQUESTED", { invitationId: id });
     await this.deliverInvitation(id, token);
     const updated = await this.prisma.adminInvitation.findUnique({ where: { id }, select: { emailStatus: true, emailAttempts: true } });
     const configuredBaseUrl = process.env.WEB_BASE_URL ?? "http://localhost:3000";
@@ -232,7 +232,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     if (!invitation) throw new NotFoundException("Convite administrativo não encontrado.");
     if (invitation.acceptedAt) throw new BadRequestException("Este convite já foi aceito.");
     await this.prisma.adminInvitation.update({ where: { id }, data: { expiresAt: new Date(), emailStatus: "CANCELLED", nextEmailAttemptAt: null } });
-    await this.audit(actorUserId, null, invitation.email, "ADMIN_INVITATION_CANCELLED", { invitationId: id });
+    await this.writeAudit(actorUserId, null, invitation.email, "ADMIN_INVITATION_CANCELLED", { invitationId: id });
     return { id, cancelled: true };
   }
 
@@ -251,7 +251,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     if (!target.active || !target.passwordHash) throw new BadRequestException("O cliente precisa ter conta ativa e senha definida. Para novos acessos, envie um convite.");
     if (target.isAdmin || this.envAdminEmails().includes(target.email.trim().toLowerCase())) throw new ConflictException("Esta conta já possui acesso administrativo.");
     await this.prisma.user.update({ where: { id: targetUserId }, data: { isAdmin: true, authVersion: { increment: 1 } } });
-    await this.audit(actorUserId, targetUserId, target.email, "ADMIN_PRIVILEGE_GRANTED");
+    await this.writeAudit(actorUserId, targetUserId, target.email, "ADMIN_PRIVILEGE_GRANTED");
     return { id: targetUserId, email: target.email, isAdmin: true };
   }
 
