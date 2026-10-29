@@ -99,7 +99,7 @@ export class AuthService {
   }
   if (dto.newPassword.length < 8) throw new BadRequestException("A nova senha deve ter pelo menos 8 caracteres.");
   const passwordHash = await hash(dto.newPassword, 12);
-  await this.prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+  await this.prisma.user.update({ where: { id: userId }, data: { passwordHash, authVersion: { increment: 1 } } });
   return { success: true };
  }
 
