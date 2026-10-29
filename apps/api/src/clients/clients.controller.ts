@@ -15,13 +15,7 @@ export class ClientsController {
   constructor(private readonly clients: ClientsService) {}
 
   private assertAdmin(request: AuthenticatedRequest) {
-    const admins = (process.env.ADMIN_EMAILS ?? "")
-      .split(",")
-      .map((email) => email.trim().toLowerCase())
-      .filter(Boolean);
-    if (!admins.includes(request.user.email.trim().toLowerCase())) {
-      throw new ForbiddenException("Apenas administradores podem gerenciar clientes.");
-    }
+    if (!request.user.isAdmin) throw new ForbiddenException("Apenas administradores podem gerenciar clientes.");
   }
 
   @Post("clients")
