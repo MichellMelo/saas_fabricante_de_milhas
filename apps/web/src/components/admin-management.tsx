@@ -386,7 +386,11 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
                       : "Não registrado"}
                   </p>
                 </div>
-                {admin.source === "database" && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button variant="outline" size="sm" disabled={busy || !admin.active || !admin.hasAccount} onClick={() => void requestPasswordReset(admin.id, admin.name || admin.email)}>
+                    <RefreshCw size={14} className="mr-2" /> Redefinir senha
+                  </Button>
+                  {admin.source === "database" && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -405,7 +409,8 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
                   >
                     <Ban size={14} className="mr-2" /> Revogar acesso
                   </Button>
-                )}
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -448,6 +453,10 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
                     · {client.active ? "Ativa" : "Inativa"}
                   </p>
                 </div>
+                <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" disabled={busy || !client.active || !client.hasAccount} onClick={() => void requestPasswordReset(client.id, client.name || client.email)}>
+                  <RefreshCw size={14} className="mr-2" /> Redefinir senha
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -462,6 +471,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
                 >
                   <ShieldCheck size={14} className="mr-2" /> Promover
                 </Button>
+                </div>
               </div>
             ))
           )}
