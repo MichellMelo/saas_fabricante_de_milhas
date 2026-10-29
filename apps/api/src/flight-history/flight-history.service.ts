@@ -12,8 +12,9 @@ export class FlightHistoryService {
   private readonly config: ConfigService,
  ) {}
 
- async list(userId: string) {
-  const records = await this.prisma.flightAvailability.findMany({ where: { userId }, orderBy: [{ dateRegistered: "desc" }, { origin: "asc" }, { destination: "asc" }], take: 2000 });
+ async list() {
+  // O histórico é uma base compartilhada de oportunidades para todos os usuários autenticados.
+  const records = await this.prisma.flightAvailability.findMany({ orderBy: [{ dateRegistered: "desc" }, { origin: "asc" }, { destination: "asc" }], take: 2000 });
   return { records, total: records.length };
  }
 
