@@ -245,9 +245,10 @@ export function ProductContent({
       )}
 
       {isAdmin && (
-        <form
+        <Card className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+<form
           onSubmit={savePost}
-          className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+          className="space-y-4"
         >
           <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f6f0e2] text-[#9a7129]">
@@ -345,6 +346,7 @@ export function ProductContent({
             )}
           </div>
         </form>
+</Card>
       )}
 
       <div className="space-y-4">
@@ -378,10 +380,10 @@ export function ProductContent({
           </Card>
         ) : (
           posts.map((post) => (
-            <article
+            <Card
               key={post.id}
               className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
-            >
+            
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -449,7 +451,7 @@ export function ProductContent({
                   </button>
                 </div>
               )}
-            </article>
+            </Card>
           ))
         )}
       </div>
