@@ -217,7 +217,8 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     await this.audit(actorUserId, null, invitation.email, "ADMIN_INVITATION_RESEND_REQUESTED", { invitationId: id });
     await this.deliverInvitation(id, token);
     const updated = await this.prisma.adminInvitation.findUnique({ where: { id }, select: { emailStatus: true, emailAttempts: true } });
-    const baseUrl = (process.env.WEB_BASE_URL ?? "http://localhost:3000").replace(/\\/$/, "");
+    const configuredBaseUrl = process.env.WEB_BASE_URL ?? "http://localhost:3000";
+    const baseUrl = configuredBaseUrl.endsWith("/") ? configuredBaseUrl.slice(0, -1) : configuredBaseUrl;
     return {
       id,
       emailStatus: updated?.emailStatus ?? "PENDING",
