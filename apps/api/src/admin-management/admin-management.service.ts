@@ -275,7 +275,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
       const admins = await tx.user.count({
         where: { active: true, passwordHash: { not: null }, OR: [{ isAdmin: true }, { email: { in: this.envAdminEmails() } }] },
       });
-      if (admins <= 1) throw new BadRequestException("Não é possível revogar o último administrador ativo.");
+      if (target.active && target.passwordHash && admins <= 1) throw new BadRequestException("Não é possível revogar o último administrador ativo.");
       await tx.user.update({ where: { id: targetUserId }, data: { isAdmin: false, authVersion: { increment: 1 } } });
       await tx.adminAuditLog.create({
         data: { actorUserId, targetUserId, targetEmail: target.email, action: "ADMIN_PRIVILEGE_REVOKED" },
