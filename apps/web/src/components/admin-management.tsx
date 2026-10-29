@@ -4,6 +4,9 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   ArrowLeft,
   ShieldCheck,
+  Users,
+  MailCheck,
+  ClipboardList,
   UserRoundPlus,
   RefreshCw,
   Ban,
@@ -245,28 +248,51 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="p-5">
-          <p className="text-sm text-slate-500">Administradores</p>
-          <p className="mt-2 text-3xl font-semibold">
-            {snapshot.administrators.length}
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
+        <Card className="relative overflow-hidden border-b-4 border-b-amber-500 p-5 transition-shadow hover:shadow-md">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-slate-500">Administradores</p>
+              <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+                {snapshot.administrators.length}
+              </p>
+            </div>
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+              <Users size={21} strokeWidth={1.8} />
+            </div>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-slate-500">
             Acesso completo às ferramentas administrativas
           </p>
         </Card>
-        <Card className="p-5">
-          <p className="text-sm text-slate-500">Convites pendentes</p>
-          <p className="mt-2 text-3xl font-semibold">
-            {snapshot.invitations.length}
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            Acesso só é ativado após aceitação
+        <Card className="relative overflow-hidden border-b-4 border-b-sky-500 p-5 transition-shadow hover:shadow-md">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-slate-500">Convites pendentes</p>
+              <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+                {snapshot.invitations.length}
+              </p>
+            </div>
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+              <MailCheck size={21} strokeWidth={1.8} />
+            </div>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            Acesso ativado somente após aceitação
           </p>
         </Card>
-        <Card className="p-5">
-          <p className="text-sm text-slate-500">Registros de auditoria</p>
-          <p className="mt-2 text-3xl font-semibold">{audit.length}</p>
-          <p className="mt-1 text-xs text-slate-500">
+        <Card className="relative overflow-hidden border-b-4 border-b-violet-500 p-5 transition-shadow hover:shadow-md">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-slate-500">Registros de auditoria</p>
+              <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+                {audit.length}
+              </p>
+            </div>
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
+              <ClipboardList size={21} strokeWidth={1.8} />
+            </div>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-slate-500">
             Últimos eventos administrativos
           </p>
         </Card>
