@@ -203,18 +203,20 @@ export function ProgramManagement({ onBack }: { onBack: () => void }) {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <Card className="panel program-summary-card">
-          <div className="flex items-center gap-3 text-slate-500">
-            <Building2 size={18} />
-            <span className="text-sm">Catálogo compartilhado</span>
-          </div>
-          <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
-            {catalogPrograms.length}
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Programas gerais listados
-          </p>
-        </Card>
+        {canManageCatalog && (
+          <Card className="panel program-summary-card">
+            <div className="flex items-center gap-3 text-slate-500">
+              <Building2 size={18} />
+              <span className="text-sm">Catálogo compartilhado</span>
+            </div>
+            <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
+              {catalogPrograms.length}
+            </div>
+            <p className="mt-1 text-xs text-slate-500">
+              Programas gerais listados
+            </p>
+          </Card>
+        )}
         <Card className="panel program-summary-card">
           <div className="flex items-center gap-3 text-slate-500">
             <UserRound size={18} />
@@ -263,17 +265,18 @@ export function ProgramManagement({ onBack }: { onBack: () => void }) {
           >
             Programa personalizado
           </Button>
-          <Button
-            type="button"
-            variant={scope === "catalog" ? "default" : "outline"}
-            disabled={!canManageCatalog && !editing}
-            onClick={() => {
-              setScope("catalog");
-              setError("");
-            }}
-          >
-            Catálogo geral
-          </Button>
+          {canManageCatalog && (
+            <Button
+              type="button"
+              variant={scope === "catalog" ? "default" : "outline"}
+              onClick={() => {
+                setScope("catalog");
+                setError("");
+              }}
+            >
+              Catálogo geral
+            </Button>
+          )}
         </div>
         <form
           onSubmit={submit}
@@ -341,10 +344,11 @@ export function ProgramManagement({ onBack }: { onBack: () => void }) {
       </Card>
 
       <div className="space-y-3">
-        <Card className="panel program-list-card">
-          <button
-            type="button"
-            aria-expanded={catalogExpanded}
+        {canManageCatalog && (
+          <Card className="panel program-list-card">
+            <button
+              type="button"
+              aria-expanded={catalogExpanded}
             aria-controls="catalog-programs-panel"
             onClick={() => setCatalogExpanded((expanded) => !expanded)}
             className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-500"
@@ -425,7 +429,8 @@ export function ProgramManagement({ onBack }: { onBack: () => void }) {
               )}
             </div>
           )}
-        </Card>
+          </Card>
+        )}
         <Card className="overflow-hidden border-slate-200 bg-white p-0 shadow-none">
           <button
             type="button"
