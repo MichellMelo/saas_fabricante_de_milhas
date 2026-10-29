@@ -1688,7 +1688,7 @@ export function ClientManagement({
               )}
             </div>
           )}
-        </div>
+        </Card>
       </div>
 
       {!selectedClientId && (
