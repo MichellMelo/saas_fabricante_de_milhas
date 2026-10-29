@@ -82,6 +82,41 @@ export class AuthService {
  }
 
 
+ async resetPassword(dto: { token?: string; password?: string }) {
+  const token = typeof dto.token === "string" ? dto.token : "";
+  const password = typeof dto.password === "string" ? dto.password : "";
+  if (!token) throw new BadRequestException("O link de redefinição está incompleto.");
+  if (password.length < 8) throw new BadRequestException("A nova senha deve ter pelo menos 8 caracteres.");
+  let payload: { sub: string; email: string; authVersion: number; purpose: string };
+  try {
+   payload = await this.jwt.verifyAsync(token);
+  } catch {
+   throw new BadRequestException("Link inválido ou expirado. Solicite uma nova redefinição.");
+  }
+  if (payload.purpose !== "password-reset" || !payload.sub || !payload.email || typeof payload.authVersion !== "number") {
+   throw new BadRequestException("Link de redefinição inválido. Solicite um novo link.");
+  }
+  const user = await this.prisma.user.findUnique({
+   where: { id: payload.sub },
+   select: { id: true, email: true, authVersion: true },
+  });
+  if (!user || user.email !== payload.email || user.authVersion !== payload.authVersion) {
+   throw new BadRequestException("Este link já foi utilizado ou não é mais válido. Solicite uma nova redefinição.");
+  }
+  const passwordHash = await hash(password, 12);
+  const changed = await this.prisma.user.updateMany({
+   where: { id: user.id, email: user.email, authVersion: payload.authVersion },
+   data: { passwordHash, authVersion: { increment: 1 } },
+  });
+  if (changed.count !== 1) {
+   throw new BadRequestException("Este link já foi utilizado ou não é mais válido. Solicite uma nova redefinição.");
+  }
+  await this.prisma.adminAuditLog.create({
+   data: { targetUserId: user.id, targetEmail: user.email, action: "PASSWORD_RESET_COMPLETED" },
+  });
+  return { success: true, message: "Senha redefinida. Entre novamente com sua nova senha." };
+ }
+
  async updateProfile(userId: string, dto: UpdateProfileDto) {
   const name = dto.name.trim();
   if (!name) throw new BadRequestException("Informe seu nome.");
