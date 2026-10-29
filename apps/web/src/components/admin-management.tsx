@@ -122,6 +122,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
             title="Gestão de administradores"
             description="Conceda ou revogue acesso administrativo completo. As alterações críticas exigem confirmação da sua senha."
             showEyebrowLine={false}
+            variant="standard"
             actions={<Button variant="outline" onClick={() => void load()} disabled={loading}><RefreshCw size={15} className="mr-2" /> Atualizar</Button>}
           />
         </div>
