@@ -61,7 +61,7 @@ export class ClientsService {
       .map((email) => email.trim().toLowerCase())
       .filter(Boolean);
     const clients = await this.prisma.user.findMany({
-      where: adminEmails.length ? { email: { notIn: adminEmails } } : undefined,
+      where: { isAdmin: false, ...(adminEmails.length ? { email: { notIn: adminEmails } } : {}) },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -84,7 +84,7 @@ export class ClientsService {
   async deleteClient(id: string) {
     const client = await this.prisma.user.findUnique({
       where: { id },
-      select: { id: true, email: true },
+      select: { id: true, email: true, isAdmin: true },
     });
     if (!client) throw new NotFoundException("Cliente não encontrado.");
 
@@ -92,7 +92,7 @@ export class ClientsService {
       .split(",")
       .map((email) => email.trim().toLowerCase())
       .filter(Boolean);
-    if (adminEmails.includes(client.email.trim().toLowerCase())) {
+    if (client.isAdmin || adminEmails.includes(client.email.trim().toLowerCase())) {
       throw new BadRequestException("Não é permitido excluir uma conta administrativa.");
     }
 
@@ -156,11 +156,11 @@ export class ClientsService {
   async setClientStatus(id: string, active: boolean) {
     const client = await this.prisma.user.findUnique({
       where: { id },
-      select: { id: true, email: true, passwordHash: true },
+      select: { id: true, email: true, passwordHash: true, isAdmin: true },
     });
     if (!client) throw new NotFoundException("Cliente não encontrado.");
     const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
-    if (adminEmails.includes(client.email.trim().toLowerCase())) {
+    if (client.isAdmin || adminEmails.includes(client.email.trim().toLowerCase())) {
       throw new BadRequestException("Não é permitido alterar o status de uma conta administrativa por esta tela.");
     }
     if (active && !client.passwordHash) {
@@ -176,7 +176,7 @@ export class ClientsService {
   async listPayments() {
     const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
     return this.prisma.clientPayment.findMany({
-      where: adminEmails.length ? { user: { email: { notIn: adminEmails } } } : undefined,
+      where: { user: { isAdmin: false, ...(adminEmails.length ? { email: { notIn: adminEmails } } : {}) } },
       orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
       select: {
         id: true, userId: true, product: true, amount: true, dueAt: true, status: true,
@@ -187,10 +187,10 @@ export class ClientsService {
   }
 
   async createPayment(dto: CreateClientPaymentDto) {
-    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, select: { id: true, email: true } });
+    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, select: { id: true, email: true, isAdmin: true } });
     if (!user) throw new NotFoundException("Cliente não encontrado.");
     const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
-    if (adminEmails.includes(user.email.trim().toLowerCase())) {
+    if (user.isAdmin || adminEmails.includes(user.email.trim().toLowerCase())) {
       throw new BadRequestException("Não é permitido registrar cobranças para uma conta administrativa.");
     }
     const amount = Number(dto.amount);
@@ -216,10 +216,10 @@ export class ClientsService {
   async updatePayment(id: string, dto: CreateClientPaymentDto) {
     const payment = await this.prisma.clientPayment.findUnique({ where: { id }, select: { id: true, status: true } });
     if (!payment) throw new NotFoundException("Lançamento financeiro não encontrado.");
-    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, select: { id: true, email: true } });
+    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, select: { id: true, email: true, isAdmin: true } });
     if (!user) throw new NotFoundException("Cliente não encontrado.");
     const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
-    if (adminEmails.includes(user.email.trim().toLowerCase())) throw new BadRequestException("Não é permitido registrar cobranças para uma conta administrativa.");
+    if (user.isAdmin || adminEmails.includes(user.email.trim().toLowerCase())) throw new BadRequestException("Não é permitido registrar cobranças para uma conta administrativa.");
     const amount = Number(dto.amount);
     if (!Number.isFinite(amount) || amount <= 0) throw new BadRequestException("O valor deve ser maior que zero.");
     const dueAt = new Date(dto.dueAt);
@@ -245,10 +245,10 @@ export class ClientsService {
   }
 
   async setPaymentPaid(id: string, paid: boolean) {
-    const payment = await this.prisma.clientPayment.findUnique({ where: { id }, select: { id: true, user: { select: { email: true } } } });
+    const payment = await this.prisma.clientPayment.findUnique({ where: { id }, select: { id: true, user: { select: { email: true, isAdmin: true } } } });
     if (!payment) throw new NotFoundException("Lançamento financeiro não encontrado.");
     const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
-    if (adminEmails.includes(payment.user.email.trim().toLowerCase())) {
+    if (payment.user.isAdmin || adminEmails.includes(payment.user.email.trim().toLowerCase())) {
       throw new BadRequestException("Não é permitido alterar cobranças de uma conta administrativa.");
     }
     return this.prisma.clientPayment.update({
