@@ -24,6 +24,7 @@ type Admin = {
   email: string;
   name: string | null;
   active: boolean;
+  hasAccount: boolean;
   source: "environment" | "database";
   createdAt: string;
   lastLoginAt: string | null;
