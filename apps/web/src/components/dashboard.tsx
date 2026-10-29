@@ -273,7 +273,12 @@ export function Dashboard({ user }: { user: DashboardUser }) {
     () =>
       user.isAdmin
         ? navItems
-        : navItems.filter((item) => item.key !== "administradores-admin"),
+        : navItems.filter(
+            (item) =>
+              item.key !== "clientes-admin" &&
+              item.key !== "financeiro" &&
+              item.key !== "administradores-admin",
+          ),
     [user.isAdmin],
   );
 
