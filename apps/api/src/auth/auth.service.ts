@@ -104,15 +104,17 @@ export class AuthService {
    throw new BadRequestException("Este link já foi utilizado ou não é mais válido. Solicite uma nova redefinição.");
   }
   const passwordHash = await hash(password, 12);
-  const changed = await this.prisma.user.updateMany({
-   where: { id: user.id, email: user.email, authVersion: payload.authVersion },
-   data: { passwordHash, authVersion: { increment: 1 } },
-  });
-  if (changed.count !== 1) {
-   throw new BadRequestException("Este link já foi utilizado ou não é mais válido. Solicite uma nova redefinição.");
-  }
-  await this.prisma.adminAuditLog.create({
-   data: { targetUserId: user.id, targetEmail: user.email, action: "PASSWORD_RESET_COMPLETED" },
+  await this.prisma.$transaction(async (tx) => {
+   const changed = await tx.user.updateMany({
+    where: { id: user.id, email: user.email, authVersion: payload.authVersion },
+    data: { passwordHash, authVersion: { increment: 1 } },
+   });
+   if (changed.count !== 1) {
+    throw new BadRequestException("Este link já foi utilizado ou não é mais válido. Solicite uma nova redefinição.");
+   }
+   await tx.adminAuditLog.create({
+    data: { targetUserId: user.id, targetEmail: user.email, action: "PASSWORD_RESET_COMPLETED" },
+   });
   });
   return { success: true, message: "Senha redefinida. Entre novamente com sua nova senha." };
  }
