@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
   OnModuleDestroy,
@@ -33,6 +34,24 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
 
   onModuleDestroy() {
     if (this.retryTimer) clearInterval(this.retryTimer);
+  }
+
+  private frontendBaseUrl() {
+    const configured = process.env.FRONTEND_BASE_URL ?? (process.env.NODE_ENV === "production" ? undefined : process.env.WEB_BASE_URL);
+    if (!configured && process.env.NODE_ENV === "production") {
+      throw new InternalServerErrorException("FRONTEND_BASE_URL precisa apontar para a URL pública do frontend.");
+    }
+    const value = (configured ?? "http://localhost:3000").trim();
+    let url: URL;
+    try {
+      url = new URL(value);
+    } catch {
+      throw new InternalServerErrorException("FRONTEND_BASE_URL deve ser uma URL absoluta válida do frontend.");
+    }
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+      throw new InternalServerErrorException("FRONTEND_BASE_URL deve usar HTTP ou HTTPS.");
+    }
+    return url.toString().replace(/\\/$/, "");
   }
 
   private envAdminEmails() {
@@ -123,7 +142,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
       where: { id: invitation.id },
       select: { id: true, emailStatus: true, emailAttempts: true, lastEmailError: true },
     });
-    const baseUrl = (process.env.WEB_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+    const baseUrl = this.frontendBaseUrl();
     return {
       invitation: { ...invitation, emailStatus: updated?.emailStatus, emailAttempts: updated?.emailAttempts },
       inviteUrl: updated?.emailStatus === "MANUAL" ? `${baseUrl}/accept-admin-invite?token=${token}` : undefined,
@@ -152,7 +171,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     if (!initialToken) {
       await this.prisma.adminInvitation.update({ where: { id }, data: { tokenHash } });
     }
-    const baseUrl = (process.env.WEB_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+    const baseUrl = this.frontendBaseUrl();
     const inviteUrl = `${baseUrl}/accept-admin-invite?token=${token}`;
     const attempt = invitation.emailAttempts + 1;
     try {
@@ -223,8 +242,8 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     await this.writeAudit(actorUserId, null, invitation.email, "ADMIN_INVITATION_RESEND_REQUESTED", { invitationId: id });
     await this.deliverInvitation(id, token);
     const updated = await this.prisma.adminInvitation.findUnique({ where: { id }, select: { emailStatus: true, emailAttempts: true } });
-    const configuredBaseUrl = process.env.WEB_BASE_URL ?? "http://localhost:3000";
-    const baseUrl = configuredBaseUrl.endsWith("/") ? configuredBaseUrl.slice(0, -1) : configuredBaseUrl;
+    const baseUrl = this.frontendBaseUrl();
+
     return {
       id,
       emailStatus: updated?.emailStatus ?? "PENDING",
@@ -296,7 +315,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
       { sub: target.id, email: target.email, authVersion: target.authVersion, purpose: "password-reset" },
       { expiresIn: "30m" },
     );
-    const baseUrl = (process.env.WEB_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+    const baseUrl = this.frontendBaseUrl();
     const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`;
     let delivery: "sent" | "manual" = "manual";
     const apiKey = process.env.RESEND_API_KEY;
