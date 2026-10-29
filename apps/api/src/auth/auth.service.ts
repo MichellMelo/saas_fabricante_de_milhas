@@ -47,7 +47,7 @@ export class AuthService {
       })
     : await tx.user.create({
        data: { email, passwordHash, name: emailName || invitation.name },
-       select: { id: true, email: true, name: true, createdAt: true },
+       select: { id: true, email: true, name: true, createdAt: true, authVersion: true },
       });
 
    await tx.userProductAccess.createMany({
