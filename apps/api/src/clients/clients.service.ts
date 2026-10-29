@@ -115,6 +115,8 @@ export class ClientsService {
       mileMovements,
       authoredPosts,
       authoredContent,
+      adminInvitations,
+      adminAuditEvents,
     ] = await Promise.all([
       this.prisma.clientPayment.count({ where: { userId: id } }),
       this.prisma.pointTransaction.count({ where: { userId: id } }),
@@ -130,15 +132,17 @@ export class ClientsService {
       this.prisma.mileInventoryMovement.count({ where: { userId: id } }),
       this.prisma.groupVipPost.count({ where: { authorId: id } }),
       this.prisma.productContent.count({ where: { authorId: id } }),
+      this.prisma.adminInvitation.count({ where: { invitedByUserId: id } }),
+      this.prisma.adminAuditLog.count({ where: { OR: [{ actorUserId: id }, { targetUserId: id }] } }),
     ]);
 
     if (
       payments + transactions + loyaltyAccounts + flights + trips + redemptions +
       audits + availabilities + mileSales + milePurchases + mileInventories +
-      mileMovements + authoredPosts + authoredContent > 0
+      mileMovements + authoredPosts + authoredContent + adminInvitations + adminAuditEvents > 0
     ) {
       throw new BadRequestException(
-        "Este cliente possui histórico financeiro, viagens, milhas ou conteúdos vinculados. Para preservar o histórico, inative a conta em vez de excluí-la.",
+        "Este cliente possui histórico financeiro, viagens, milhas, conteúdos ou auditoria administrativa vinculados. Para preservar o histórico, inative a conta em vez de excluí-la.",
       );
     }
 
