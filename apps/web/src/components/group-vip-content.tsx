@@ -372,7 +372,7 @@ export function GroupVipContent({ isAdmin }: { isAdmin: boolean }) {
             <Card
               key={post.id}
               className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
-            
+            >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
