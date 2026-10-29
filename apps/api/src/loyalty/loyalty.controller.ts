@@ -76,8 +76,8 @@ export class LoyaltyController {
   }
 
   @Delete("loyalty-accounts/:id")
-  deleteAccount(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
-    return this.loyalty.deleteAccount(request.user.id, id);
+  archiveAccount(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
+    return this.loyalty.archiveAccount(request.user.id, id);
   }
 
   @Post("loyalty-accounts/:id/transactions")
