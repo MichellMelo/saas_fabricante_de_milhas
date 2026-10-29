@@ -192,6 +192,11 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
 
   private async retryPendingEmails() {
     try {
+      const staleSendingBefore = new Date(Date.now() - 5 * 60_000);
+      await this.prisma.adminInvitation.updateMany({
+        where: { emailStatus: "SENDING", updatedAt: { lt: staleSendingBefore }, acceptedAt: null, expiresAt: { gt: new Date() } },
+        data: { emailStatus: "RETRY", nextEmailAttemptAt: new Date() },
+      });
       const pending = await this.prisma.adminInvitation.findMany({
         where: { emailStatus: "RETRY", acceptedAt: null, expiresAt: { gt: new Date() }, emailAttempts: { lt: MAX_EMAIL_ATTEMPTS }, nextEmailAttemptAt: { lte: new Date() } },
         select: { id: true },
@@ -250,8 +255,10 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     if (!target) throw new NotFoundException("Cliente não encontrado.");
     if (!target.active || !target.passwordHash) throw new BadRequestException("O cliente precisa ter conta ativa e senha definida. Para novos acessos, envie um convite.");
     if (target.isAdmin || this.envAdminEmails().includes(target.email.trim().toLowerCase())) throw new ConflictException("Esta conta já possui acesso administrativo.");
-    await this.prisma.user.update({ where: { id: targetUserId }, data: { isAdmin: true, authVersion: { increment: 1 } } });
-    await this.writeAudit(actorUserId, targetUserId, target.email, "ADMIN_PRIVILEGE_GRANTED");
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({ where: { id: targetUserId }, data: { isAdmin: true, authVersion: { increment: 1 } } });
+      await tx.adminAuditLog.create({ data: { actorUserId, targetUserId, targetEmail: target.email, action: "ADMIN_PRIVILEGE_GRANTED" } });
+    });
     return { id: targetUserId, email: target.email, isAdmin: true };
   }
 
