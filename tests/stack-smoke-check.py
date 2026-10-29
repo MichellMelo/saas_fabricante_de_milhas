@@ -13,6 +13,7 @@ web_pkg = json_file("apps/web/package.json")
 api_pkg = json_file("apps/api/package.json")
 schema = read("apps/api/prisma/schema.prisma")
 dashboard = read("apps/web/src/components/dashboard.tsx")
+dashboard_normalized = " ".join(dashboard.split())
 workflow = read(".github/workflows/validate.yml")
 auth_controller = read("apps/api/src/auth/auth.controller.ts")
 auth_service = read("apps/api/src/auth/auth.service.ts")
@@ -55,7 +56,7 @@ checks = {
  "JWT secret is required and documented": "JWT_SECRET" in read("apps/api/src/main.ts") and "JWT_SECRET" in read(".env.example"),
  "NestJS health endpoint and API prefix exist": '@Controller("health")' in read("apps/api/src/health.controller.ts") and 'setGlobalPrefix("api")' in read("apps/api/src/main.ts"),
  "Dashboard uses Lucide and shadcn primitives": 'from "lucide-react"' in dashboard and 'from "@/components/ui/button"' in dashboard and 'from "@/components/ui/card"' in dashboard,
- "Dashboard avoids fictitious values and explains unavailable metrics": "Sem custo de aquisição suficiente para estimar com segurança" in dashboard and "histórico será exibido quando houver uma série temporal confiável" in dashboard and "DEMONSTRAÇÃO" not in dashboard and "fictícios" not in dashboard,
+ "Dashboard avoids fictitious values and explains unavailable metrics": "Sem custo de aquisição suficiente para estimar com segurança" in dashboard_normalized and "histórico será exibido quando houver uma série temporal confiável" in dashboard_normalized and "DEMONSTRAÇÃO" not in dashboard_normalized and "fictícios" not in dashboard_normalized,
  "CI installs, generates Prisma, typechecks and builds": all(token in workflow for token in ("npm install", "npm run prisma:generate", "npm run typecheck", "npm run build")),
  "Environment template exists and ignores real secrets": (root / ".env.example").exists() and ".env" in read(".gitignore") and "DATABASE_URL" in read(".env.example"),
  "Administrator role, session version and last login are persisted": all(token in schema for token in ('isAdmin Boolean @default(false)', 'authVersion Int @default(0)', 'lastLoginAt DateTime?')),
