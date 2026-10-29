@@ -10,6 +10,13 @@ export class AdminManagementController {
   constructor(private readonly admins: AdminManagementService) {}
 
   @UseGuards(JwtAuthGuard)
+  @Post("admin/users/:id/password-reset")
+  async requestPasswordReset(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
+    await this.admins.assertAdmin(request.user.id);
+    return this.admins.createPasswordResetLink(request.user.id, id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get("admin/administrators")
   async list(@Req() request: AuthenticatedRequest) {
     await this.admins.assertAdmin(request.user.id);
