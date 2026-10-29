@@ -47,7 +47,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     return user;
   }
 
-  private async audit(actorUserId: string | null, targetUserId: string | null, targetEmail: string, action: string, details?: Prisma.InputJsonValue) {
+  private async writeAudit(actorUserId: string | null, targetUserId: string | null, targetEmail: string, action: string, details?: Prisma.InputJsonValue) {
     await this.prisma.adminAuditLog.create({
       data: { actorUserId, targetUserId, targetEmail, action, ...(details ? { details } : {}) },
     });
@@ -116,7 +116,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
       },
       select: { id: true, email: true, name: true, expiresAt: true, createdAt: true },
     });
-    await this.audit(actorUserId, existing?.id ?? null, email, "ADMIN_INVITATION_CREATED", { invitationId: invitation.id });
+    await this.writeAudit(actorUserId, existing?.id ?? null, email, "ADMIN_INVITATION_CREATED", { invitationId: invitation.id });
     await this.deliverInvitation(invitation.id, token);
     const updated = await this.prisma.adminInvitation.findUnique({
       where: { id: invitation.id },
