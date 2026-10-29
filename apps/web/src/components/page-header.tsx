@@ -9,6 +9,7 @@ type PageHeaderProps = {
   actions?: ReactNode;
   className?: string;
   showEyebrowLine?: boolean;
+  variant?: "hero" | "standard";
 };
 
 export function PageHeader({
@@ -18,9 +19,10 @@ export function PageHeader({
   actions,
   className = "",
   showEyebrowLine = true,
+  variant = "hero",
 }: PageHeaderProps) {
   return (
-    <header className={`welcome-row ${className}`.trim()}>
+    <header className={`welcome-row ${variant === "standard" ? "page-header-standard" : ""} ${className}`.trim()}>
       <div className="min-w-0">
         <div className="eyebrow">
           {showEyebrowLine && <span className="eyebrow-line" />}
