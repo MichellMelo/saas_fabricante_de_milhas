@@ -20,6 +20,11 @@ auth_guard = read("apps/api/src/auth/jwt-auth.guard.ts")
 clients_controller = read("apps/api/src/clients/clients.controller.ts")
 clients_service = read("apps/api/src/clients/clients.service.ts")
 accept_invitation_form = read("apps/web/src/components/accept-invitation-form.tsx")
+admin_schema = read("apps/api/src/admin-management/admin-management.service.ts")
+admin_controller = read("apps/api/src/admin-management/admin-management.controller.ts")
+admin_ui = read("apps/web/src/components/admin-management.tsx")
+admin_accept_form = read("apps/web/src/components/accept-admin-invitation-form.tsx")
+admin_migration = read("apps/api/prisma/migrations/20261029120000_admin_management/migration.sql")
 client_management = read("apps/web/src/components/client-management.tsx")
 group_vip_controller = read("apps/api/src/group-vip/group-vip.controller.ts")
 group_vip_service = read("apps/api/src/group-vip/group-vip.service.ts")
@@ -40,7 +45,7 @@ checks = {
  "Passwords are hashed and checked with bcrypt": "hash(dto.password, 12)" in auth_service and "compare(dto.password, user.passwordHash)" in auth_service,
  "Public registration is disabled and invitation acceptance is available": "O cadastro é feito somente por convite" in auth_service and 'Post("accept-invitation")' in auth_controller,
  "Product entitlements and hashed invitations are modeled": all(token in schema for token in ("enum ProductType", "model UserProductAccess", "model ClientInvitation", "tokenHash String @unique")),
- "Client management API checks administrator allowlist": "ADMIN_EMAILS" in clients_controller and 'Get("clients")' in clients_controller and 'Post("invitations")' in clients_controller,
+ "Client management API checks the authenticated admin role": "request.user.isAdmin" in clients_controller and 'Get("clients")' in clients_controller and 'Post("invitations")' in clients_controller,
  "Invitation acceptance grants selected products": "tx.userProductAccess.createMany" in auth_service and 'createHash("sha256")' in auth_service,
  "Frontend supports invite activation and product controls": "accept-invitation" in accept_invitation_form and all(token in client_management for token in ("GROUP_VIP", "AULAO", "MENTORSHIP", "product-access")),
  "Group VIP content has persistent model and migration": "model GroupVipPost {" in schema and 'CREATE TABLE "GroupVipPost"' in group_vip_migration,
@@ -52,7 +57,14 @@ checks = {
  "Dashboard uses Lucide and shadcn primitives": 'from "lucide-react"' in dashboard and 'from "@/components/ui/button"' in dashboard and 'from "@/components/ui/card"' in dashboard,
  "Dashboard avoids fictitious values and explains unavailable metrics": "Sem custo de aquisição suficiente para estimar com segurança" in dashboard and "histórico será exibido quando houver uma série temporal confiável" in dashboard and "DEMONSTRAÇÃO" not in dashboard and "fictícios" not in dashboard,
  "CI installs, generates Prisma, typechecks and builds": all(token in workflow for token in ("npm install", "npm run prisma:generate", "npm run typecheck", "npm run build")),
- "Environment template exists and ignores real secrets": (root / ".env.example").exists() and ".env" in read(".gitignore") and "DATABASE_URL" in read(".env.example")
+ "Environment template exists and ignores real secrets": (root / ".env.example").exists() and ".env" in read(".gitignore") and "DATABASE_URL" in read(".env.example"),
+ "Administrator role, session version and last login are persisted": all(token in schema for token in ('isAdmin Boolean @default(false)', 'authVersion Int @default(0)', 'lastLoginAt DateTime?')),
+ "Administrator invitations and audit logs have a migration": all(token in admin_migration for token in ('CREATE TABLE "AdminInvitation"', 'CREATE TABLE "AdminAuditLog"', '"authVersion"', '"isAdmin"')),
+ "Administrator endpoints support promotion, revocation and invitation acceptance": all(token in admin_controller for token in ('admin/administrators/:id/promote', 'admin/administrators/:id/revoke', 'auth/accept-admin-invitation')),
+ "Revocation preserves the account and protects the last active administrator": "accountPreserved: true" in admin_schema and "Não é possível revogar o último administrador ativo" in admin_schema,
+ "Administrator invitation tokens are hashed and activation is acceptance-gated": 'createHash("sha256")' in admin_schema and "ADMIN_INVITATION_ACCEPTED" in admin_schema and "isAdmin: true" in admin_schema,
+ "Administrator invitation delivery supports Resend and bounded retries": all(token in admin_schema for token in ("RESEND_API_KEY", "MAX_EMAIL_ATTEMPTS", 'emailStatus: "RETRY"', "retryPendingEmails")),
+ "Administrator management UI and acceptance form exist": all(token in admin_ui for token in ("Administradores atuais", "Promover cliente existente", "Auditoria administrativa")) and "accept-admin-invitation" in admin_accept_form
 }
 failed = [name for name, passed in checks.items() if not passed]
 for name, passed in checks.items():
