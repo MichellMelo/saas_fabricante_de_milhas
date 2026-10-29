@@ -54,7 +54,7 @@ A conexão e o comando `migrate resolve` devem apontar para o projeto remoto cor
 
 Configure no arquivo local `.env`:
 - `ADMIN_EMAILS`: lista separada por vírgulas dos e-mails administrativos. O e-mail deve corresponder ao usuário que fará login.
-- `WEB_BASE_URL`: origem pública do frontend usada para gerar links de convite (por exemplo, `http://localhost:3000` no desenvolvimento).
+- `FRONTEND_BASE_URL`: URL pública do frontend (por exemplo, `https://app.seudominio.com` em produção ou `http://localhost:3000` no desenvolvimento). É usada para links de convite administrativo e redefinição de senha. Em produção, é obrigatória e deve apontar para o Next.js, nunca para o domínio da API. `WEB_BASE_URL` é aceita apenas como compatibilidade em desenvolvimento.
 - `RESEND_API_KEY` e `EMAIL_FROM`: opcionais para enviar convites administrativos por Resend. Sem essas variáveis, o sistema apresenta o link de uso único para envio manual. Falhas de envio são registradas e retentadas automaticamente até três tentativas.
 
 Na tela **Clientes e produtos**, o administrador escolhe os produtos liberados e copia o link gerado para enviá-lo ao cliente por um canal seguro. O token em texto puro é exibido apenas na criação; no banco fica armazenado somente seu hash. Ainda não há provedor de e-mail integrado, portanto o envio é manual.
