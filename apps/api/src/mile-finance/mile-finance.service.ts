@@ -154,7 +154,7 @@ export class MileFinanceService {
       // If this user already tracks the same loyalty program in their wallet,
       // keep its points balance and transaction history in sync with the purchase.
       const loyaltyAccount = await tx.loyaltyAccount.findFirst({
-        where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: program.id } },
+        where: { userId, loyaltyProgramId: program.id },
         select: { id: true },
       });
       if (loyaltyAccount) {
@@ -198,7 +198,7 @@ export class MileFinanceService {
       // Permit a wallet-only sale when no finance-managed stock exists, without inventing a cost.
       if (!inventory || inventory.miles === 0) {
         const account = await tx.loyaltyAccount.findFirst({
-          where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: program.id } },
+          where: { userId, loyaltyProgramId: program.id },
         });
         if (!account || new Prisma.Decimal(account.balance).lt(dto.miles)) {
           throw new BadRequestException("Saldo insuficiente em Programas e saldos para esse programa.");
@@ -256,7 +256,7 @@ export class MileFinanceService {
       // Keep the points wallet synchronized with the financial sale when the
       // user has a matching loyalty account. Reject rather than create a negative balance.
       const loyaltyAccount = await tx.loyaltyAccount.findFirst({
-        where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: program.id } },
+        where: { userId, loyaltyProgramId: program.id },
       });
       if (loyaltyAccount) {
         const walletBalance = new Prisma.Decimal(loyaltyAccount.balance);
@@ -323,7 +323,7 @@ export class MileFinanceService {
       const miles = inventory.miles - purchase.miles;
       if (totalCost.lt(0)) throw new BadRequestException("Não é possível excluir: o custo do estoque ficaria negativo.");
       await tx.mileInventory.update({ where: { id: inventory.id }, data: { miles, totalCost: miles === 0 ? 0 : totalCost, averageCpm: miles === 0 ? 0 : totalCost.div(miles).mul(1000).toDecimalPlaces(4) } });
-      const account = await tx.loyaltyAccount.findFirst({ where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: purchase.loyaltyProgramId } } });
+      const account = await tx.loyaltyAccount.findFirst({ where: { userId, loyaltyProgramId: purchase.loyaltyProgramId } });
       if (account) {
         const balance = new Prisma.Decimal(account.balance);
         if (balance.lt(purchase.miles)) throw new BadRequestException("Não é possível reverter a compra: saldo atual da carteira insuficiente.");
@@ -368,7 +368,7 @@ export class MileFinanceService {
         await tx.mileInventory.update({ where: { id: inventory.id }, data: { miles: restoredMiles, totalCost: restoredCost, averageCpm: restoredCost.div(restoredMiles).mul(1000).toDecimalPlaces(4) } });
       }
       if (sale.loyaltyProgramId) {
-        const account = await tx.loyaltyAccount.findFirst({ where: { userId_loyaltyProgramId: { userId, loyaltyProgramId: sale.loyaltyProgramId } } });
+        const account = await tx.loyaltyAccount.findFirst({ where: { userId, loyaltyProgramId: sale.loyaltyProgramId } });
         if (account) {
           await tx.loyaltyAccount.update({ where: { id: account.id }, data: { balance: { increment: sale.miles }, lastBalanceAt: new Date() } });
           await tx.pointTransaction.create({ data: { userId, loyaltyAccountId: account.id, type: "ADJUSTMENT", points: new Prisma.Decimal(sale.miles), occurredAt: new Date(), notes: "Estorno auditável de venda excluída do Financeiro de Milhas." } });
