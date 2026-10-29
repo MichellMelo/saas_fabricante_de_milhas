@@ -78,12 +78,25 @@ export function DashboardSidebar({
   navigate: (route: DashboardRoute) => void;
   notify: (message: string) => void;
 }) {
-  const adminItems = navItems.filter(
-    (item) => item.key === "clientes-admin" || item.key === "financeiro" || item.key === "administradores-admin",
+  const showAdminSection = navItems.some(
+    (item) => item.key === "administradores-admin",
   );
-  const workspaceItems = navItems.filter(
-    (item) => item.key !== "clientes-admin" && item.key !== "financeiro" && item.key !== "administradores-admin",
-  );
+  const adminItems = showAdminSection
+    ? navItems.filter(
+        (item) =>
+          item.key === "clientes-admin" ||
+          item.key === "financeiro" ||
+          item.key === "administradores-admin",
+      )
+    : [];
+  const workspaceItems = showAdminSection
+    ? navItems.filter(
+        (item) =>
+          item.key !== "clientes-admin" &&
+          item.key !== "financeiro" &&
+          item.key !== "administradores-admin",
+      )
+    : navItems.filter((item) => item.key !== "administradores-admin");
   const [adminOpen, setAdminOpen] = useState(
     route === "clientes-admin" || route === "financeiro" || route === "administradores-admin",
   );
