@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { AcceptAdminInvitationDto } from "./dto/accept-admin-invitation.dto";
 import { AdminPasswordConfirmationDto } from "./dto/admin-password-confirmation.dto";
@@ -9,56 +9,52 @@ import { AdminManagementService } from "./admin-management.service";
 export class AdminManagementController {
   constructor(private readonly admins: AdminManagementService) {}
 
-  private assertAdmin(request: AuthenticatedRequest) {
-    if (!request.user.isAdmin) throw new ForbiddenException("Apenas administradores podem gerenciar administradores.");
-  }
-
   @UseGuards(JwtAuthGuard)
   @Get("admin/administrators")
-  list(@Req() request: AuthenticatedRequest) {
-    this.assertAdmin(request);
+  async list(@Req() request: AuthenticatedRequest) {
+    await this.admins.assertAdmin(request.user.id);
     return this.admins.list();
   }
 
   @UseGuards(JwtAuthGuard)
   @Post("admin/administrators/invitations")
-  invite(@Req() request: AuthenticatedRequest, @Body() dto: CreateAdminInvitationDto) {
-    this.admins.assertAdmin(request.user.id);
+  async invite(@Req() request: AuthenticatedRequest, @Body() dto: CreateAdminInvitationDto) {
+    await this.admins.assertAdmin(request.user.id);
     return this.admins.createInvitation(request.user.id, dto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post("admin/administrators/:id/promote")
-  promote(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() dto: AdminPasswordConfirmationDto) {
-    this.admins.assertAdmin(request.user.id);
+  async promote(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() dto: AdminPasswordConfirmationDto) {
+    await this.admins.assertAdmin(request.user.id);
     return this.admins.promote(request.user.id, id, dto.currentPassword);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post("admin/administrators/:id/revoke")
-  revoke(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() dto: AdminPasswordConfirmationDto) {
-    this.admins.assertAdmin(request.user.id);
+  async revoke(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() dto: AdminPasswordConfirmationDto) {
+    await this.admins.assertAdmin(request.user.id);
     return this.admins.revoke(request.user.id, id, dto.currentPassword);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post("admin/administrators/invitations/:id/cancel")
-  cancelInvitation(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
-    this.admins.assertAdmin(request.user.id);
+  async cancelInvitation(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
+    await this.admins.assertAdmin(request.user.id);
     return this.admins.cancelInvitation(request.user.id, id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post("admin/administrators/invitations/:id/resend")
-  resendInvitation(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
-    this.admins.assertAdmin(request.user.id);
+  async resendInvitation(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
+    await this.admins.assertAdmin(request.user.id);
     return this.admins.resendInvitation(request.user.id, id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get("admin/administrators/audit")
-  audit(@Req() request: AuthenticatedRequest) {
-    this.admins.assertAdmin(request.user.id);
+  async audit(@Req() request: AuthenticatedRequest) {
+    await this.admins.assertAdmin(request.user.id);
     return this.admins.audit();
   }
 
