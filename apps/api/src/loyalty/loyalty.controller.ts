@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
 import { LoyaltyProgramType } from "@prisma/client";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CreateAccountDto } from "./dto/create-account.dto";
@@ -73,6 +73,11 @@ export class LoyaltyController {
   @Post("loyalty-accounts")
   createAccount(@Req() request: AuthenticatedRequest, @Body() dto: CreateAccountDto) {
     return this.loyalty.createAccount(request.user.id, dto);
+  }
+
+  @Delete("loyalty-accounts/:id")
+  deleteAccount(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
+    return this.loyalty.deleteAccount(request.user.id, id);
   }
 
   @Post("loyalty-accounts/:id/transactions")
