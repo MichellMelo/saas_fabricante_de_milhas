@@ -51,7 +51,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     if (url.protocol !== "https:" && url.protocol !== "http:") {
       throw new InternalServerErrorException("FRONTEND_BASE_URL deve usar HTTP ou HTTPS.");
     }
-    return url.toString().replace(/\\/$/, "");
+    return url.toString().replace(/\/$/, "");
   }
 
   private envAdminEmails() {
