@@ -125,9 +125,9 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     const baseUrl = (process.env.WEB_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
     return {
       invitation: { ...invitation, emailStatus: updated?.emailStatus, emailAttempts: updated?.emailAttempts },
-      inviteUrl: `${baseUrl}/accept-admin-invite?token=${token}`,
-      delivery: updated?.emailStatus === "SENT" ? "sent" : updated?.emailStatus === "MANUAL" ? "manual" : "queued",
-      message: updated?.emailStatus === "SENT" ? "Convite enviado por e-mail." : "Convite criado; configure RESEND_API_KEY e EMAIL_FROM para envio automático.",
+      inviteUrl: updated?.emailStatus === "MANUAL" ? `${baseUrl}/accept-admin-invite?token=${token}` : undefined,
+      delivery: updated?.emailStatus === "SENT" ? "sent" : updated?.emailStatus === "MANUAL" ? "manual" : updated?.emailStatus === "FAILED" ? "failed" : "queued",
+      message: updated?.emailStatus === "SENT" ? "Convite enviado por e-mail." : updated?.emailStatus === "MANUAL" ? "Envio automático não configurado. Copie o link para enviar manualmente." : "Convite criado; o sistema tentará enviar o e-mail automaticamente.",
     };
   }
 
@@ -222,8 +222,8 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     return {
       id,
       emailStatus: updated?.emailStatus ?? "PENDING",
-      inviteUrl: `${baseUrl}/accept-admin-invite?token=${token}`,
-      message: updated?.emailStatus === "SENT" ? "Convite reenviado por e-mail." : "O link foi renovado; se o envio automático não estiver configurado, copie o link para enviar manualmente.",
+      inviteUrl: updated?.emailStatus === "MANUAL" ? `${baseUrl}/accept-admin-invite?token=${token}` : undefined,
+      message: updated?.emailStatus === "SENT" ? "Convite reenviado por e-mail." : updated?.emailStatus === "MANUAL" ? "Envio automático não configurado. Copie o link para enviar manualmente." : "O convite foi renovado; o sistema tentará enviar o e-mail automaticamente.",
     };
   }
 
