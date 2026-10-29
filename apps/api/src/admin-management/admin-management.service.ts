@@ -65,6 +65,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
       name: user.name,
       active: user.active,
       isAdmin: true,
+      hasAccount: Boolean(user.passwordHash),
       source: envAdmins.includes(user.email.trim().toLowerCase()) ? "environment" : "database",
       createdAt: user.createdAt,
       lastLoginAt: user.lastLoginAt,
