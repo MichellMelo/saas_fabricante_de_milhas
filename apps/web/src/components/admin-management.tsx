@@ -114,18 +114,16 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <button onClick={onBack} className="mb-3 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900"><ArrowLeft size={15} /> Voltar ao painel</button>
-          <PageHeader
-            eyebrow="Segurança e acessos"
-            title="Gestão de administradores"
-            description="Conceda ou revogue acesso administrativo completo. As alterações críticas exigem confirmação da sua senha."
-            showEyebrowLine={false}
-            variant="standard"
-            actions={<Button variant="outline" onClick={() => void load()} disabled={loading}><RefreshCw size={15} className="mr-2" /> Atualizar</Button>}
-          />
-        </div>
+      <div className="space-y-3">
+        <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900"><ArrowLeft size={15} /> Voltar ao painel</button>
+        <PageHeader
+          eyebrow="Segurança e acessos"
+          title="Gestão de administradores"
+          description="Conceda ou revogue acesso administrativo completo. As alterações críticas exigem confirmação da sua senha."
+          showEyebrowLine={false}
+          variant="standard"
+          actions={<Button variant="outline" onClick={() => void load()} disabled={loading}><RefreshCw size={15} className="mr-2" /> Atualizar</Button>}
+        />
       </div>
 
       {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
