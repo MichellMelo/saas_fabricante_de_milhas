@@ -284,6 +284,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
         : navItems.filter((item) => {
             if (
               item.key === "clientes-admin" ||
+              item.key === "administradores-admin" ||
               item.key === "financeiro" ||
               item.key === "programas-admin"
             )
