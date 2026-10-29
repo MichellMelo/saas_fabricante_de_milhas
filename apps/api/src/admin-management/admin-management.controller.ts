@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, ForbiddenException, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { AcceptAdminInvitationDto } from "./dto/accept-admin-invitation.dto";
 import { AdminPasswordConfirmationDto } from "./dto/admin-password-confirmation.dto";
@@ -9,10 +9,14 @@ import { AdminManagementService } from "./admin-management.service";
 export class AdminManagementController {
   constructor(private readonly admins: AdminManagementService) {}
 
+  private assertAdmin(request: AuthenticatedRequest) {
+    if (!request.user.isAdmin) throw new ForbiddenException("Apenas administradores podem gerenciar administradores.");
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get("admin/administrators")
   list(@Req() request: AuthenticatedRequest) {
-    this.admins.assertAdmin(request.user.id);
+    this.assertAdmin(request);
     return this.admins.list();
   }
 
