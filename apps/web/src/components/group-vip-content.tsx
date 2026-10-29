@@ -1,5 +1,7 @@
 "use client";
 
+import { Card } from "@/components/ui/card";
+
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   ExternalLink,
@@ -350,7 +352,7 @@ export function GroupVipContent({ isAdmin }: { isAdmin: boolean }) {
             Carregando conteúdo...
           </p>
         ) : posts.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+          <Card className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
             <FileText size={26} className="mx-auto text-slate-400" />
             <p className="mt-3 font-medium text-slate-800">
               {isAdmin
@@ -362,7 +364,7 @@ export function GroupVipContent({ isAdmin }: { isAdmin: boolean }) {
                 ? "Use o formulário acima para criar o primeiro conteúdo."
                 : "Novos conteúdos aparecerão aqui quando forem publicados."}
             </p>
-          </div>
+          </Card>
         ) : (
           posts.map((post) => (
             <article
