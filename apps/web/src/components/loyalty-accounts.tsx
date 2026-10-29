@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 type Program = {
@@ -273,20 +274,20 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
       />
 
       {error && (
-        <div
+        <Alert
           role="alert"
-          className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+          className="border-red-200 bg-red-50 text-red-800"
         >
-          {error}
-        </div>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
       {success && (
-        <div
+        <Alert
           role="status"
-          className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+          className="border-emerald-200 bg-emerald-50 text-emerald-800"
         >
-          {success}
-        </div>
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -477,7 +478,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
         title="Excluir conta de fidelidade?"
         description={
           accountPendingDeletion
-            ? `Deseja excluir a conta de fidelidade ${accountPendingDeletion.loyaltyProgram.name}? Esta ação não pode ser desfeita. Contas com movimentações registradas não podem ser excluídas.`
+            ? `Deseja excluir a conta de fidelidade ${accountPendingDeletion.loyaltyProgram.name}? Esta ação não pode ser desfeita. Contas com movimentações registradas não podem ser excluídas para preservar o histórico financeiro.`
             : ""
         }
         confirmLabel="Excluir conta"
