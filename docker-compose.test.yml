@@ -1,0 +1,21 @@
+services:
+  postgres-test:
+    image: postgres:17-alpine
+    container_name: fabricante-milhas-postgres-test
+    environment:
+      POSTGRES_DB: fabricante_milhas_test
+      POSTGRES_USER: fabricante_test
+      POSTGRES_PASSWORD: fabricante_test_local_only
+    ports:
+      - "127.0.0.1:55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fabricante_test -d fabricante_milhas_test"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    # Intentionally no volume: this database is disposable.
+    tmpfs:
+      - /var/lib/postgresql/data
+    # Create the minimal Supabase roles before Prisma applies migrations.
+    volumes:
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/01-init-test-db.sql:ro
