@@ -9,26 +9,49 @@ on:
   pull_request:
     branches:
       - main
+      - feature/**
 
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fabricante_milhas?schema=public
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
       - name: Install workspace dependencies
         run: npm install
+
       - name: Generate Prisma client
         run: npm run prisma:generate
+
       - name: Type-check frontend and backend
         run: npm run typecheck
+
+      - name: Run API unit tests
+        run: npm run test --workspace=@fabricante/api
+
       - name: Build frontend and backend
         run: npm run build
+
       - name: Run architecture smoke checks
         run: python3 tests/stack-smoke-check.py
+
+      - name: Start isolated PostgreSQL test database
+        run: npm run test:integration:up --workspace=@fabricante/api
+
+      - name: Run API PostgreSQL integration tests
+        run: npm run test:integration --workspace=@fabricante/api
+        env:
+          TEST_DATABASE_URL: postgresql://fabricante_test:fabricante_test_local_only@127.0.0.1:55432/fabricante_milhas_test?schema=public
+
+      - name: Stop and remove isolated PostgreSQL test database
+        if: always()
+        run: npm run test:integration:down --workspace=@fabricante/api
