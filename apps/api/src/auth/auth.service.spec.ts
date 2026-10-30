@@ -1,4 +1,7 @@
 import "reflect-metadata";
+import { createHash } from "node:crypto";
+import { BadRequestException } from "@nestjs/common";
+import { compare } from "bcryptjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthService } from "./auth.service";
 
@@ -96,7 +99,6 @@ describe("AuthService password recovery", () => {
       id: "user-1", email: "user@example.com", active: true, passwordHash: "hash", name: "User",
     });
     prisma.passwordResetToken.create.mockResolvedValue({ id: "reset-2" });
-    vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 503, text: async () => "unavailable" });
     vi.stubGlobal("fetch", fetchMock);
 
@@ -105,5 +107,142 @@ describe("AuthService password recovery", () => {
       where: { id: "reset-2", usedAt: null },
       data: { usedAt: expect.any(Date) },
     });
+  });
+});
+
+describe("AuthService resetPassword", () => {
+  let prisma: any;
+  let service: AuthService;
+  const rawToken = "unit-test-reset-token";
+  const tokenHash = createHash("sha256").update(rawToken).digest("hex");
+
+  const validReset = (overrides: Record<string, unknown> = {}) => ({
+    id: "reset-1",
+    tokenHash,
+    usedAt: null,
+    expiresAt: new Date(Date.now() + 30 * 60_000),
+    user: { id: "user-1", email: "user@example.com", active: true },
+    ...overrides,
+  });
+
+  beforeEach(() => {
+    prisma = {
+      user: { findUnique: vi.fn(), updateMany: vi.fn() },
+      passwordResetToken: {
+        findUnique: vi.fn(),
+        updateMany: vi.fn(),
+      },
+      adminAuditLog: { create: vi.fn() },
+      $transaction: vi.fn(async (callback: (tx: any) => unknown) => callback(prisma)),
+    };
+    service = new AuthService(prisma, {} as any);
+  });
+
+  it("rejects a missing token without querying the database", async () => {
+    await expect(service.resetPassword({ password: "NewPassword123" }))
+      .rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.passwordResetToken.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("rejects a token that does not exist", async () => {
+    prisma.passwordResetToken.findUnique.mockResolvedValue(null);
+
+    await expect(service.resetPassword({ token: rawToken, password: "NewPassword123" }))
+      .rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("rejects an expired token", async () => {
+    prisma.passwordResetToken.findUnique.mockResolvedValue(validReset({
+      expiresAt: new Date(Date.now() - 1_000),
+    }));
+
+    await expect(service.resetPassword({ token: rawToken, password: "NewPassword123" }))
+      .rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("rejects a token that has already been used", async () => {
+    prisma.passwordResetToken.findUnique.mockResolvedValue(validReset({ usedAt: new Date() }));
+
+    await expect(service.resetPassword({ token: rawToken, password: "NewPassword123" }))
+      .rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("rejects a reset for an inactive account", async () => {
+    prisma.passwordResetToken.findUnique.mockResolvedValue(validReset({
+      user: { id: "user-1", email: "user@example.com", active: false },
+    }));
+
+    await expect(service.resetPassword({ token: rawToken, password: "NewPassword123" }))
+      .rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["short", "1234567"],
+    ["too long", "a".repeat(129)],
+  ])("rejects a %s password before querying the token", async (_label, password) => {
+    await expect(service.resetPassword({ token: rawToken, password }))
+      .rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.passwordResetToken.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("updates the password, increments authVersion, invalidates other tokens, and audits success", async () => {
+    prisma.passwordResetToken.findUnique.mockResolvedValue(validReset());
+    prisma.passwordResetToken.updateMany
+      .mockResolvedValueOnce({ count: 1 })
+      .mockResolvedValueOnce({ count: 2 });
+    prisma.user.updateMany.mockResolvedValue({ count: 1 });
+
+    await expect(service.resetPassword({ token: rawToken, password: "NewPassword123" }))
+      .resolves.toEqual({
+        success: true,
+        message: "Senha redefinida. Entre novamente com sua nova senha.",
+      });
+
+    const userUpdate = prisma.user.updateMany.mock.calls[0][0];
+    expect(userUpdate.where).toEqual({ id: "user-1", active: true });
+    expect(userUpdate.data.authVersion).toEqual({ increment: 1 });
+    expect(userUpdate.data.passwordHash).not.toBe("NewPassword123");
+    await expect(compare("NewPassword123", userUpdate.data.passwordHash)).resolves.toBe(true);
+
+    expect(prisma.passwordResetToken.updateMany).toHaveBeenNthCalledWith(1, {
+      where: { id: "reset-1", usedAt: null, expiresAt: { gt: expect.any(Date) } },
+      data: { usedAt: expect.any(Date) },
+    });
+    expect(prisma.passwordResetToken.updateMany).toHaveBeenNthCalledWith(2, {
+      where: { userId: "user-1", id: { not: "reset-1" }, usedAt: null },
+      data: { usedAt: expect.any(Date) },
+    });
+    expect(prisma.adminAuditLog.create).toHaveBeenCalledWith({
+      data: {
+        targetUserId: "user-1",
+        targetEmail: "user@example.com",
+        action: "PASSWORD_RESET_COMPLETED",
+      },
+    });
+  });
+
+  it("does not update the password when another request has already claimed the token", async () => {
+    prisma.passwordResetToken.findUnique.mockResolvedValue(validReset());
+    prisma.passwordResetToken.updateMany.mockResolvedValue({ count: 0 });
+
+    await expect(service.resetPassword({ token: rawToken, password: "NewPassword123" }))
+      .rejects.toBeInstanceOf(BadRequestException);
+
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+    expect(prisma.adminAuditLog.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects when the account cannot be updated and does not write the audit event", async () => {
+    prisma.passwordResetToken.findUnique.mockResolvedValue(validReset());
+    prisma.passwordResetToken.updateMany.mockResolvedValueOnce({ count: 1 });
+    prisma.user.updateMany.mockResolvedValue({ count: 0 });
+
+    await expect(service.resetPassword({ token: rawToken, password: "NewPassword123" }))
+      .rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.adminAuditLog.create).not.toHaveBeenCalled();
   });
 });
