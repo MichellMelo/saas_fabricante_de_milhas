@@ -143,6 +143,8 @@ export function AuthForm({ mode }: AuthFormProps) {
                 {isRegister && <span className="mt-2 block text-[11px] font-normal leading-5 text-[#89919d]">Mínimo de 12 caracteres.</span>}
               </label>
 
+              {!isRegister && <div className="text-right"><Link href="/forgot-password" className="text-[12px] font-semibold text-[#98691e] underline-offset-4 hover:underline">Esqueci minha senha</Link></div>}
+
               {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[12px] leading-5 text-red-700">{error}</p>}
 
               <button
