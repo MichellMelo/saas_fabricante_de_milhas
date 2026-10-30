@@ -11,8 +11,16 @@
     "prisma:generate": "node scripts/prisma-with-env.cjs generate",
     "prisma:migrate": "node scripts/prisma-with-env.cjs migrate dev",
     "prisma:deploy": "node scripts/prisma-with-env.cjs migrate deploy",
+    "prisma:status": "node scripts/prisma-with-env.cjs migrate status",
     "prisma:studio": "node scripts/prisma-with-env.cjs studio",
-    "prisma:seed": "node prisma/seed.cjs"
+    "prisma:seed": "node prisma/seed.cjs",
+    "test": "vitest run",
+    "test:run": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:integration:up": "docker compose -f ../../docker-compose.test.yml up -d --wait",
+    "test:integration": "node scripts/test-integration.cjs",
+    "test:integration:down": "docker compose -f ../../docker-compose.test.yml down --volumes --remove-orphans"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.11",
@@ -33,6 +41,8 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.10",
     "prisma": "^6.6.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "vitest": "^3.2.4",
+    "@vitest/coverage-v8": "^3.2.4"
   }
 }

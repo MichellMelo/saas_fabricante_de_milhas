@@ -75,6 +75,7 @@ model User {
  adminAuditEvents AdminAuditLog[] @relation("AdminAuditActor")
  authoredGroupVipPosts GroupVipPost[]
  authoredProductContent ProductContent[]
+ passwordResetTokens PasswordResetToken[]
 }
 model LoyaltyProgram {
  id String @id @default(cuid())
@@ -482,4 +483,17 @@ model AdminAuditLog {
  @@index([createdAt])
  @@index([targetEmail, createdAt])
  @@index([actorUserId, createdAt])
+}
+
+
+model PasswordResetToken {
+  id String @id @default(cuid())
+  userId String
+  tokenHash String @unique
+  expiresAt DateTime
+  usedAt DateTime?
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt])
+  @@index([expiresAt, usedAt])
 }

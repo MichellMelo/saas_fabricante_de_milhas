@@ -307,14 +307,25 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
   async createPasswordResetLink(actorUserId: string, targetUserId: string) {
     const target = await this.prisma.user.findUnique({
       where: { id: targetUserId },
-      select: { id: true, email: true, name: true, active: true, passwordHash: true, authVersion: true },
+      select: { id: true, email: true, name: true, active: true, passwordHash: true },
     });
     if (!target) throw new NotFoundException("Conta não encontrada.");
-    if (!target.passwordHash) throw new BadRequestException("Esta conta ainda não possui senha. Envie um convite para ativá-la.");
-    const token = await this.jwt.signAsync(
-      { sub: target.id, email: target.email, authVersion: target.authVersion, purpose: "password-reset" },
-      { expiresIn: "30m" },
-    );
+    if (!target.active || !target.passwordHash) throw new BadRequestException("Esta conta não possui senha ativa para redefinir.");
+
+    const token = randomBytes(32).toString("hex");
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 30 * 60_000);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.passwordResetToken.updateMany({
+        where: { userId: target.id, usedAt: null },
+        data: { usedAt: now },
+      });
+      await tx.passwordResetToken.create({
+        data: { userId: target.id, tokenHash, expiresAt },
+      });
+    });
+
     const baseUrl = this.frontendBaseUrl();
     const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`;
     let delivery: "sent" | "manual" = "manual";
@@ -329,16 +340,16 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
             from,
             to: [target.email],
             subject: "Redefinição de senha — Fabricante de Milhas",
-            html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#172033"><h2>Redefina sua senha</h2><p>Foi solicitado um link para redefinir a senha da sua conta no Fabricante de Milhas.</p><p><a href="${resetUrl}" style="display:inline-block;padding:12px 18px;background:#101a2b;color:#fff;text-decoration:none;border-radius:8px">Definir nova senha</a></p><p>O link é válido por 30 minutos e só pode ser usado uma vez. Se você não solicitou esta alteração, ignore esta mensagem.</p></div>`,
+            html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#172033"><h2>Redefina sua senha</h2><p>Um administrador solicitou um link para redefinir a senha da sua conta no Fabricante de Milhas.</p><p><a href="${resetUrl}" style="display:inline-block;padding:12px 18px;background:#101a2b;color:#fff;text-decoration:none;border-radius:8px">Definir nova senha</a></p><p>O link expira em 30 minutos e só pode ser utilizado uma vez.</p></div>`,
           }),
         });
         if (response.ok) delivery = "sent";
-        else this.logger.warn(`Não foi possível enviar redefinição de senha para ${target.email}: HTTP ${response.status}`);
+        else this.logger.warn(`Não foi possível enviar redefinição de senha para o usuário-alvo: HTTP ${response.status}`);
       } catch (error) {
-        this.logger.warn(`Falha no envio de redefinição de senha para ${target.email}: ${String(error)}`);
+        this.logger.warn(`Falha no envio de redefinição de senha: ${error instanceof Error ? error.message : "erro desconhecido"}`);
       }
     }
-    await this.writeAudit(actorUserId, target.id, target.email, "PASSWORD_RESET_REQUESTED", { delivery, expiresInMinutes: 30 });
+    await this.writeAudit(actorUserId, target.id, target.email, "PASSWORD_RESET_REQUESTED", { delivery, expiresInMinutes: 30, source: "admin" });
     return {
       resetUrl,
       delivery,

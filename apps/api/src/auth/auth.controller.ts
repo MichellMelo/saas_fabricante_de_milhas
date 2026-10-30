@@ -6,6 +6,8 @@ import { LoginDto } from "./dto/login.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { BootstrapFirstAdminDto } from "./dto/bootstrap-first-admin.dto";
+import { RequestPasswordResetDto } from "./dto/request-password-reset.dto";
+import { ResetPasswordDto } from "./dto/reset-password.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -26,8 +28,13 @@ export class AuthController {
   return this.auth.acceptInvitation(dto);
  }
 
+ @Post("request-password-reset")
+ requestPasswordReset(@Body() dto: RequestPasswordResetDto) {
+  return this.auth.requestPasswordReset(dto.email);
+ }
+
  @Post("reset-password")
- resetPassword(@Body() body: { token?: string; password?: string }) {
+ resetPassword(@Body() body: ResetPasswordDto) {
   return this.auth.resetPassword(body);
  }
 

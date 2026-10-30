@@ -1,7 +1,7 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
 import { ProductType, Prisma } from "@prisma/client";
 import { JwtService } from "@nestjs/jwt";
-import { createHash, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { hash, compare } from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
 import { AcceptInvitationDto } from "./dto/accept-invitation.dto";
@@ -11,6 +11,7 @@ import { LoginDto } from "./dto/login.dto";
 
 @Injectable()
 export class AuthService {
+ private readonly logger = new Logger(AuthService.name);
  constructor(private readonly prisma: PrismaService, private readonly jwt: JwtService) {}
 
  async register(): Promise<never> {
@@ -118,38 +119,120 @@ export class AuthService {
  }
 
 
+ async requestPasswordReset(rawEmail: string) {
+  const generic = {
+   success: true,
+   message: "Se o e-mail estiver cadastrado, enviaremos um link para redefinir sua senha. Verifique sua caixa de entrada e spam.",
+  };
+  const email = rawEmail.trim().toLowerCase();
+  const user = await this.prisma.user.findUnique({
+   where: { email },
+   select: { id: true, email: true, active: true, passwordHash: true, name: true },
+  });
+  if (!user?.active || !user.passwordHash) return generic;
+
+  const now = new Date();
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.EMAIL_FROM;
+  const configuredBase = process.env.FRONTEND_BASE_URL ?? (process.env.NODE_ENV === "production" ? "" : process.env.WEB_BASE_URL ?? "http://localhost:3000");
+  if (!apiKey || !from || !configuredBase) {
+   this.logger.warn("Recuperação de senha indisponível: serviço de e-mail ou URL pública não configurados.");
+   return generic;
+  }
+
+  let baseUrl: URL;
+  try {
+   baseUrl = new URL(configuredBase);
+   if (!["https:", "http:"].includes(baseUrl.protocol)) return generic;
+  } catch {
+   this.logger.error("FRONTEND_BASE_URL inválida para recuperação de senha.");
+   return generic;
+  }
+
+  const token = randomBytes(32).toString("hex");
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const expiresAt = new Date(now.getTime() + 30 * 60_000);
+  // Serialize reset requests per account. Counting and inserting while holding
+  // the user's row lock prevents concurrent requests from exceeding the limit.
+  const resetToken = await this.prisma.$transaction(async (tx) => {
+   await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${user.id} FOR UPDATE`;
+   const recentRequests = await tx.passwordResetToken.count({
+    where: { userId: user.id, createdAt: { gte: new Date(now.getTime() - 15 * 60_000) } },
+   });
+   if (recentRequests >= 3) return null;
+   return tx.passwordResetToken.create({
+    data: { userId: user.id, tokenHash, expiresAt },
+    select: { id: true },
+   });
+  });
+  if (!resetToken) return generic;
+
+  const resetUrl = new URL("/reset-password", baseUrl);
+  resetUrl.searchParams.set("token", token);
+
+  try {
+   const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+     from,
+     to: [user.email],
+     subject: "Redefinição de senha — Fabricante de Milhas",
+     html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#172033"><h2>Redefina sua senha</h2><p>Recebemos uma solicitação para redefinir a senha da sua conta no Fabricante de Milhas.</p><p><a href="${resetUrl.toString()}" style="display:inline-block;padding:12px 18px;background:#101a2b;color:#fff;text-decoration:none;border-radius:8px">Criar nova senha</a></p><p>O link expira em 30 minutos e só pode ser usado uma vez. Se você não solicitou esta alteração, ignore esta mensagem.</p></div>`,
+    }),
+   });
+   if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`Resend HTTP ${response.status}: ${detail.slice(0, 300)}`);
+   }
+   await this.prisma.$transaction(async (tx) => {
+    await tx.passwordResetToken.updateMany({
+     where: { userId: user.id, id: { not: resetToken.id }, usedAt: null },
+     data: { usedAt: now },
+    });
+    await tx.adminAuditLog.create({
+     data: { targetUserId: user.id, targetEmail: user.email, action: "PASSWORD_RESET_REQUESTED", details: { expiresInMinutes: 30 } },
+    });
+   });
+  } catch (error) {
+   await this.prisma.passwordResetToken.updateMany({ where: { id: resetToken.id, usedAt: null }, data: { usedAt: now } });
+   this.logger.warn(`Falha no envio de recuperação de senha (token ${resetToken.id}): ${error instanceof Error ? error.message : "erro desconhecido"}`);
+  }
+  return generic;
+ }
+
  async resetPassword(dto: { token?: string; password?: string }) {
   const token = typeof dto.token === "string" ? dto.token : "";
   const password = typeof dto.password === "string" ? dto.password : "";
   if (!token) throw new BadRequestException("O link de redefinição está incompleto.");
-  if (password.length < 8) throw new BadRequestException("A nova senha deve ter pelo menos 8 caracteres.");
-  let payload: { sub: string; email: string; authVersion: number; purpose: string };
-  try {
-   payload = await this.jwt.verifyAsync(token);
-  } catch {
-   throw new BadRequestException("Link inválido ou expirado. Solicite uma nova redefinição.");
-  }
-  if (payload.purpose !== "password-reset" || !payload.sub || !payload.email || typeof payload.authVersion !== "number") {
-   throw new BadRequestException("Link de redefinição inválido. Solicite um novo link.");
-  }
-  const user = await this.prisma.user.findUnique({
-   where: { id: payload.sub },
-   select: { id: true, email: true, authVersion: true },
+  if (password.length < 8 || password.length > 128) throw new BadRequestException("A nova senha deve ter entre 8 e 128 caracteres.");
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const now = new Date();
+  const passwordReset = await this.prisma.passwordResetToken.findUnique({
+   where: { tokenHash },
+   include: { user: { select: { id: true, email: true, active: true } } },
   });
-  if (!user || user.email !== payload.email || user.authVersion !== payload.authVersion) {
-   throw new BadRequestException("Este link já foi utilizado ou não é mais válido. Solicite uma nova redefinição.");
+  if (!passwordReset || passwordReset.usedAt || passwordReset.expiresAt <= now || !passwordReset.user.active) {
+   throw new BadRequestException("Link inválido, expirado ou já utilizado. Solicite uma nova redefinição.");
   }
   const passwordHash = await hash(password, 12);
   await this.prisma.$transaction(async (tx) => {
+   const claimed = await tx.passwordResetToken.updateMany({
+    where: { id: passwordReset.id, usedAt: null, expiresAt: { gt: now } },
+    data: { usedAt: now },
+   });
+   if (claimed.count !== 1) throw new BadRequestException("Este link já foi utilizado ou expirou. Solicite uma nova redefinição.");
    const changed = await tx.user.updateMany({
-    where: { id: user.id, email: user.email, authVersion: payload.authVersion },
+    where: { id: passwordReset.user.id, active: true },
     data: { passwordHash, authVersion: { increment: 1 } },
    });
-   if (changed.count !== 1) {
-    throw new BadRequestException("Este link já foi utilizado ou não é mais válido. Solicite uma nova redefinição.");
-   }
+   if (changed.count !== 1) throw new BadRequestException("Não foi possível redefinir a senha desta conta.");
+   await tx.passwordResetToken.updateMany({
+    where: { userId: passwordReset.user.id, id: { not: passwordReset.id }, usedAt: null },
+    data: { usedAt: now },
+   });
    await tx.adminAuditLog.create({
-    data: { targetUserId: user.id, targetEmail: user.email, action: "PASSWORD_RESET_COMPLETED" },
+    data: { targetUserId: passwordReset.user.id, targetEmail: passwordReset.user.email, action: "PASSWORD_RESET_COMPLETED" },
    });
   });
   return { success: true, message: "Senha redefinida. Entre novamente com sua nova senha." };

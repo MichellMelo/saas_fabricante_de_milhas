@@ -20,15 +20,27 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-// Resolve Prisma through npm's local executable PATH. On Windows, npm exposes
-// CLI tools as .cmd shims, which cannot reliably be loaded with require.resolve.
-const command = process.platform === "win32" ? "prisma.cmd" : "prisma";
-const result = spawnSync(command, process.argv.slice(2), {
-  stdio: "inherit",
-  env: process.env,
-  cwd: process.cwd(),
-  shell: process.platform === "win32",
-});
+// Resolve Prisma's JavaScript CLI directly. This avoids the Windows .cmd shim
+// and works consistently across Windows, macOS, and Linux.
+let prismaCli;
+try {
+  prismaCli = require.resolve("prisma/build/index.js", {
+    paths: [process.cwd(), path.resolve(__dirname, "../../../")],
+  });
+} catch (error) {
+  console.error("Could not resolve the local Prisma CLI:", error);
+  process.exit(1);
+}
+
+const result = spawnSync(
+  process.execPath,
+  [prismaCli, ...process.argv.slice(2)],
+  {
+    stdio: "inherit",
+    env: process.env,
+    cwd: process.cwd(),
+  },
+);
 
 if (result.error) {
   console.error(result.error);
