@@ -8,6 +8,7 @@ import { SetProductAccessDto } from "./dto/set-product-access.dto";
 import { CreateClientDto } from "./dto/create-client.dto";
 import { UpdateClientDto } from "./dto/update-client.dto";
 import { CreateMileSaleDto } from "./dto/create-mile-sale.dto";
+import { getWebBaseUrl } from "./web-base-url";
 
 @Injectable()
 export class ClientsService {
@@ -385,6 +386,7 @@ export class ClientsService {
   }
 
   async createInvitation(invitedByUserId: string, dto: CreateInvitationDto) {
+    const baseUrl = getWebBaseUrl();
     const email = dto.email.trim().toLowerCase();
     const products = [...new Set(dto.products ?? [])];
 
@@ -412,7 +414,6 @@ export class ClientsService {
       select: { id: true, email: true, name: true, productTypes: true, expiresAt: true, createdAt: true },
     });
 
-    const baseUrl = (process.env.WEB_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
     return {
       invitation,
       inviteUrl: `${baseUrl}/accept-invite?token=${token}`,
