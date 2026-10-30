@@ -22,7 +22,6 @@ import {
   ShieldCheck,
   Settings2,
   Users,
-  MessageCircle,
   Video,
   GraduationCap,
   Wallet,
@@ -36,7 +35,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoyaltyAccounts } from "@/components/loyalty-accounts";
 import { ProgramManagement } from "@/components/program-management";
 import { ClientManagement } from "@/components/client-management";
-import { GroupVipContent } from "@/components/group-vip-content";
 import { ProductContent } from "@/components/product-content";
 import { FinanceDashboard } from "@/components/finance-dashboard";
 import { MileFinanceDashboard } from "@/components/mile-finance-dashboard";
@@ -106,13 +104,6 @@ const routeCopy: Record<
     description:
       "Acompanhe recebimentos, cobranças pendentes e valores vencidos.",
     icon: Wallet,
-  },
-  "grupo-vip": {
-    title: "Grupo VIP",
-    eyebrow: "CONTEÚDO EXCLUSIVO",
-    description:
-      "Publicações e materiais exclusivos para membros com acesso ativo.",
-    icon: MessageCircle,
   },
   auloes: {
     title: "Aulões",
@@ -771,8 +762,6 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <MileFinanceDashboard />
           ) : route === "financeiro" ? (
             <FinanceDashboard />
-          ) : route === "grupo-vip" ? (
-            <GroupVipContent isAdmin={Boolean(user.isAdmin)} />
           ) : route === "auloes" ? (
             <ProductContent isAdmin={Boolean(user.isAdmin)} product="AULAO" />
           ) : route === "mentorias" ? (
@@ -795,7 +784,6 @@ export function Dashboard({ user }: { user: DashboardUser }) {
               { key: "dashboard", label: "Início", icon: LayoutDashboard },
               { key: "programas", label: "Meus Pontos", icon: CreditCard },
               { key: "passagens", label: "Viagens", icon: Plane },
-              { key: "grupo-vip", label: "Comunidade", icon: MessageCircle },
               { key: "menu", label: "Mais", icon: Plus },
             ] as const
           ).map(({ key, label, icon: Icon }) => (
