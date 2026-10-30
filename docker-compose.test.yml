@@ -16,3 +16,6 @@ services:
     # Intentionally no volume: this database is disposable.
     tmpfs:
       - /var/lib/postgresql/data
+    # Create the minimal Supabase roles before Prisma applies migrations.
+    volumes:
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/01-init-test-db.sql:ro
