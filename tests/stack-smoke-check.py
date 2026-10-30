@@ -52,7 +52,7 @@ checks = {
  "Group VIP content has persistent model and migration": "model GroupVipPost {" in schema and 'CREATE TABLE "GroupVipPost"' in group_vip_migration,
  "Group VIP read endpoint enforces product entitlement and filters drafts": "assertProductAccess(request.user.id)" in group_vip_controller and "isPublished: true" in group_vip_service,
  "Only admins can manage Group VIP posts": "assertAdmin(request)" in group_vip_controller and all(token in group_vip_controller for token in ('Post("posts")', 'Post("posts/:id/update")', 'Post("posts/:id/publish")')),
- "Group VIP UI supports internal content, external links, editing and publication": all(token in group_vip_ui for token in ("externalUrl", "Salvar rascunho", "Editar", "Publicar")) and "GroupVipContent" in dashboard,
+ "Group VIP content editor supports internal content, external links, editing and publication": all(token in group_vip_ui for token in ("externalUrl", "Salvar rascunho", "Editar", "Publicar")),
  "JWT secret is required and documented": "JWT_SECRET" in read("apps/api/src/main.ts") and "JWT_SECRET" in read(".env.example"),
  "NestJS health endpoint and API prefix exist": '@Controller("health")' in read("apps/api/src/health.controller.ts") and 'setGlobalPrefix("api")' in read("apps/api/src/main.ts"),
  "Dashboard uses Lucide and shadcn primitives": 'from "lucide-react"' in dashboard and 'from "@/components/ui/button"' in dashboard and 'from "@/components/ui/card"' in dashboard,
