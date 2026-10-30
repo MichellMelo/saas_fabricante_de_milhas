@@ -11,6 +11,7 @@
     "prisma:generate": "node scripts/prisma-with-env.cjs generate",
     "prisma:migrate": "node scripts/prisma-with-env.cjs migrate dev",
     "prisma:deploy": "node scripts/prisma-with-env.cjs migrate deploy",
+    "prisma:status": "node scripts/prisma-with-env.cjs migrate status",
     "prisma:studio": "node scripts/prisma-with-env.cjs studio",
     "prisma:seed": "node prisma/seed.cjs"
   },
