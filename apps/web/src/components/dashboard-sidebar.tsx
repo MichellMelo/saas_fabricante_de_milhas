@@ -11,7 +11,6 @@ import {
   Settings2,
   Users,
   ShieldCheck,
-  MessageCircle,
   Video,
   GraduationCap,
   Wallet,
@@ -39,7 +38,6 @@ export type DashboardRoute =
   | "programas-admin"
   | "clientes-admin"
   | "administradores-admin"
-  | "grupo-vip"
   | "auloes"
   | "mentorias"
   | "financeiro"
