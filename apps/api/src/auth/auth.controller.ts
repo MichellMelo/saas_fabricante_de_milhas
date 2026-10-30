@@ -7,6 +7,7 @@ import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { BootstrapFirstAdminDto } from "./dto/bootstrap-first-admin.dto";
 import { RequestPasswordResetDto } from "./dto/request-password-reset.dto";
+import { ResetPasswordDto } from "./dto/reset-password.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -33,7 +34,7 @@ export class AuthController {
  }
 
  @Post("reset-password")
- resetPassword(@Body() body: { token?: string; password?: string }) {
+ resetPassword(@Body() body: ResetPasswordDto) {
   return this.auth.resetPassword(body);
  }
 
