@@ -30,8 +30,14 @@ O container executa `docker/init-test-db.sql` na primeira inicialização para c
 
 O runner aplica as migrações com `prisma migrate deploy` e só então executa os arquivos `*.integration.test.ts`.
 
-## Escopo atual
+## Cobertura atual
 
-O primeiro teste real verifica, em PostgreSQL, que duas tentativas concorrentes de redefinição com o mesmo token resultem em exatamente uma operação bem-sucedida, uma rejeitada, um incremento de `authVersion` e um único evento de auditoria.
+A suíte de integração verifica no PostgreSQL real:
 
-A simulação unitária existente continua separada e não substitui este teste de concorrência no banco real.
+- Duas redefinições concorrentes com o mesmo token resultam em exatamente uma operação bem-sucedida, um incremento de `authVersion` e um evento de auditoria.
+- Tokens expirados e já utilizados são rejeitados sem alterar a senha ou gerar auditoria de conclusão.
+- Usuários inativos não conseguem redefinir a senha e não têm seus dados alterados.
+- Uma senha inválida não consome o token nem altera dados persistidos.
+- Uma falha real no UPDATE da senha, forçada por trigger temporário no banco de teste, reverte o consumo do token e impede a criação do evento de auditoria.
+
+Os testes usam usuários e tokens isolados, removidos ao final. O trigger de falha é removido em bloco `finally` e novamente na limpeza global. A simulação unitária existente continua separada e não substitui estes testes com banco real.
