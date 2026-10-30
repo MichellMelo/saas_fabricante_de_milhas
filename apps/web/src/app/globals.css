@@ -2508,3 +2508,14 @@ label select { margin-top: 4px; }
     width: 100%;
   }
 }
+
+
+/* Mobile sidebar: keep the brand below the sticky application header. */
+@media (max-width: 760px) {
+  [data-sidebar="sidebar"] {
+    top: 62px;
+    bottom: 0;
+    height: calc(100dvh - 62px);
+    z-index: 110;
+  }
+}
