@@ -30,5 +30,7 @@ jobs:
         run: npm run typecheck
       - name: Build frontend and backend
         run: npm run build
+      - name: Test public web URL validation
+        run: npm run test:config --workspace=@fabricante/api
       - name: Run architecture smoke checks
         run: python3 tests/stack-smoke-check.py
