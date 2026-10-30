@@ -132,11 +132,6 @@ export class AuthService {
   if (!user?.active || !user.passwordHash) return generic;
 
   const now = new Date();
-  const recentRequests = await this.prisma.passwordResetToken.count({
-   where: { userId: user.id, createdAt: { gte: new Date(now.getTime() - 15 * 60_000) } },
-  });
-  if (recentRequests >= 3) return generic;
-
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
   const configuredBase = process.env.FRONTEND_BASE_URL ?? (process.env.NODE_ENV === "production" ? "" : process.env.WEB_BASE_URL ?? "http://localhost:3000");
@@ -157,10 +152,21 @@ export class AuthService {
   const token = randomBytes(32).toString("hex");
   const tokenHash = createHash("sha256").update(token).digest("hex");
   const expiresAt = new Date(now.getTime() + 30 * 60_000);
-  const resetToken = await this.prisma.passwordResetToken.create({
-   data: { userId: user.id, tokenHash, expiresAt },
-   select: { id: true },
+  // Serialize reset requests per account. Counting and inserting while holding
+  // the user's row lock prevents concurrent requests from exceeding the limit.
+  const resetToken = await this.prisma.$transaction(async (tx) => {
+   await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${user.id} FOR UPDATE`;
+   const recentRequests = await tx.passwordResetToken.count({
+    where: { userId: user.id, createdAt: { gte: new Date(now.getTime() - 15 * 60_000) } },
+   });
+   if (recentRequests >= 3) return null;
+   return tx.passwordResetToken.create({
+    data: { userId: user.id, tokenHash, expiresAt },
+    select: { id: true },
+   });
   });
+  if (!resetToken) return generic;
+
   const resetUrl = new URL("/reset-password", baseUrl);
   resetUrl.searchParams.set("token", token);
 
