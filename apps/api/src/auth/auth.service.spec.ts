@@ -25,6 +25,7 @@ describe("AuthService password recovery", () => {
         findUnique: vi.fn(),
       },
       adminAuditLog: { create: vi.fn() },
+      $queryRaw: vi.fn().mockResolvedValue([{ id: "user-1" }]),
       $transaction: vi.fn(async (callback: (tx: any) => unknown) => callback(prisma)),
     };
     jwt = { signAsync: vi.fn() };
