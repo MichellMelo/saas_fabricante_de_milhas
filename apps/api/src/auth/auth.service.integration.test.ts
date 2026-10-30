@@ -3,7 +3,7 @@ import { JwtService } from "@nestjs/jwt";
 import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { createHash, randomBytes } from "node:crypto";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { AuthService } from "./auth.service";
 
 const prisma = new PrismaClient();
@@ -95,6 +95,57 @@ afterAll(async () => {
 });
 
 describe("AuthService password reset with PostgreSQL", () => {
+  it("enforces the three-request rate limit under concurrent requests for the same account", async () => {
+    const suffix = randomBytes(8).toString("hex");
+    const user = await prisma.user.create({
+      data: {
+        email: `integration-rate-limit-${suffix}@example.invalid`,
+        active: true,
+        passwordHash: await hash("Original-password-123", 4),
+      },
+      select: { id: true, email: true },
+    });
+    createdUserIds.push(user.id);
+
+    const previousEnv = {
+      apiKey: process.env.RESEND_API_KEY,
+      from: process.env.EMAIL_FROM,
+      base: process.env.FRONTEND_BASE_URL,
+    };
+    process.env.RESEND_API_KEY = "integration-test-resend-key";
+    process.env.EMAIL_FROM = "test@example.invalid";
+    process.env.FRONTEND_BASE_URL = "https://example.invalid";
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal("fetch", fetchMock);
+
+    try {
+      const attempts = await Promise.all(
+        Array.from({ length: 8 }, () => service.requestPasswordReset(user.email)),
+      );
+
+      expect(attempts).toHaveLength(8);
+      expect(attempts.every((result) => result.success)).toBe(true);
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      await expect(
+        prisma.passwordResetToken.count({ where: { userId: user.id } }),
+      ).resolves.toBe(3);
+      await expect(
+        prisma.adminAuditLog.count({
+          where: { targetUserId: user.id, action: "PASSWORD_RESET_REQUESTED" },
+        }),
+      ).resolves.toBe(3);
+    } finally {
+      vi.unstubAllGlobals();
+      if (previousEnv.apiKey === undefined) delete process.env.RESEND_API_KEY;
+      else process.env.RESEND_API_KEY = previousEnv.apiKey;
+      if (previousEnv.from === undefined) delete process.env.EMAIL_FROM;
+      else process.env.EMAIL_FROM = previousEnv.from;
+      if (previousEnv.base === undefined) delete process.env.FRONTEND_BASE_URL;
+      else process.env.FRONTEND_BASE_URL = previousEnv.base;
+    }
+  });
+
+
   it("allows only one concurrent reset to claim and consume the same token", async () => {
     const { user, token, rawToken } = await createFixture();
 
