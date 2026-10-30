@@ -1,11 +1,13 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  resolve: {
+    extensions: [".ts", ".tsx", ".mts", ".js", ".mjs", ".json"],
+  },
   esbuild: {
     tsconfigRaw: {
       compilerOptions: {
         experimentalDecorators: true,
-        emitDecoratorMetadata: true,
       },
     },
   },
