@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { ProductType } from "@prisma/client";
+import { ProductType, Prisma } from "@prisma/client";
 import { JwtService } from "@nestjs/jwt";
-import { createHash } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { hash, compare } from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
 import { AcceptInvitationDto } from "./dto/accept-invitation.dto";
@@ -63,6 +63,42 @@ export class AuthService {
   });
 
   return { user, accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email, authVersion: user.authVersion }) };
+ }
+
+
+ async bootstrapFirstAdmin(dto: { email: string; name?: string; password: string }, suppliedToken?: string) {
+  const configuredToken = process.env.ADMIN_BOOTSTRAP_TOKEN ?? "";
+  const configuredEmail = (process.env.ADMIN_BOOTSTRAP_EMAIL ?? "").trim().toLowerCase();
+  const provided = Buffer.from(suppliedToken ?? "");
+  const expected = Buffer.from(configuredToken);
+  if (configuredToken.length < 32 || provided.length !== expected.length || !timingSafeEqual(provided, expected)) {
+   throw new ForbiddenException("Bootstrap administrativo não autorizado.");
+  }
+  const email = dto.email.trim().toLowerCase();
+  if (!configuredEmail || email !== configuredEmail) {
+   throw new ForbiddenException("O e-mail não corresponde ao autorizado para o bootstrap.");
+  }
+  const passwordHash = await hash(dto.password, 12);
+  const now = new Date();
+  const user = await this.prisma.$transaction(async (tx) => {
+   const existingAdmins = await tx.user.count({
+    where: { active: true, passwordHash: { not: null }, OR: [{ isAdmin: true }, { email: { in: (process.env.ADMIN_EMAILS ?? "").split(",").map((value) => value.trim().toLowerCase()).filter(Boolean) } }] },
+   });
+   if (existingAdmins > 0) throw new ConflictException("O bootstrap já foi encerrado: existe um administrador ativo.");
+   const existing = await tx.user.findUnique({ where: { email } });
+   if (existing?.passwordHash) throw new ConflictException("Já existe uma conta com esse e-mail. O bootstrap não pode substituir credenciais.");
+   const created = existing
+    ? await tx.user.update({ where: { id: existing.id }, data: { name: dto.name?.trim() || existing.name, passwordHash, active: true, isAdmin: true, authVersion: { increment: 1 }, lastLoginAt: now } })
+    : await tx.user.create({ data: { email, name: dto.name?.trim() || null, passwordHash, active: true, isAdmin: true, lastLoginAt: now } });
+   await tx.adminAuditLog.create({
+    data: { targetUserId: created.id, targetEmail: created.email, action: "FIRST_ADMIN_BOOTSTRAPPED", details: { method: "one_time_environment_token" } },
+   });
+   return created;
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  return {
+   user: { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt, isAdmin: true },
+   accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email, authVersion: user.authVersion }),
+  };
  }
 
  async login(dto: LoginDto) {

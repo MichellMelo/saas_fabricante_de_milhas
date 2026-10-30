@@ -1,14 +1,20 @@
-import { Body, Controller, Get, Patch, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard, AuthenticatedRequest } from "./jwt-auth.guard";
 import { AcceptInvitationDto } from "./dto/accept-invitation.dto";
 import { LoginDto } from "./dto/login.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
+import { BootstrapFirstAdminDto } from "./dto/bootstrap-first-admin.dto";
 
 @Controller("auth")
 export class AuthController {
  constructor(private readonly auth: AuthService) {}
+
+ @Post("bootstrap-admin")
+ bootstrapAdmin(@Body() dto: BootstrapFirstAdminDto, @Headers("x-admin-bootstrap-token") token?: string) {
+  return this.auth.bootstrapFirstAdmin(dto, token);
+ }
 
  @Post("register")
  register() {
