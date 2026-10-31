@@ -18,7 +18,7 @@ function BrandLockup() {
         alt="Fabricante de Milhas"
         width={120}
         height={120}
-        className="h-auto w-[66px] object-contain sm:w-[74px]"
+        className="h-auto w-[104px] object-contain sm:w-[118px]"
         fetchPriority="high"
       />
     </Link>
@@ -66,25 +66,24 @@ export function AuthForm({ mode }: AuthFormProps) {
   const inputClass = "mt-2 block w-full rounded-xl border border-[#dfe3e8] bg-[#fbfcfd] px-4 py-3 text-[14px] text-[#152033] outline-none transition placeholder:text-[#a1a9b5] hover:border-[#c4cbd4] focus:border-[#b58a37] focus:bg-white focus:ring-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d6b66f] focus-visible:outline-offset-1 disabled:cursor-wait disabled:opacity-60";
 
   return (
-    <main className="relative flex h-[100svh] min-h-[600px] flex-col overflow-hidden bg-[#0d1728] text-[#111b2b]">
+    <main className="relative flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[#f6eee3] text-[#111b2b]">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <img
-          src="/login-landscape.svg"
+          src="https://brol.com/wp-content/uploads/2025/08/Low-Fares-to-Brazil.webp"
           alt=""
           className="h-full w-full object-cover object-center"
           fetchPriority="high"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#fffdf9]/65 via-[#fffaf2]/30 to-[#e8d6c0]/25" />
-        <div className="absolute inset-0 bg-white/10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#fffaf4]/70 via-[#fff8ed]/18 to-[#e8c99f]/10" />
       </div>
 
-      <header className="relative z-10 flex shrink-0 justify-center px-5 pb-0 pt-3 sm:pt-4">
+      <header className="relative z-10 flex shrink-0 justify-center px-5 pb-1 pt-[clamp(14px,5vh,54px)]">
         <BrandLockup />
       </header>
 
-      <div className="relative z-10 flex min-h-0 w-full flex-1 items-center justify-center overflow-y-auto px-4 py-2 sm:px-6 sm:py-3">
+      <div className="relative z-10 flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden px-4 py-2 sm:px-6 sm:py-3">
         <section className="mx-auto w-full max-w-[600px] shrink-0">
-          <div className="relative overflow-hidden rounded-[25px] border border-white/70 bg-[#fffefd]/[0.98] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:rounded-[28px] sm:p-7 lg:p-8">
+          <div className="relative overflow-hidden rounded-[25px] border border-white/80 bg-[#fffefd]/[0.96] p-5 shadow-[0_24px_70px_rgba(33,39,49,0.20)] backdrop-blur-md sm:rounded-[28px] sm:p-7 lg:p-8">
             <div aria-hidden="true" className="absolute right-0 top-0 h-1.5 w-full bg-gradient-to-r from-[#c99127] via-[#f1dfad] to-transparent" />
             <div className="mb-4 sm:mb-5">
               <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.23em] text-[#a6792d] sm:text-[11px]">
@@ -162,9 +161,13 @@ export function AuthForm({ mode }: AuthFormProps) {
         </section>
       </div>
 
-      <footer className="relative z-10 mt-auto shrink-0 px-4 pb-[max(10px,env(safe-area-inset-bottom))] pt-2 text-center text-[9px] leading-4 text-white/55 sm:text-[10px]">
-        
-        © 2026 Fabricante de Milhas · Estratégias, oportunidades e viagens
+      <footer className="relative z-10 h-[88px] shrink-0 px-4 pb-[max(15px,env(safe-area-inset-bottom))] pt-9 text-center text-[10px] leading-5 text-white/85 sm:h-[112px] sm:pt-12 sm:text-[12px]">
+        <svg aria-hidden="true" viewBox="0 0 1600 150" preserveAspectRatio="none" className="absolute inset-x-0 -top-[54px] h-[150px] w-full">
+          <path d="M0 58 C250 5 440 28 650 70 C900 125 1120 115 1320 70 C1450 40 1530 30 1600 18 L1600 150 L0 150 Z" fill="#101d33" />
+          <path d="M0 58 C250 5 440 28 650 70 C900 125 1120 115 1320 70 C1450 40 1530 30 1600 18" fill="none" stroke="#d4a642" strokeWidth="5" />
+          <path d="M0 68 C250 15 440 38 650 80 C900 135 1120 125 1320 80 C1450 50 1530 40 1600 28" fill="none" stroke="#d4a642" strokeWidth="2" />
+        </svg>
+        <span className="relative z-10">© 2026 Fabricante de Milhas · Estratégias, oportunidades e viagens</span>
       </footer>
     </main>
   );
