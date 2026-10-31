@@ -116,6 +116,80 @@ export class LoyaltyService {
     });
   }
 
+  async getBalanceEvolution(userId: string, period: "30" | "90" | "365" | "all") {
+    const accounts = await this.prisma.loyaltyAccount.findMany({
+      where: { userId, archivedAt: null, currency: "POINTS" },
+      select: { id: true, balance: true },
+    });
+    if (accounts.length === 0) {
+      return { reliable: true, points: [], coverageStart: null, message: null };
+    }
+
+    const accountIds = accounts.map((account) => account.id);
+    const transactions = await this.prisma.pointTransaction.findMany({
+      where: { userId, loyaltyAccountId: { in: accountIds } },
+      orderBy: [{ occurredAt: "asc" }, { createdAt: "asc" }],
+      select: { loyaltyAccountId: true, points: true, occurredAt: true },
+    });
+
+    const reconstructed = new Map<string, Prisma.Decimal>();
+    for (const account of accounts) reconstructed.set(account.id, new Prisma.Decimal(0));
+    for (const transaction of transactions) {
+      if (!transaction.loyaltyAccountId) continue;
+      const previous = reconstructed.get(transaction.loyaltyAccountId) ?? new Prisma.Decimal(0);
+      reconstructed.set(transaction.loyaltyAccountId, previous.plus(transaction.points));
+    }
+
+    const reliable = accounts.every((account) =>
+      (reconstructed.get(account.id) ?? new Prisma.Decimal(0)).equals(account.balance),
+    );
+    if (!reliable) {
+      return {
+        reliable: false,
+        points: [],
+        coverageStart: null,
+        message: "Ainda não há histórico completo para reconstruir a evolução com segurança.",
+      };
+    }
+
+    if (transactions.length === 0) {
+      return { reliable: true, points: [], coverageStart: null, message: null };
+    }
+
+    const now = new Date();
+    const start = period === "all"
+      ? new Date(transactions[0].occurredAt)
+      : new Date(now.getTime() - (Number(period) - 1) * 24 * 60 * 60 * 1000);
+    start.setUTCHours(0, 0, 0, 0);
+    const openingBalance = transactions
+      .filter((transaction) => transaction.occurredAt < start)
+      .reduce((sum, transaction) => sum.plus(transaction.points), new Prisma.Decimal(0));
+    const grouped = new Map<string, Prisma.Decimal>();
+    for (const transaction of transactions) {
+      if (transaction.occurredAt < start) continue;
+      const date = transaction.occurredAt.toISOString().slice(0, 10);
+      grouped.set(date, (grouped.get(date) ?? new Prisma.Decimal(0)).plus(transaction.points));
+    }
+
+    const lastDate = now.toISOString().slice(0, 10);
+    const result: { date: string; balance: number }[] = [];
+    let running = openingBalance;
+    const cursor = new Date(start);
+    while (cursor.toISOString().slice(0, 10) <= lastDate) {
+      const date = cursor.toISOString().slice(0, 10);
+      running = running.plus(grouped.get(date) ?? new Prisma.Decimal(0));
+      result.push({ date, balance: running.toNumber() });
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+
+    return {
+      reliable: true,
+      points: result,
+      coverageStart: transactions[0].occurredAt.toISOString(),
+      message: null,
+    };
+  }
+
   async createAccount(userId: string, dto: CreateAccountDto) {
     const program = await this.prisma.loyaltyProgram.findFirst({
       where: { id: dto.loyaltyProgramId, active: true, OR: [{ ownerUserId: null }, { ownerUserId: userId }] },
