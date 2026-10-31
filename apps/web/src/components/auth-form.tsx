@@ -8,13 +8,17 @@ type AuthFormProps = { mode: "login" | "register" };
 
 function BrandLockup() {
   return (
-    <Link href="/" className="mx-auto inline-flex items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6b66f] lg:hidden" aria-label="Fabricante de Milhas — página inicial">
+    <Link
+      href="/"
+      className="inline-flex items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d6b66f]"
+      aria-label="Fabricante de Milhas — página inicial"
+    >
       <img
         src="/logo-sem-background.png"
         alt="Fabricante de Milhas"
         width={120}
         height={120}
-        className="h-auto w-[112px] object-contain sm:w-[128px] lg:w-[104px]"
+        className="h-auto w-[82px] object-contain sm:w-[94px] lg:w-[104px]"
         fetchPriority="high"
       />
     </Link>
@@ -59,74 +63,42 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   }
 
-  const inputClass = "mt-2 block w-full rounded-xl border border-[#dfe3e8] bg-[#fbfcfd] px-4 py-[11px] text-[14px] sm:mt-2.5 sm:py-[12px] text-[#152033] outline-none transition placeholder:text-[#a1a9b5] hover:border-[#c4cbd4] focus:border-[#b58a37] focus:bg-white focus:ring-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d6b66f] focus-visible:outline-offset-1 disabled:cursor-wait disabled:opacity-60";
+  const inputClass = "mt-2 block w-full rounded-xl border border-[#dfe3e8] bg-[#fbfcfd] px-4 py-3 text-[14px] text-[#152033] outline-none transition placeholder:text-[#a1a9b5] hover:border-[#c4cbd4] focus:border-[#b58a37] focus:bg-white focus:ring-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d6b66f] focus-visible:outline-offset-1 disabled:cursor-wait disabled:opacity-60";
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-[#0b1220] text-[#111b2b] lg:h-dvh lg:min-h-0 lg:overflow-hidden">
+    <main className="relative flex min-h-[100svh] flex-col overflow-hidden bg-[#e9dfd1] text-[#111b2b]">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-40 -top-48 h-[560px] w-[560px] rounded-full bg-[#b68b3c]/10 blur-[100px]" />
-        <div className="absolute -bottom-64 right-[18%] h-[520px] w-[520px] rounded-full bg-[#315174]/20 blur-[120px]" />
-        <div className="absolute inset-0 opacity-[0.045]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.22) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px)", backgroundSize: "56px 56px" }} />
+        <img
+          src="/login-landscape.svg"
+          alt=""
+          className="h-full w-full object-cover object-center"
+          fetchPriority="high"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#fffdf9]/65 via-[#fffaf2]/30 to-[#e8d6c0]/25" />
+        <div className="absolute inset-0 bg-white/10" />
       </div>
 
-      <header className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center justify-center px-5 py-3 sm:px-8 sm:py-4 lg:justify-end lg:px-10 lg:py-2">
+      <header className="relative z-10 flex shrink-0 justify-center px-5 pb-1 pt-5 sm:pt-6">
         <BrandLockup />
-        <div className="hidden">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#d6b66f]" />
-          SEU ESPAÇO DE ESTRATÉGIA
-        </div>
       </header>
 
-      <div className="relative z-10 mx-auto grid w-full min-h-[calc(100vh-104px)] max-w-[1280px] items-center gap-6 px-5 pb-6 pt-2 sm:gap-10 sm:px-8 sm:pb-10 sm:pt-4 lg:min-h-0 lg:h-[calc(100dvh-48px)] lg:grid-cols-[minmax(0,1fr)_minmax(380px,440px)] lg:gap-12 lg:px-10 lg:pb-4 lg:pt-0 xl:gap-16">
-        <section className="relative hidden min-h-0 flex-col justify-center lg:flex">
-          <div aria-hidden="true" className="absolute left-[-90px] top-1/2 h-[430px] w-[430px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
-          <div aria-hidden="true" className="absolute left-[-28px] top-1/2 h-[320px] w-[320px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
-          <div aria-hidden="true" className="absolute left-[40px] top-1/2 h-[210px] w-[210px] -translate-y-1/2 rounded-full border border-[#d6b66f]/10" />
-          <div className="relative max-w-[650px]">
-            <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#e0c47f]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#d6b66f]" />
-              Inteligência para suas milhas
-            </div>
-            <h1 className="max-w-[620px] text-[48px] font-medium leading-[1.06] tracking-[-0.055em] text-white xl:text-[60px]">
-              Milhas não são sorte.
-              <span className="mt-2 block text-[#d6b66f]">São estratégia.</span>
-            </h1>
-            <p className="mt-4 max-w-[430px] text-[14px] leading-6 sm:mt-6 sm:leading-7 text-slate-300/80">
-              Compare custos, entenda o valor real dos seus pontos e transforme cada decisão em uma viagem melhor planejada.
-            </p>
-            <div className="mt-6 flex max-w-[440px] items-center gap-5 border-t border-white/10 pt-5">
-              <div className="flex -space-x-2">
-                <span className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#0b1220] bg-[#26364a] text-[10px] font-bold text-white">CP</span>
-                <span className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#0b1220] bg-[#39465a] text-[10px] font-bold text-white">R$</span>
-                <span className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#0b1220] bg-[#d6b66f] text-[10px] font-bold text-[#101827]">✦</span>
-              </div>
-              <div>
-                <p className="text-[12px] font-medium text-white">Mais clareza para decidir</p>
-                <p className="mt-1 text-[11px] text-slate-400">Custo por milheiro · valor de resgate · taxas</p>
-              </div>
-            </div>
-          </div>
-          <p className="relative mt-6 text-[11px] text-slate-500">© 2026 Fabricante de Milhas</p>
-        </section>
-
-        <section className="mx-auto w-full max-w-[440px] lg:my-auto">
-          <div className="relative overflow-hidden rounded-[22px] border border-white/80 bg-[#fffefd] p-5 shadow-[0_20px_55px_rgba(0,0,0,0.2)] sm:rounded-[24px] sm:p-8 lg:p-7 xl:p-8">
-            <div aria-hidden="true" className="absolute right-0 top-0 h-1 w-full bg-gradient-to-r from-[#d6b66f] via-[#f1dfad] to-transparent" />
-            <div className="mb-5 flex items-start justify-between gap-4 sm:mb-6">
-              <div>
-                <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.23em] text-[#a6792d]">
-                  {isRegister ? "Sua próxima decisão começa aqui" : "Acesse sua estratégia"}
-                </p>
-                <h2 className="text-[27px] font-semibold leading-[1.12] tracking-[-0.05em] sm:text-[29px] text-[#101a2b]">
-                  {isRegister ? "Abra seu espaço." : "Continue de onde parou."}
-                </h2>
-                <p className="mt-3 max-w-[340px] text-[13px] leading-6 text-[#6f7886]">
-                  {isRegister ? "Organize seus pontos e tenha mais critério para escolher quando comprar, transferir ou resgatar." : "Entre para acompanhar seus pontos, custos e próximas oportunidades."}
-                </p>
-              </div>
+      <div className="relative z-10 flex w-full flex-1 items-center justify-center px-4 py-4 sm:px-6 sm:py-6">
+        <section className="mx-auto w-full max-w-[636px]">
+          <div className="relative overflow-hidden rounded-[25px] border border-white/90 bg-[#fffefd]/95 p-5 shadow-[0_24px_70px_rgba(33,39,49,0.18)] backdrop-blur-md sm:rounded-[30px] sm:p-8 lg:p-10">
+            <div aria-hidden="true" className="absolute right-0 top-0 h-1.5 w-full bg-gradient-to-r from-[#c99127] via-[#f1dfad] to-transparent" />
+            <div className="mb-5 sm:mb-6">
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.23em] text-[#a6792d] sm:text-[11px]">
+                {isRegister ? "Sua próxima decisão começa aqui" : "Acesse sua estratégia"}
+              </p>
+              <h1 className="text-[27px] font-semibold leading-[1.12] tracking-[-0.05em] text-[#101a2b] sm:text-[32px]">
+                {isRegister ? "Abra seu espaço." : "Continue de onde parou."}
+              </h1>
+              <p className="mt-3 max-w-[470px] text-[13px] leading-6 text-[#6f7886] sm:text-[15px] sm:leading-7">
+                {isRegister ? "Organize seus pontos e tenha mais critério para escolher quando comprar, transferir ou resgatar." : "Entre para acompanhar seus pontos, custos e próximas oportunidades."}
+              </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               {isRegister && (
                 <label className="block text-[12px] font-semibold text-[#344054]">
                   Como devemos chamar você? <span className="font-normal text-[#9aa2ae]">Opcional</span>
@@ -153,27 +125,9 @@ export function AuthForm({ mode }: AuthFormProps) {
               >
                 <span className="inline-flex items-center gap-2.5">
                   {loading && (
-                    <svg
-                      className="h-4 w-4 animate-spin"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="9"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                      />
-                      <path
-                        className="opacity-90"
-                        d="M21 12a9 9 0 0 0-9-9"
-                        stroke="#d6b66f"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                      />
+                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <circle className="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" />
+                      <path className="opacity-90" d="M21 12a9 9 0 0 0-9-9" stroke="#d6b66f" strokeWidth="3" strokeLinecap="round" />
                     </svg>
                   )}
                   <span>
@@ -186,27 +140,32 @@ export function AuthForm({ mode }: AuthFormProps) {
                         : "Entrar no meu espaço"}
                   </span>
                 </span>
-                {!loading && (
-                  <span className="text-[#d6b66f] transition-transform group-hover:translate-x-1" aria-hidden="true">↗</span>
-                )}
+                {!loading && <span className="text-[#d6b66f] transition-transform group-hover:translate-x-1" aria-hidden="true">↗</span>}
               </button>
             </form>
 
-            <p className="mt-5 text-center text-[12px] text-[#7b8491] sm:mt-7">
+            <p className="mt-5 text-center text-[12px] text-[#7b8491] sm:mt-6 sm:text-[13px]">
               {isRegister ? "Já tem uma conta?" : "Ainda não tem uma conta?"}{" "}
               <Link href={isRegister ? "/login" : "/register"} className="font-bold text-[#98691e] decoration-[#d6b66f] underline-offset-4 hover:underline">
                 {isRegister ? "Fazer login" : "Criar conta"}
               </Link>
             </p>
 
-            <div className="mt-5 flex items-center justify-center gap-2 border-t sm:mt-7 border-[#eceef1] pt-5 text-[10px] text-[#9aa2ae]">
-              <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.3" /><path d="M5 7V4.8a3 3 0 0 1 6 0V7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /></svg>
+            <div className="mt-5 flex items-center justify-center gap-2 border-t border-[#eceef1] pt-4 text-[10px] text-[#89919d] sm:mt-6 sm:pt-5 sm:text-[11px]">
+              <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" aria-hidden="true">
+                <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+                <path d="M5 7V4.8a3 3 0 0 1 6 0V7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
               Proteção de conta com sessão segura
             </div>
           </div>
-          <p className="mt-5 text-center text-[10px] leading-5 text-slate-500 lg:hidden">© 2026 Fabricante de Milhas · Estratégias, oportunidades e viagens</p>
         </section>
       </div>
+
+      <footer className="relative z-10 mt-auto shrink-0 overflow-hidden bg-[#101a2b] px-4 pb-[max(18px,env(safe-area-inset-bottom))] pt-7 text-center text-[10px] leading-5 text-white/70 sm:pt-8 sm:text-[11px]">
+        <div aria-hidden="true" className="absolute -top-5 left-[-8%] h-10 w-[116%] rounded-[50%] border-t-[3px] border-[#d6b66f] bg-[#101a2b]" />
+        © 2026 Fabricante de Milhas · Estratégias, oportunidades e viagens
+      </footer>
     </main>
   );
 }
