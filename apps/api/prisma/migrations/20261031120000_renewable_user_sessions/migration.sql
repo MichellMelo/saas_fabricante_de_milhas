@@ -18,3 +18,8 @@ ALTER TABLE "UserSession"
   ADD CONSTRAINT "UserSession_userId_fkey"
   FOREIGN KEY ("userId") REFERENCES "User"("id")
   ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Refresh tokens are accessed only by the trusted API through Prisma.
+-- Do not expose session hashes to Supabase API roles.
+ALTER TABLE "UserSession" ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE "UserSession" FROM anon, authenticated;
