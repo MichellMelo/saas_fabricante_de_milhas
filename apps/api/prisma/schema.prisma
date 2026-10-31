@@ -75,6 +75,21 @@ model User {
  adminAuditEvents AdminAuditLog[] @relation("AdminAuditActor")
  authoredGroupVipPosts GroupVipPost[]
  authoredProductContent ProductContent[]
+ sessions UserSession[]
+}
+
+model UserSession {
+ id String @id @default(cuid())
+ userId String
+ refreshTokenHash String @unique
+ authVersion Int
+ expiresAt DateTime
+ lastUsedAt DateTime @default(now())
+ revokedAt DateTime?
+ createdAt DateTime @default(now())
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ @@index([userId, expiresAt])
+ @@index([expiresAt])
 }
 model LoyaltyProgram {
  id String @id @default(cuid())

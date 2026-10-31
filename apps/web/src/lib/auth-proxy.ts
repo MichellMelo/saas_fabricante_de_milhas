@@ -10,6 +10,7 @@ type AuthResponse = {
     createdAt: string;
   };
   accessToken?: string;
+  refreshToken?: string;
 };
 
 export async function proxyAuth(
@@ -53,7 +54,7 @@ export async function proxyAuth(
 
   const auth = payload as AuthResponse;
 
-  if (!auth.accessToken || !auth.user) {
+  if (!auth.accessToken || !auth.refreshToken || !auth.user) {
     return NextResponse.json(
       { message: "Resposta de autenticação inválida." },
       { status: 502 },
@@ -67,7 +68,15 @@ export async function proxyAuth(
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60,
+    maxAge: 15 * 60,
+  });
+
+  response.cookies.set("fm_refresh", auth.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/api/auth",
+    maxAge: 30 * 24 * 60 * 60,
   });
 
   return response;
