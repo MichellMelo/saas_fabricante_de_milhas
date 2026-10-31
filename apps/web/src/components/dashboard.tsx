@@ -161,7 +161,7 @@ const PROGRAM_ICON_MATCHERS: Array<{ terms: string[]; file: string }> = [
 function getProgramIconPath(programName: string) {
   const normalizedName = programName
     .normalize("NFD")
-    .replace(/[\\u0300-\\u036f]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
   const match = PROGRAM_ICON_MATCHERS.find(({ terms }) =>
     terms.some((term) => normalizedName.includes(term)),
@@ -615,7 +615,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                       {loyaltyAccounts
                         .slice()
                         .sort((a, b) => Number(b.balance) - Number(a.balance))
-                        .map((account, index) => {
+                        .map((account) => {
                           const balance = Number(account.balance || 0);
                           const share =
                             totalPoints > 0 && account.currency === "POINTS"
