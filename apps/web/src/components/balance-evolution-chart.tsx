@@ -75,7 +75,7 @@ export function BalanceEvolutionChart() {
     const coordinates = sampled.map((point, index) => [x(index), y(point.balance)] as const);
     const line = coordinates.map(([px, py], index) => `${index === 0 ? "M" : "L"} ${px.toFixed(1)} ${py.toFixed(1)}`).join(" ");
     const area = `${line} L ${width} ${height} L 0 ${height} Z`;
-    return { sampled, line, area, last: sampled[sampled.length - 1], first: sampled[0], min, max, low, high };
+    return { sampled, line, area, endY: y(sampled[sampled.length - 1].balance), last: sampled[sampled.length - 1], first: sampled[0] };
   }, [data]);
 
   const change = chart ? chart.last.balance - chart.first.balance : 0;
@@ -150,7 +150,7 @@ export function BalanceEvolutionChart() {
               <g transform="translate(0 12)">
                 <path d={chart.area} fill="#c6a45c" opacity="0.14" />
                 <path d={chart.line} fill="none" stroke="#a7894e" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="640" cy={chart.line.match(/L 640 ([\d.]+)/)?.[1] ?? "110"} r="5" fill="#a7894e" stroke="white" strokeWidth="3" />
+                <circle cx="640" cy={chart.endY} r="5" fill="#a7894e" stroke="white" strokeWidth="3" />
               </g>
             </svg>
             <div className="flex justify-between text-xs text-slate-400">
