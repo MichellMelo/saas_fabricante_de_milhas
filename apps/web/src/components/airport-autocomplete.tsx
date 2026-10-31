@@ -12,6 +12,16 @@ type AirportOption = {
   sourceType: string;
 };
 
+function formatAirportLabel(option: AirportOption) {
+  const location = [
+    option.municipality,
+    option.countryName || option.countryCode,
+  ].filter(Boolean).join(", ");
+  return [option.name, `(${option.iataCode})`, location]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 type Props = {
   value: string;
   onChange: (value: string) => void;
@@ -27,6 +37,7 @@ export function AirportAutocomplete({
 }: Props) {
   const listId = useId();
   const [query, setQuery] = useState(value);
+  const [selectedOption, setSelectedOption] = useState<AirportOption | null>(null);
   const [options, setOptions] = useState<AirportOption[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -34,10 +45,22 @@ export function AirportAutocomplete({
   const [noResults, setNoResults] = useState(false);
 
   useEffect(() => {
+    if (selectedOption?.iataCode === value) {
+      setQuery(formatAirportLabel(selectedOption));
+      return;
+    }
+    setSelectedOption(null);
     setQuery(value);
-  }, [value]);
+  }, [value, selectedOption]);
 
   useEffect(() => {
+    if (selectedOption) {
+      setOptions([]);
+      setOpen(false);
+      setLoading(false);
+      setNoResults(false);
+      return;
+    }
     const term = query.trim();
     if (term.length < 3) {
       setOptions([]);
@@ -74,10 +97,11 @@ export function AirportAutocomplete({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [query]);
+  }, [query, selectedOption]);
 
   function choose(option: AirportOption) {
-    setQuery(option.iataCode);
+    setSelectedOption(option);
+    setQuery(formatAirportLabel(option));
     onChange(option.iataCode);
     setOpen(false);
     setOptions([]);
@@ -86,6 +110,7 @@ export function AirportAutocomplete({
   }
 
   function changeText(text: string) {
+    setSelectedOption(null);
     const next = /^[a-z]{1,3}$/i.test(text) ? text.toUpperCase() : text;
     setQuery(next);
     onChange(next);
@@ -163,7 +188,7 @@ export function AirportAutocomplete({
               id={`${listId}-${index}`}
               role="option"
               aria-selected={activeIndex === index}
-              onMouseDown={(event) => event.preventDefault()}
+              onPointerDown={(event) => event.preventDefault()}
               onClick={() => choose(option)}
               className={
                 "flex w-full items-start gap-3 px-3 py-2.5 text-left hover:bg-amber-50 " +
