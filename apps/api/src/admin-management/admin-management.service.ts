@@ -379,7 +379,7 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
     });
     return {
       user: { id: acceptedUser.id, email: acceptedUser.email, name: acceptedUser.name, createdAt: acceptedUser.createdAt, isAdmin: true },
-      accessToken: await this.jwt.signAsync({ sub: acceptedUser.id, email: acceptedUser.email, authVersion: acceptedUser.authVersion }),
+      accessToken: await this.jwt.signAsync({ sub: acceptedUser.id, email: acceptedUser.email, authVersion: acceptedUser.authVersion }, { expiresIn: "15m" }),
     };
   }
 }
