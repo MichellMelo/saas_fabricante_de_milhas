@@ -142,6 +142,33 @@ const routeCopy: Record<
     icon: Clock3,
   },
 };
+const PROGRAM_ICON_MATCHERS: Array<{ terms: string[]; file: string }> = [
+  { terms: ["azul"], file: "azul.png" },
+  { terms: ["latam"], file: "latam.png" },
+  { terms: ["smiles"], file: "smiles.png" },
+  { terms: ["livelo"], file: "livelo.png" },
+  { terms: ["esfera"], file: "esfera.png" },
+  { terms: ["air canada", "aeroplan"], file: "aircanada.png" },
+  { terms: ["air france", "flying blue"], file: "airfrance.png" },
+  { terms: ["iberia"], file: "iberia.png" },
+  { terms: ["qatar"], file: "qatar.png" },
+  { terms: ["tap", "miles&go"], file: "tap.png" },
+  { terms: ["turkish"], file: "turkish.png" },
+  { terms: ["delta"], file: "delta.png" },
+  { terms: ["american airlines", "aadvantage"], file: "AA.png" },
+];
+
+function getProgramIconPath(programName: string) {
+  const normalizedName = programName
+    .normalize("NFD")
+    .replace(/[\\u0300-\\u036f]/g, "")
+    .toLowerCase();
+  const match = PROGRAM_ICON_MATCHERS.find(({ terms }) =>
+    terms.some((term) => normalizedName.includes(term)),
+  );
+  return match ? `/program-icons/${match.file}` : null;
+}
+
 function Sparkline({ color = "#c6a45c" }: { color?: string }) {
   return (
     <svg
@@ -594,22 +621,35 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                             totalPoints > 0 && account.currency === "POINTS"
                               ? (balance / totalPoints) * 100
                               : 0;
-                          const dotClasses = [
-                            "dot-one",
-                            "dot-two",
-                            "dot-three",
-                            "dot-four",
-                          ];
+                          const programIcon = getProgramIconPath(
+                            account.loyaltyProgram.name,
+                          );
+                          const programInitials = account.loyaltyProgram.name
+                            .split(/\\s+/)
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map((part) => part[0])
+                            .join("")
+                            .toUpperCase();
                           return (
                             <div key={account.id} className="space-y-2">
                               <div className="flex items-center justify-between gap-3 text-sm">
                                 <span className="flex min-w-0 items-center gap-2 font-medium text-slate-700">
-                                  <i
-                                    className={
-                                      "program-dot " +
-                                      dotClasses[index % dotClasses.length]
-                                    }
-                                  />{" "}
+                                  {programIcon ? (
+                                    <img
+                                      src={programIcon}
+                                      alt=""
+                                      aria-hidden="true"
+                                      className="h-7 w-7 shrink-0 rounded-md bg-white object-contain p-0.5"
+                                    />
+                                  ) : (
+                                    <span
+                                      aria-hidden="true"
+                                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-slate-50 text-[10px] font-semibold text-slate-500"
+                                    >
+                                      {programInitials}
+                                    </span>
+                                  )}
                                   <span className="truncate">
                                     {account.loyaltyProgram.name}
                                   </span>
