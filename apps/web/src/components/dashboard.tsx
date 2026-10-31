@@ -275,6 +275,28 @@ export function Dashboard({ user }: { user: DashboardUser }) {
   );
 
   useEffect(() => {
+    let renewing = false;
+    const renewSession = async () => {
+      if (renewing || document.visibilityState === "hidden") return;
+      renewing = true;
+      try {
+        await fetch("/api/auth/refresh", { method: "POST", cache: "no-store" });
+      } finally {
+        renewing = false;
+      }
+    };
+    const interval = window.setInterval(() => void renewSession(), 600000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void renewSession();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     async function loadDashboardData() {
       setDashboardLoading(true);
