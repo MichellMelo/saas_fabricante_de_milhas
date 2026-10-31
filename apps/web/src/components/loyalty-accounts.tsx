@@ -545,26 +545,26 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
             {accounts.map((account) => (
               <Card
                 key={account.id}
-                className="border-slate-200 bg-white p-5 shadow-none transition hover:border-amber-300"
+                className="min-w-0 border-slate-200 bg-white p-4 shadow-none transition hover:border-amber-300 sm:p-5"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-4">
+                <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                     <ProgramMark program={account.loyaltyProgram} />
                     <div className="min-w-0">
                       <div className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
                         {typeLabel[account.loyaltyProgram.type]}
                       </div>
-                      <h3 className="mt-2 text-xl font-semibold text-slate-900">
+                      <h3 className="mt-1 break-words text-lg font-semibold text-slate-900 sm:mt-2 sm:text-xl">
                         {account.loyaltyProgram.name}
                       </h3>
                       {account.memberReference && (
-                        <p className="mt-1 text-xs text-slate-500">
+                        <p className="mt-1 break-words text-xs text-slate-500">
                           Identificação: {account.memberReference}
                         </p>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto sm:shrink-0 sm:justify-end">
                     <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
                       {account._count?.transactions ?? 0} mov.
                     </span>
@@ -587,10 +587,10 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
                     </Button>
                   </div>
                 </div>
-                <div className="mt-6 border-t border-slate-100 pt-4">
+                <div className="mt-5 border-t border-slate-100 pt-4 sm:mt-6">
                   <div className="text-sm text-slate-500">Saldo disponível</div>
-                  <div className="mt-1 text-3xl font-semibold tracking-tight text-slate-900">
-                    {formatPoints(account.balance)}{" "}
+                  <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-3xl font-semibold tracking-tight text-slate-900">
+                    {formatPoints(account.balance)}
                     <span className="text-sm font-normal text-slate-500">
                       {account.currency === "POINTS"
                         ? "pontos/milhas"
