@@ -50,7 +50,7 @@ export const metadata: Metadata = {
       { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
     ],
     shortcut: "/favicon-32x32.png",
-    apple: [{ url: "/logo.jpeg", type: "image/jpeg" }],
+    apple: [{ url: "/logo-sem-background.png", type: "image/png" }],
   },
 };
 
