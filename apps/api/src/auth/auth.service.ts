@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ProductType, Prisma } from "@prisma/client";
 import { JwtService } from "@nestjs/jwt";
-import { createHash, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { hash, compare } from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
 import { AcceptInvitationDto } from "./dto/accept-invitation.dto";
@@ -12,6 +12,77 @@ import { LoginDto } from "./dto/login.dto";
 @Injectable()
 export class AuthService {
  constructor(private readonly prisma: PrismaService, private readonly jwt: JwtService) {}
+
+ private async issueSession(user: { id: string; email: string; authVersion: number }) {
+  const refreshToken = randomBytes(48).toString("base64url");
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  await this.prisma.userSession.create({
+   data: {
+    userId: user.id,
+    refreshTokenHash: createHash("sha256").update(refreshToken).digest("hex"),
+    authVersion: user.authVersion,
+    expiresAt,
+    lastUsedAt: now,
+   },
+  });
+  const accessToken = await this.jwt.signAsync(
+   { sub: user.id, email: user.email, authVersion: user.authVersion },
+   { expiresIn: "15m" },
+  );
+  return { accessToken, refreshToken };
+ }
+
+ async refreshSession(refreshToken: string) {
+  if (!refreshToken || refreshToken.length > 256) {
+   throw new UnauthorizedException("Sessão expirada. Entre novamente.");
+  }
+  const tokenHash = createHash("sha256").update(refreshToken).digest("hex");
+  const session = await this.prisma.userSession.findUnique({
+   where: { refreshTokenHash: tokenHash },
+   include: { user: { select: { id: true, email: true, active: true, authVersion: true } } },
+  });
+  const now = new Date();
+  if (!session || session.revokedAt || session.expiresAt <= now ||
+      !session.user.active || session.authVersion !== session.user.authVersion) {
+   throw new UnauthorizedException("Sessão expirada. Entre novamente.");
+  }
+  const nextRefreshToken = randomBytes(48).toString("base64url");
+  const nextHash = createHash("sha256").update(nextRefreshToken).digest("hex");
+  const nextExpiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const rotated = await this.prisma.userSession.updateMany({
+   where: {
+    id: session.id,
+    refreshTokenHash: tokenHash,
+    revokedAt: null,
+    expiresAt: { gt: now },
+    authVersion: session.user.authVersion,
+   },
+   data: {
+    refreshTokenHash: nextHash,
+    expiresAt: nextExpiry,
+    lastUsedAt: now,
+   },
+  });
+  if (rotated.count !== 1) {
+   throw new UnauthorizedException("Sessão já renovada ou expirada. Entre novamente.");
+  }
+  const accessToken = await this.jwt.signAsync(
+   { sub: session.user.id, email: session.user.email, authVersion: session.user.authVersion },
+   { expiresIn: "15m" },
+  );
+  return { accessToken, refreshToken: nextRefreshToken };
+ }
+
+ async revokeSession(refreshToken: string) {
+  if (!refreshToken || refreshToken.length > 256) return { success: true };
+  const tokenHash = createHash("sha256").update(refreshToken).digest("hex");
+  await this.prisma.userSession.updateMany({
+   where: { refreshTokenHash: tokenHash, revokedAt: null },
+   data: { revokedAt: new Date() },
+  });
+  return { success: true };
+ }
 
  async register(): Promise<never> {
   throw new ForbiddenException("O cadastro é feito somente por convite. Solicite acesso à equipe Fabricante de Milhas.");
@@ -62,7 +133,7 @@ export class AuthService {
    return created;
   });
 
-  return { user, accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email, authVersion: user.authVersion }) };
+  return { user, ...await this.issueSession(user) };
  }
 
 
@@ -97,7 +168,7 @@ export class AuthService {
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   return {
    user: { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt, isAdmin: true },
-   accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email, authVersion: user.authVersion }),
+   ...await this.issueSession(user),
   };
  }
 
@@ -113,7 +184,7 @@ export class AuthService {
   await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   return {
    user: { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt },
-   accessToken: await this.jwt.signAsync({ sub: user.id, email: user.email, authVersion: user.authVersion })
+   ...await this.issueSession(user),
   };
  }
 
