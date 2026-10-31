@@ -43,6 +43,10 @@ type Availability = {
   outboundDates: string;
   returnDates: string;
 };
+type GroupedAvailability = Availability & {
+  history: Availability[];
+  observationDates: string[];
+};
 const HEADERS = [
   "Data_Registro",
   "Programa",
@@ -226,7 +230,7 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
     [importing, setImporting] = useState(false),
     [message, setMessage] = useState(""),
     [error, setError] = useState("");
-  const [selected, setSelected] = useState<Availability | null>(null),
+  const [selected, setSelected] = useState<GroupedAvailability | null>(null),
     [currentPage, setCurrentPage] = useState(1);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -297,19 +301,48 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
     (sum, record) => sum + record.milesFloor,
     0,
   );
+  const groupedAvailabilities = useMemo(() => {
+    const groups = new Map<string, Availability[]>();
+    for (const record of filtered) {
+      const key = JSON.stringify([
+        record.origin.trim().toUpperCase(),
+        record.destination.trim().toUpperCase(),
+        record.program.trim().toLocaleLowerCase("pt-BR"),
+        record.cabinClass.trim().toLocaleLowerCase("pt-BR"),
+        record.milesFloor,
+      ]);
+      const group = groups.get(key) ?? [];
+      group.push(record);
+      groups.set(key, group);
+    }
+    return [...groups.values()].map((history): GroupedAvailability => {
+      const ordered = [...history].sort((a, b) =>
+        b.dateRegistered.localeCompare(a.dateRegistered),
+      );
+      const latest = ordered[0];
+      return {
+        ...latest,
+        history: ordered,
+        observationDates: [...new Set(ordered.map((item) => item.dateRegistered))],
+        monthsAvailable: [...new Set(ordered.map((item) => item.monthsAvailable).filter(Boolean))].join("\\n"),
+        outboundDates: [...new Set(ordered.map((item) => item.outboundDates).filter(Boolean))].join("\\n"),
+        returnDates: [...new Set(ordered.map((item) => item.returnDates).filter(Boolean))].join("\\n"),
+      };
+    });
+  }, [filtered]);
   const topAvailabilities = useMemo(
     () =>
-      [...filtered]
+      [...groupedAvailabilities]
         .sort(
           (a, b) =>
             a.milesFloor - b.milesFloor ||
             b.dateRegistered.localeCompare(a.dateRegistered),
         )
         .slice(0, 5),
-    [filtered],
+    [groupedAvailabilities],
   );
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageRecords = filtered.slice(
+  const totalPages = Math.max(1, Math.ceil(groupedAvailabilities.length / PAGE_SIZE));
+  const pageRecords = groupedAvailabilities.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
@@ -749,7 +782,7 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
             </p>
           </div>
           <Badge variant="outline">
-            {numberFormat.format(filtered.length)} registros
+            {numberFormat.format(groupedAvailabilities.length)} oportunidades · {numberFormat.format(filtered.length)} observações
           </Badge>
         </div>
         {loading ? (
@@ -833,7 +866,12 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
                       onClick={() => setSelected(r)}
                     >
                       <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-600">
-                        {dateFormat(r.dateRegistered)}
+                        <div>{dateFormat(r.dateRegistered)}</div>
+                        {r.history.length > 1 && (
+                          <div className="mt-1 text-[10px] text-slate-400">
+                            {r.history.length} observações
+                          </div>
+                        )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
                         <div className="font-semibold text-slate-900">
@@ -924,8 +962,8 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
           <div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-slate-500">
               Exibindo {(currentPage - 1) * PAGE_SIZE + 1}–
-              {Math.min(currentPage * PAGE_SIZE, filtered.length)} de{" "}
-              {numberFormat.format(filtered.length)} registros
+              {Math.min(currentPage * PAGE_SIZE, groupedAvailabilities.length)} de{" "}
+              {numberFormat.format(groupedAvailabilities.length)} oportunidades
             </p>
             <div className="flex items-center gap-2">
               <span className="mr-2 text-xs text-slate-500">
@@ -986,9 +1024,12 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
               <div className="flex-1 space-y-7 overflow-y-auto p-6 sm:p-7">
                 <div className="grid grid-cols-2 gap-3.5">
                   <div className="rounded-2xl bg-slate-50 p-5">
-                    <p className="text-xs text-slate-500">Data do registro</p>
+                    <p className="text-xs text-slate-500">Última observação</p>
                     <p className="mt-1 font-semibold text-slate-900">
                       {dateFormat(selected.dateRegistered)}
+                    </p>
+                    <p className="mt-1 text-[11px] text-slate-500">
+                      {selected.history.length} observações · {selected.observationDates.length} datas distintas
                     </p>
                   </div>
                   <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
@@ -1013,12 +1054,23 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
                   </p>
                 </section>
                 <section>
-                  <h3 className="font-semibold text-slate-900">
-                    Datas de volta
-                  </h3>
+                  <h3 className="font-semibold text-slate-900">Datas de volta</h3>
                   <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
                     {selected.returnDates || "Não informado"}
                   </p>
+                </section>
+                <section>
+                  <h3 className="font-semibold text-slate-900">Histórico de observações</h3>
+                  <div className="mt-2 space-y-3">
+                    {selected.history.map((item, index) => (
+                      <div key={item.id ?? item.dateRegistered + "-" + index} className="rounded-xl border border-slate-100 p-3">
+                        <p className="text-xs font-semibold text-slate-700">{dateFormat(item.dateRegistered)}</p>
+                        <p className="mt-1 text-xs text-slate-500">Meses: {item.monthsAvailable || "Não informado"}</p>
+                        <p className="mt-1 whitespace-pre-wrap text-xs text-slate-500">Ida: {item.outboundDates || "Não informado"}</p>
+                        <p className="mt-1 whitespace-pre-wrap text-xs text-slate-500">Volta: {item.returnDates || "Não informado"}</p>
+                      </div>
+                    ))}
+                  </div>
                 </section>
                 <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-5 text-amber-900">
                   <CalendarDays size={18} className="mt-0.5 shrink-0" />
