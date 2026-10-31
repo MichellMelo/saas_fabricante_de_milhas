@@ -18,7 +18,7 @@ function BrandLockup() {
         alt="Fabricante de Milhas"
         width={120}
         height={120}
-        className="h-auto w-[82px] object-contain sm:w-[94px] lg:w-[104px]"
+        className="h-auto w-[66px] object-contain sm:w-[74px]"
         fetchPriority="high"
       />
     </Link>
@@ -66,7 +66,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const inputClass = "mt-2 block w-full rounded-xl border border-[#dfe3e8] bg-[#fbfcfd] px-4 py-3 text-[14px] text-[#152033] outline-none transition placeholder:text-[#a1a9b5] hover:border-[#c4cbd4] focus:border-[#b58a37] focus:bg-white focus:ring-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d6b66f] focus-visible:outline-offset-1 disabled:cursor-wait disabled:opacity-60";
 
   return (
-    <main className="relative flex min-h-[100svh] flex-col overflow-hidden bg-[#e9dfd1] text-[#111b2b]">
+    <main className="relative flex h-[100svh] min-h-[600px] flex-col overflow-hidden bg-[#0d1728] text-[#111b2b]">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <img
           src="/login-landscape.svg"
@@ -78,27 +78,27 @@ export function AuthForm({ mode }: AuthFormProps) {
         <div className="absolute inset-0 bg-white/10" />
       </div>
 
-      <header className="relative z-10 flex shrink-0 justify-center px-5 pb-1 pt-5 sm:pt-6">
+      <header className="relative z-10 flex shrink-0 justify-center px-5 pb-0 pt-3 sm:pt-4">
         <BrandLockup />
       </header>
 
-      <div className="relative z-10 flex w-full flex-1 items-center justify-center px-4 py-4 sm:px-6 sm:py-6">
-        <section className="mx-auto w-full max-w-[636px]">
-          <div className="relative overflow-hidden rounded-[25px] border border-white/90 bg-[#fffefd]/95 p-5 shadow-[0_24px_70px_rgba(33,39,49,0.18)] backdrop-blur-md sm:rounded-[30px] sm:p-8 lg:p-10">
+      <div className="relative z-10 flex min-h-0 w-full flex-1 items-center justify-center overflow-y-auto px-4 py-2 sm:px-6 sm:py-3">
+        <section className="mx-auto w-full max-w-[600px] shrink-0">
+          <div className="relative overflow-hidden rounded-[25px] border border-white/70 bg-[#fffefd]/[0.98] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:rounded-[28px] sm:p-7 lg:p-8">
             <div aria-hidden="true" className="absolute right-0 top-0 h-1.5 w-full bg-gradient-to-r from-[#c99127] via-[#f1dfad] to-transparent" />
-            <div className="mb-5 sm:mb-6">
+            <div className="mb-4 sm:mb-5">
               <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.23em] text-[#a6792d] sm:text-[11px]">
                 {isRegister ? "Sua próxima decisão começa aqui" : "Acesse sua estratégia"}
               </p>
               <h1 className="text-[27px] font-semibold leading-[1.12] tracking-[-0.05em] text-[#101a2b] sm:text-[32px]">
                 {isRegister ? "Abra seu espaço." : "Continue de onde parou."}
               </h1>
-              <p className="mt-3 max-w-[470px] text-[13px] leading-6 text-[#6f7886] sm:text-[15px] sm:leading-7">
+              <p className="mt-2 max-w-[470px] text-[13px] leading-6 text-[#6f7886] sm:text-[14px] sm:leading-6">
                 {isRegister ? "Organize seus pontos e tenha mais critério para escolher quando comprar, transferir ou resgatar." : "Entre para acompanhar seus pontos, custos e próximas oportunidades."}
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
               {isRegister && (
                 <label className="block text-[12px] font-semibold text-[#344054]">
                   Como devemos chamar você? <span className="font-normal text-[#9aa2ae]">Opcional</span>
@@ -144,14 +144,14 @@ export function AuthForm({ mode }: AuthFormProps) {
               </button>
             </form>
 
-            <p className="mt-5 text-center text-[12px] text-[#7b8491] sm:mt-6 sm:text-[13px]">
+            <p className="mt-4 text-center text-[12px] text-[#7b8491] sm:mt-5 sm:text-[13px]">
               {isRegister ? "Já tem uma conta?" : "Ainda não tem uma conta?"}{" "}
               <Link href={isRegister ? "/login" : "/register"} className="font-bold text-[#98691e] decoration-[#d6b66f] underline-offset-4 hover:underline">
                 {isRegister ? "Fazer login" : "Criar conta"}
               </Link>
             </p>
 
-            <div className="mt-5 flex items-center justify-center gap-2 border-t border-[#eceef1] pt-4 text-[10px] text-[#89919d] sm:mt-6 sm:pt-5 sm:text-[11px]">
+            <div className="mt-4 flex items-center justify-center gap-2 border-t border-[#eceef1] pt-3 text-[10px] text-[#89919d] sm:mt-5 sm:pt-4 sm:text-[11px]">
               <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" aria-hidden="true">
                 <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
                 <path d="M5 7V4.8a3 3 0 0 1 6 0V7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
@@ -162,8 +162,8 @@ export function AuthForm({ mode }: AuthFormProps) {
         </section>
       </div>
 
-      <footer className="relative z-10 mt-auto shrink-0 overflow-hidden bg-[#101a2b] px-4 pb-[max(18px,env(safe-area-inset-bottom))] pt-7 text-center text-[10px] leading-5 text-white/70 sm:pt-8 sm:text-[11px]">
-        <div aria-hidden="true" className="absolute -top-5 left-[-8%] h-10 w-[116%] rounded-[50%] border-t-[3px] border-[#d6b66f] bg-[#101a2b]" />
+      <footer className="relative z-10 mt-auto shrink-0 px-4 pb-[max(10px,env(safe-area-inset-bottom))] pt-2 text-center text-[9px] leading-4 text-white/55 sm:text-[10px]">
+        
         © 2026 Fabricante de Milhas · Estratégias, oportunidades e viagens
       </footer>
     </main>
