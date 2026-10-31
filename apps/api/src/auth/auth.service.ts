@@ -65,7 +65,7 @@ export class AuthService {
    },
   });
   if (rotated.count !== 1) {
-   throw new UnauthorizedException("Sessão já renovada ou expirada. Entre novamente.");
+   throw new ConflictException("Sessão já renovada em outra aba. Tente novamente.");
   }
   const accessToken = await this.jwt.signAsync(
    { sub: session.user.id, email: session.user.email, authVersion: session.user.authVersion },
