@@ -378,8 +378,8 @@ export class AdminManagementService implements OnModuleInit, OnModuleDestroy {
       return user;
     });
     const refreshToken = randomBytes(48).toString("base64url");
-    const now = new Date();
-    await this.prisma.userSession.create({ data: { userId: acceptedUser.id, refreshTokenHash: createHash("sha256").update(refreshToken).digest("hex"), authVersion: acceptedUser.authVersion, expiresAt: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), lastUsedAt: now } });
+    const sessionCreatedAt = new Date();
+    await this.prisma.userSession.create({ data: { userId: acceptedUser.id, refreshTokenHash: createHash("sha256").update(refreshToken).digest("hex"), authVersion: acceptedUser.authVersion, expiresAt: new Date(sessionCreatedAt.getTime() + 30 * 24 * 60 * 60 * 1000), lastUsedAt: sessionCreatedAt } });
     return {
       user: { id: acceptedUser.id, email: acceptedUser.email, name: acceptedUser.name, createdAt: acceptedUser.createdAt, isAdmin: true },
       accessToken: await this.jwt.signAsync({ sub: acceptedUser.id, email: acceptedUser.email, authVersion: acceptedUser.authVersion }, { expiresIn: "15m" }),
