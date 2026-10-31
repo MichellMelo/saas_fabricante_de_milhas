@@ -36,6 +36,16 @@ export class AuthController {
   return this.auth.login(dto);
  }
 
+ @Post("refresh")
+ refresh(@Body() body: { refreshToken?: string }) {
+  return this.auth.refreshSession(body.refreshToken ?? "");
+ }
+
+ @Post("logout")
+ logout(@Body() body: { refreshToken?: string }) {
+  return this.auth.revokeSession(body.refreshToken ?? "");
+ }
+
  @UseGuards(JwtAuthGuard)
  @Patch("profile")
  updateProfile(@Req() request: AuthenticatedRequest, @Body() dto: UpdateProfileDto) {
