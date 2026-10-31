@@ -512,57 +512,6 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                 }}
               >
                 <BalanceEvolutionChart />
-                <Card className="panel opportunity-preview">
-                  <div className="panel-heading">
-                    <div>
-                      <span className="preview-kicker">
-                        <Sparkles size={12} /> SUGESTÃO DE RECURSO
-                      </span>
-                      <h2 className="mt-3">Antes de resgatar, compare.</h2>
-                      <p>
-                        Uma visão rápida para avaliar se uma emissão vale a
-                        pena.
-                      </p>
-                    </div>
-                    <Badge variant="secondary">Preview</Badge>
-                  </div>
-                  <div className="preview-ticket mt-5">
-                    <div className="flex items-center gap-3">
-                      <div className="preview-plane">
-                        <Plane size={19} />
-                      </div>
-                      <div>
-                        <strong>Simulação de resgate</strong>
-                        <span>Exemplo de como a análise poderá aparecer</span>
-                      </div>
-                    </div>
-                    <div className="preview-metrics">
-                      <div>
-                        <span>Custo por milheiro</span>
-                        <strong>—</strong>
-                      </div>
-                      <div>
-                        <span>Taxas do resgate</span>
-                        <strong>—</strong>
-                      </div>
-                      <div>
-                        <span>Preço em dinheiro</span>
-                        <strong>—</strong>
-                      </div>
-                    </div>
-                    <div className="preview-disclaimer">
-                      Os valores serão preenchidos a partir dos dados informados
-                      na simulação. Nenhum valor estimado é exibido neste
-                      preview.
-                    </div>
-                  </div>
-                  <button
-                    className="preview-action"
-                    onClick={() => navigate("passagens")}
-                  >
-                    Explorar passagens e resgates <ArrowRight size={14} />
-                  </button>
-                </Card>
               </motion.section>
               <motion.section
                 className="bottom-grid"
