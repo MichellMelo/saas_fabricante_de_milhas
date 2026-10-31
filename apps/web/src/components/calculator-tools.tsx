@@ -791,6 +791,13 @@ export function CalculatorTools() {
         </Card>
 
         <aside className="space-y-4">
+          <button
+            type="button"
+            onClick={reset}
+            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c]"
+          >
+            <RotateCcw size={15} /> Limpar formulário
+          </button>
           <div className="rounded-2xl bg-[#111b2b] p-5 text-white md:p-6">
             <div className="flex items-center gap-2 text-sm font-semibold text-[#e0c47f]">
               <Info size={17} /> Como interpretar
@@ -837,13 +844,7 @@ export function CalculatorTools() {
               </li>
             </ul>
           </Card>
-          <button
-            type="button"
-            onClick={reset}
-            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c]"
-          >
-            <RotateCcw size={15} /> Limpar formulário
-          </button>
+
         </aside>
       </div>
     </section>
