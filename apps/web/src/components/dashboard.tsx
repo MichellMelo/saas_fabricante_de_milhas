@@ -42,6 +42,7 @@ import { CalculatorTools } from "@/components/calculator-tools";
 import { FlightHistory } from "@/components/flight-history";
 import { PersonalTravel } from "@/components/personal-travel";
 import { AdminManagement } from "@/components/admin-management";
+import { BalanceEvolutionChart } from "@/components/balance-evolution-chart";
 
 type RouteKey = DashboardRoute;
 const navItems: SidebarNavItem[] = [
@@ -510,58 +511,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
-                <Card className="panel">
-                  <div className="panel-heading">
-                    <div>
-                      <h2>Evolução dos saldos</h2>
-                      <p>
-                        O histórico será exibido quando houver uma série
-                        temporal confiável.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex min-h-64 flex-col items-center justify-center gap-3 px-5 py-8 text-center">
-                    <div className="placeholder-mark">
-                      <Clock3 size={24} />
-                    </div>
-                    {dashboardLoading ? (
-                      <p className="text-sm text-slate-500">
-                        Carregando dados da carteira…
-                      </p>
-                    ) : dashboardError ? (
-                      <p className="text-sm text-slate-500">
-                        Não foi possível carregar o histórico agora.
-                      </p>
-                    ) : totalTransactions === 0 ? (
-                      <>
-                        <h3 className="font-semibold text-slate-800">
-                          Ainda não há histórico de movimentações
-                        </h3>
-                        <p className="max-w-md text-sm text-slate-500">
-                          Registre entradas, resgates ou ajustes em Programas e
-                          saldos para começar a acompanhar as movimentações.
-                        </p>
-                        <Button
-                          variant="outline"
-                          onClick={() => navigate("programas")}
-                        >
-                          Registrar movimentação <ArrowRight size={14} />
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <h3 className="font-semibold text-slate-800">
-                          Há movimentações registradas
-                        </h3>
-                        <p className="max-w-md text-sm text-slate-500">
-                          O saldo atual e a quantidade de lançamentos estão
-                          atualizados. Ainda não há uma consulta temporal
-                          integrada para reconstruir a evolução por período.
-                        </p>
-                      </>
-                    )}
-                  </div>
-                </Card>
+                <BalanceEvolutionChart />
                 <Card className="panel opportunity-preview">
                   <div className="panel-heading">
                     <div>
