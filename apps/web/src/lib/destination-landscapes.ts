@@ -1,0 +1,102 @@
+export type DestinationLandscape = {
+  iata: string;
+  city: string;
+  country: string;
+  imageSrc?: string;
+  imageAlt?: string;
+  credit?: string;
+  sourceUrl?: string;
+  license?: string;
+};
+
+// Catálogo inicial baseado nos destinos já encontrados no histórico compartilhado.
+// Novos códigos podem ser adicionados sem alterar os registros de oportunidades.
+export const DESTINATION_LANDSCAPES: Record<string, DestinationLandscape> = {
+  AEP: { iata: "AEP", city: "Buenos Aires", country: "Argentina" },
+  AMS: { iata: "AMS", city: "Amsterdã", country: "Países Baixos" },
+  BCN: { iata: "BCN", city: "Barcelona", country: "Espanha" },
+  BEL: {
+    iata: "BEL",
+    city: "Belém",
+    country: "Brasil",
+    imageSrc: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Bel%C3%A9m_do_Par%C3%A1.jpg/1280px-Bel%C3%A9m_do_Par%C3%A1.jpg",
+    imageAlt: "Paisagem urbana de Belém, próxima ao Mercado Ver-o-Peso",
+    credit: "Lgjunior",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Bel%C3%A9m_do_Par%C3%A1.jpg",
+    license: "CC BY-SA 4.0",
+  },
+  BOG: { iata: "BOG", city: "Bogotá", country: "Colômbia" },
+  BSB: { iata: "BSB", city: "Brasília", country: "Brasil" },
+  BYO: { iata: "BYO", city: "Bonito", country: "Brasil" },
+  CDG: { iata: "CDG", city: "Paris", country: "França" },
+  CGH: { iata: "CGH", city: "São Paulo", country: "Brasil" },
+  CNF: { iata: "CNF", city: "Belo Horizonte", country: "Brasil" },
+  COR: { iata: "COR", city: "Córdoba", country: "Argentina" },
+  CUR: { iata: "CUR", city: "Willemstad", country: "Curaçao" },
+  CWB: { iata: "CWB", city: "Curitiba", country: "Brasil" },
+  EZE: { iata: "EZE", city: "Buenos Aires", country: "Argentina" },
+  FEN: { iata: "FEN", city: "Fernando de Noronha", country: "Brasil" },
+  FLN: { iata: "FLN", city: "Florianópolis", country: "Brasil" },
+  FTE: { iata: "FTE", city: "El Calafate", country: "Argentina" },
+  GIG: { iata: "GIG", city: "Rio de Janeiro", country: "Brasil" },
+  GVA: { iata: "GVA", city: "Genebra", country: "Suíça" },
+  GYN: { iata: "GYN", city: "Goiânia", country: "Brasil" },
+  IBZ: { iata: "IBZ", city: "Ibiza", country: "Espanha" },
+  IGU: {
+    iata: "IGU",
+    city: "Foz do Iguaçu",
+    country: "Brasil",
+    imageSrc: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Cataratas_foz_iguacu.jpg/1280px-Cataratas_foz_iguacu.jpg",
+    imageAlt: "Vista das Cataratas do Iguaçu pelo lado brasileiro",
+    credit: "Allan Sansone",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Cataratas_foz_iguacu.jpg",
+    license: "CC BY-SA 4.0",
+  },
+  JDO: { iata: "JDO", city: "Juazeiro do Norte", country: "Brasil" },
+  LHR: { iata: "LHR", city: "Londres", country: "Reino Unido" },
+  LIM: { iata: "LIM", city: "Lima", country: "Peru" },
+  LIS: { iata: "LIS", city: "Lisboa", country: "Portugal" },
+  MAD: {
+    iata: "MAD",
+    city: "Madri",
+    country: "Espanha",
+    imageSrc: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Madrid_ciudad.jpg/1280px-Madrid_ciudad.jpg",
+    imageAlt: "Vista panorâmica do skyline de Madri",
+    credit: "Photocommons",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Madrid_ciudad.jpg",
+    license: "CC BY-SA 4.0",
+  },
+  MAO: { iata: "MAO", city: "Manaus", country: "Brasil" },
+  MIA: { iata: "MIA", city: "Miami", country: "Estados Unidos" },
+  MVD: { iata: "MVD", city: "Montevidéu", country: "Uruguai" },
+  NAT: { iata: "NAT", city: "Natal", country: "Brasil" },
+  NVT: { iata: "NVT", city: "Navegantes", country: "Brasil" },
+  PET: { iata: "PET", city: "Pelotas", country: "Brasil" },
+  PHB: {
+    iata: "PHB",
+    city: "Parnaíba",
+    country: "Brasil",
+    imageSrc: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Delta_do_Parna%C3%ADba.jpg/1280px-Delta_do_Parna%C3%ADba.jpg",
+    imageAlt: "Vista aérea do Delta do Parnaíba, com canais, manguezais e bancos de areia",
+    credit: "Cristiano Quintino",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Delta_do_Parna%C3%ADba.jpg",
+    license: "CC BY-SA 3.0",
+  },
+  POA: { iata: "POA", city: "Porto Alegre", country: "Brasil" },
+  PRG: { iata: "PRG", city: "Praga", country: "Tchéquia" },
+  PTY: { iata: "PTY", city: "Cidade do Panamá", country: "Panamá" },
+  REC: { iata: "REC", city: "Recife", country: "Brasil" },
+  SAO: { iata: "SAO", city: "São Paulo", country: "Brasil" },
+  SCL: { iata: "SCL", city: "Santiago", country: "Chile" },
+  SDU: { iata: "SDU", city: "Rio de Janeiro", country: "Brasil" },
+  SJP: { iata: "SJP", city: "São José do Rio Preto", country: "Brasil" },
+  SLZ: { iata: "SLZ", city: "São Luís", country: "Brasil" },
+  SSA: { iata: "SSA", city: "Salvador", country: "Brasil" },
+  THE: { iata: "THE", city: "Teresina", country: "Brasil" },
+  UDI: { iata: "UDI", city: "Uberlândia", country: "Brasil" },
+  USH: { iata: "USH", city: "Ushuaia", country: "Argentina" },
+  VCE: { iata: "VCE", city: "Veneza", country: "Itália" },
+  VCP: { iata: "VCP", city: "Campinas", country: "Brasil" },
+  VIE: { iata: "VIE", city: "Viena", country: "Áustria" },
+  VIX: { iata: "VIX", city: "Vitória", country: "Brasil" },
+};

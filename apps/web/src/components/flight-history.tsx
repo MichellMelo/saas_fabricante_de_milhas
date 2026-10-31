@@ -30,6 +30,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DESTINATION_LANDSCAPES } from "@/lib/destination-landscapes";
 
 type Availability = {
   id?: string;
@@ -470,6 +471,9 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
       tone: "green",
     },
   ];
+  const destinationLandscape = selected
+    ? DESTINATION_LANDSCAPES[selected.destination]
+    : undefined;
   return (
     <section className="space-y-5">
       <PageHeader
@@ -1013,6 +1017,31 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
                   <DrawerDescription>
                     {selected.program} · {selected.cabinClass}
                   </DrawerDescription>
+                  {destinationLandscape?.imageSrc && (
+                    <figure className="mt-5 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+                      <img
+                        src={destinationLandscape.imageSrc}
+                        alt={destinationLandscape.imageAlt ?? `Paisagem turística de ${destinationLandscape.city}`}
+                        className="h-44 w-full object-cover sm:h-56"
+                        loading="lazy"
+                      />
+                      <figcaption className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-[10px] text-slate-500">
+                        <span>
+                          {destinationLandscape.city} · {destinationLandscape.country}
+                        </span>
+                        {destinationLandscape.sourceUrl && (
+                          <a
+                            href={DESTINATION_LANDSCAPES[selected.destination].sourceUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline underline-offset-2"
+                          >
+                            Foto: {destinationLandscape.credit} · {destinationLandscape.license}
+                          </a>
+                        )}
+                      </figcaption>
+                    </figure>
+                  )}
                 </DrawerHeader>
                 <DrawerClose
                   aria-label="Fechar detalhes"
