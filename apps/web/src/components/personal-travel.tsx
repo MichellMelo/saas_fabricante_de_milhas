@@ -388,14 +388,6 @@ export function PersonalTravel() {
             >
               <RefreshCw size={14} /> Atualizar
             </Button>
-            <Button
-              onClick={() => {
-                setRedemptionForm(emptyRedemption);
-                setShowRedemptionForm(true);
-              }}
-            >
-              <Plus size={15} /> Novo resgate
-            </Button>
           </>
         }
       />
@@ -710,6 +702,16 @@ export function PersonalTravel() {
         </div>
       ) : (
         <div className="space-y-3">
+          <div className="flex justify-end">
+            <Button
+              onClick={() => {
+                setRedemptionForm(emptyRedemption);
+                setShowRedemptionForm(true);
+              }}
+            >
+              <Plus size={15} /> Novo resgate
+            </Button>
+          </div>
           <Card className="p-3">
             <label className="relative block">
               <Search
