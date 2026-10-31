@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, ForbiddenException, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Post, Query, Req, UseGuards } from "@nestjs/common";
 import { LoyaltyProgramType } from "@prisma/client";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CreateAccountDto } from "./dto/create-account.dto";
@@ -73,6 +73,17 @@ export class LoyaltyController {
   @Get("loyalty-accounts/archived")
   listArchivedAccounts(@Req() request: AuthenticatedRequest) {
     return this.loyalty.listArchivedAccounts(request.user.id);
+  }
+
+  @Get("loyalty-accounts/balance-evolution")
+  getBalanceEvolution(
+    @Req() request: AuthenticatedRequest,
+    @Query("period") period: string,
+  ) {
+    const validPeriod = ["30", "90", "365", "all"].includes(period)
+      ? (period as "30" | "90" | "365" | "all")
+      : "30";
+    return this.loyalty.getBalanceEvolution(request.user.id, validPeriod);
   }
 
   @Post("loyalty-accounts")
