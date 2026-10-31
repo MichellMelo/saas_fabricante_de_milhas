@@ -30,6 +30,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DESTINATION_LANDSCAPES } from "@/lib/destination-landscapes";
 
 type Availability = {
   id?: string;
@@ -1013,6 +1014,31 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
                   <DrawerDescription>
                     {selected.program} · {selected.cabinClass}
                   </DrawerDescription>
+                  {DESTINATION_LANDSCAPES[selected.destination]?.imageSrc && (
+                    <figure className="mt-5 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+                      <img
+                        src={DESTINATION_LANDSCAPES[selected.destination].imageSrc}
+                        alt={DESTINATION_LANDSCAPES[selected.destination].imageAlt ?? `Paisagem turística de ${DESTINATION_LANDSCAPES[selected.destination].city}`}
+                        className="h-44 w-full object-cover sm:h-56"
+                        loading="lazy"
+                      />
+                      <figcaption className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-[10px] text-slate-500">
+                        <span>
+                          {DESTINATION_LANDSCAPES[selected.destination].city} · {DESTINATION_LANDSCAPES[selected.destination].country}
+                        </span>
+                        {DESTINATION_LANDSCAPES[selected.destination].sourceUrl && (
+                          <a
+                            href={DESTINATION_LANDSCAPES[selected.destination].sourceUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline underline-offset-2"
+                          >
+                            Foto: {DESTINATION_LANDSCAPES[selected.destination].credit} · {DESTINATION_LANDSCAPES[selected.destination].license}
+                          </a>
+                        )}
+                      </figcaption>
+                    </figure>
+                  )}
                 </DrawerHeader>
                 <DrawerClose
                   aria-label="Fechar detalhes"
