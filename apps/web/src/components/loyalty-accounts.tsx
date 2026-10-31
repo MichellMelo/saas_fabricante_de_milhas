@@ -10,6 +10,7 @@ import {
   Building2,
   Plane,
   Plus,
+  RotateCcw,
   WalletCards,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -112,7 +113,9 @@ async function readResponse(response: Response) {
 export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [archivedAccounts, setArchivedAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
+  const [restoringAccountId, setRestoringAccountId] = useState("");
   const [saving, setSaving] = useState(false);
   const [archivingAccountId, setArchivingAccountId] = useState("");
   const [accountPendingDeletion, setAccountPendingDeletion] = useState<Account | null>(null);
@@ -143,16 +146,19 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
     setLoading(true);
     setError("");
     try {
-      const [programResponse, accountResponse] = await Promise.all([
+      const [programResponse, accountResponse, archivedResponse] = await Promise.all([
         fetch("/api/loyalty-programs", { cache: "no-store" }),
         fetch("/api/loyalty-accounts", { cache: "no-store" }),
+        fetch("/api/loyalty-accounts/archived", { cache: "no-store" }),
       ]);
-      const [programData, accountData] = await Promise.all([
+      const [programData, accountData, archivedData] = await Promise.all([
         readResponse(programResponse),
         readResponse(accountResponse),
+        readResponse(archivedResponse),
       ]);
       setPrograms(programData as Program[]);
       setAccounts(accountData as Account[]);
+      setArchivedAccounts(archivedData as Account[]);
     } catch (e) {
       setError(
         e instanceof Error ? e.message : "Erro ao carregar programas e saldos.",
@@ -220,6 +226,28 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
       );
     } finally {
       setArchivingAccountId("");
+    }
+  }
+
+  async function restoreAccount(account: Account) {
+    setRestoringAccountId(account.id);
+    setError("");
+    setSuccess("");
+    try {
+      await readResponse(
+        await fetch(
+          `/api/loyalty-accounts/${encodeURIComponent(account.id)}/restore`,
+          { method: "POST" },
+        ),
+      );
+      setSuccess(`${account.loyaltyProgram.name} foi restaurado à sua carteira.`);
+      await loadData();
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "Não foi possível restaurar a conta.",
+      );
+    } finally {
+      setRestoringAccountId("");
     }
   }
 
@@ -607,6 +635,68 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
           </div>
         )}
       </div>
+
+      {archivedAccounts.length > 0 && (
+        <section className="space-y-4" aria-labelledby="archived-accounts-title">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 id="archived-accounts-title" className="text-xl font-semibold text-slate-900">
+                Contas arquivadas
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Saldos e movimentações preservados. Você pode restaurar uma conta a qualquer momento.
+              </p>
+            </div>
+            <span className="shrink-0 text-sm text-slate-500">
+              {archivedAccounts.length} {archivedAccounts.length === 1 ? "conta" : "contas"}
+            </span>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {archivedAccounts.map((account) => (
+              <Card
+                key={account.id}
+                className="min-w-0 border-dashed border-slate-300 bg-slate-50 p-4 shadow-none sm:p-5"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <ProgramMark program={account.loyaltyProgram} />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      {typeLabel[account.loyaltyProgram.type]}
+                    </div>
+                    <h3 className="mt-1 break-words text-lg font-semibold text-slate-900">
+                      {account.loyaltyProgram.name}
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {account._count?.transactions ?? 0} movimentações preservadas
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap items-end justify-between gap-3 border-t border-slate-200 pt-4">
+                  <div>
+                    <div className="text-xs text-slate-500">Saldo preservado</div>
+                    <div className="mt-1 text-xl font-semibold text-slate-900">
+                      {formatPoints(account.balance)}{" "}
+                      <span className="text-xs font-normal text-slate-500">
+                        {account.currency === "POINTS" ? "pontos/milhas" : account.currency}
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={saving || restoringAccountId !== ""}
+                    onClick={() => void restoreAccount(account)}
+                    className="border-emerald-200 text-emerald-800 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-900"
+                  >
+                    <RotateCcw size={15} />
+                    {restoringAccountId === account.id ? "Restaurando..." : "Restaurar conta"}
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
     </section>
   );
 }

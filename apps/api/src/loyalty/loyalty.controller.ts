@@ -70,6 +70,11 @@ export class LoyaltyController {
     return this.loyalty.listAccounts(request.user.id);
   }
 
+  @Get("loyalty-accounts/archived")
+  listArchivedAccounts(@Req() request: AuthenticatedRequest) {
+    return this.loyalty.listArchivedAccounts(request.user.id);
+  }
+
   @Post("loyalty-accounts")
   createAccount(@Req() request: AuthenticatedRequest, @Body() dto: CreateAccountDto) {
     return this.loyalty.createAccount(request.user.id, dto);
@@ -78,6 +83,11 @@ export class LoyaltyController {
   @Delete("loyalty-accounts/:id")
   archiveAccount(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
     return this.loyalty.archiveAccount(request.user.id, id);
+  }
+
+  @Post("loyalty-accounts/:id/restore")
+  restoreAccount(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
+    return this.loyalty.restoreAccount(request.user.id, id);
   }
 
   @Post("loyalty-accounts/:id/transactions")
