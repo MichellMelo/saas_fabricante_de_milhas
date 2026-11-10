@@ -7,7 +7,7 @@ import {
   useEffect,
   useMemo,
   useState,
-  type FormEvent,
+  type SubmitEvent,
 } from "react";
 import {
   ArrowDownLeft,
@@ -327,7 +327,7 @@ export function MileFinanceDashboard() {
     }
   }
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!formType) return;
     setSaving(true);

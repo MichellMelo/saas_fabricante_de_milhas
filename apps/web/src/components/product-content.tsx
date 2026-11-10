@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type SubmitEvent } from "react";
 import {
   ExternalLink,
   FileText,
@@ -109,7 +109,7 @@ export function ProductContent({
     setForm(EMPTY_FORM);
   }
 
-  async function savePost(event: FormEvent<HTMLFormElement>) {
+  async function savePost(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
     setError("");

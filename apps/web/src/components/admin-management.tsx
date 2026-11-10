@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type SubmitEvent } from "react";
 import {
   ArrowLeft,
   ShieldCheck,
@@ -114,7 +114,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
     void load();
   }, [load]);
 
-  async function createInvitation(event: FormEvent<HTMLFormElement>) {
+  async function createInvitation(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setError("");
@@ -143,7 +143,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
     }
   }
 
-  async function confirmAction(event: FormEvent<HTMLFormElement>) {
+  async function confirmAction(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!action) return;
     setBusy(true);

@@ -2,7 +2,7 @@
 
 import { PageHeader } from "@/components/page-header";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type SubmitEvent } from "react";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -172,7 +172,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
     void loadData();
   }, [loadData]);
 
-  async function createAccount(event: FormEvent<HTMLFormElement>) {
+  async function createAccount(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!programId) {
       setError("Selecione um programa de fidelidade.");

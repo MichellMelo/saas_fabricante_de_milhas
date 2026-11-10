@@ -2,7 +2,7 @@
 
 import { PageHeader } from "@/components/page-header";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type SubmitEvent } from "react";
 import {
   Building2,
   Check,
@@ -101,7 +101,7 @@ export function ProgramManagement({ onBack }: { onBack: () => void }) {
     setType("AIRLINE");
   }
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (name.trim().length < 2) {
       setError("Informe um nome com pelo menos 2 caracteres.");

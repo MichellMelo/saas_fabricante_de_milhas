@@ -3,7 +3,7 @@
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type SubmitEvent } from "react";
 import {
   ChevronDown,
   Copy,
@@ -278,7 +278,7 @@ function ClientProfileEditor({
   const [phone, setPhone] = useState(client.phone ?? "");
   const [notes, setNotes] = useState(client.notes ?? "");
   const [saving, setSaving] = useState(false);
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
     try {
@@ -373,7 +373,7 @@ function ClientPayments({
   const [notes, setNotes] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
     try {
@@ -659,7 +659,7 @@ export function ClientManagement({
     void load();
   }, [load]);
 
-  async function createClient(event: FormEvent<HTMLFormElement>) {
+  async function createClient(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
     setError("");
