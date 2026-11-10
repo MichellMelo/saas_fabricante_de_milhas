@@ -246,107 +246,104 @@ export function ProductContent({
 
       {isAdmin && (
         <Card className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-<form
-          onSubmit={savePost}
-          className="space-y-4"
-        >
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f6f0e2] text-[#9a7129]">
-              {editingId ? <Pencil size={18} /> : <Plus size={19} />}
-            </span>
-            <div>
-              <h2 className="font-semibold text-slate-900">
-                {editingId ? "Editar publicação" : "Nova publicação"}
-              </h2>
-              <p className="mt-1 text-xs text-slate-500">
-                O conteúdo é salvo como rascunho; você decide quando publicar.
-              </p>
+          <form onSubmit={savePost} className="space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f6f0e2] text-[#9a7129]">
+                {editingId ? <Pencil size={18} /> : <Plus size={19} />}
+              </span>
+              <div>
+                <h2 className="font-semibold text-slate-900">
+                  {editingId ? "Editar publicação" : "Nova publicação"}
+                </h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  O conteúdo é salvo como rascunho; você decide quando publicar.
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="block text-sm font-medium text-slate-700">
+                Título
+                <input
+                  required
+                  minLength={3}
+                  maxLength={180}
+                  value={form.title}
+                  onChange={(event) =>
+                    setForm({ ...form, title: event.target.value })
+                  }
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-3.5 py-3 outline-none focus:border-[#b58a37]"
+                  placeholder="Ex.: Oportunidade de transferência"
+                />
+              </label>
+              <label className="block text-sm font-medium text-slate-700">
+                Resumo{" "}
+                <span className="font-normal text-slate-400">(opcional)</span>
+                <input
+                  maxLength={300}
+                  value={form.summary}
+                  onChange={(event) =>
+                    setForm({ ...form, summary: event.target.value })
+                  }
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-3.5 py-3 outline-none focus:border-[#b58a37]"
+                  placeholder="Uma frase para contextualizar"
+                />
+              </label>
+            </div>
             <label className="block text-sm font-medium text-slate-700">
-              Título
-              <input
+              Conteúdo
+              <textarea
                 required
-                minLength={3}
-                maxLength={180}
-                value={form.title}
+                maxLength={20000}
+                rows={7}
+                value={form.body}
                 onChange={(event) =>
-                  setForm({ ...form, title: event.target.value })
+                  setForm({ ...form, body: event.target.value })
                 }
                 className="mt-2 w-full rounded-xl border border-slate-300 px-3.5 py-3 outline-none focus:border-[#b58a37]"
-                placeholder="Ex.: Oportunidade de transferência"
+                placeholder="Escreva a análise, orientação ou comunicado. Quebras de linha são preservadas."
               />
             </label>
             <label className="block text-sm font-medium text-slate-700">
-              Resumo{" "}
-              <span className="font-normal text-slate-400">(opcional)</span>
+              Link externo seguro{" "}
+              <span className="font-normal text-slate-400">
+                (opcional, HTTPS/HTTP)
+              </span>
               <input
-                maxLength={300}
-                value={form.summary}
+                type="url"
+                maxLength={2048}
+                value={form.externalUrl}
                 onChange={(event) =>
-                  setForm({ ...form, summary: event.target.value })
+                  setForm({ ...form, externalUrl: event.target.value })
                 }
                 className="mt-2 w-full rounded-xl border border-slate-300 px-3.5 py-3 outline-none focus:border-[#b58a37]"
-                placeholder="Uma frase para contextualizar"
+                placeholder="https://..."
               />
             </label>
-          </div>
-          <label className="block text-sm font-medium text-slate-700">
-            Conteúdo
-            <textarea
-              required
-              maxLength={20000}
-              rows={7}
-              value={form.body}
-              onChange={(event) =>
-                setForm({ ...form, body: event.target.value })
-              }
-              className="mt-2 w-full rounded-xl border border-slate-300 px-3.5 py-3 outline-none focus:border-[#b58a37]"
-              placeholder="Escreva a análise, orientação ou comunicado. Quebras de linha são preservadas."
-            />
-          </label>
-          <label className="block text-sm font-medium text-slate-700">
-            Link externo seguro{" "}
-            <span className="font-normal text-slate-400">
-              (opcional, HTTPS/HTTP)
-            </span>
-            <input
-              type="url"
-              maxLength={2048}
-              value={form.externalUrl}
-              onChange={(event) =>
-                setForm({ ...form, externalUrl: event.target.value })
-              }
-              className="mt-2 w-full rounded-xl border border-slate-300 px-3.5 py-3 outline-none focus:border-[#b58a37]"
-              placeholder="https://..."
-            />
-          </label>
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="submit"
-              disabled={saving}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#101a2b] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
-            >
-              <FileText size={15} />{" "}
-              {saving
-                ? "Salvando..."
-                : editingId
-                  ? "Salvar alterações"
-                  : "Salvar rascunho"}
-            </button>
-            {editingId && (
+            <div className="flex flex-wrap gap-3">
               <button
-                type="button"
-                onClick={resetForm}
-                className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600"
+                type="submit"
+                disabled={saving}
+                className="inline-flex items-center gap-2 rounded-xl bg-[#101a2b] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
               >
-                Cancelar edição
+                <FileText size={15} />{" "}
+                {saving
+                  ? "Salvando..."
+                  : editingId
+                    ? "Salvar alterações"
+                    : "Salvar rascunho"}
               </button>
-            )}
-          </div>
-        </form>
-</Card>
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600"
+                >
+                  Cancelar edição
+                </button>
+              )}
+            </div>
+          </form>
+        </Card>
       )}
 
       <div className="space-y-4">
