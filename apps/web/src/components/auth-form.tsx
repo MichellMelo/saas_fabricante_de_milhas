@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -34,7 +34,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setLoading(true);
@@ -325,35 +325,6 @@ export function AuthForm({ mode }: AuthFormProps) {
           </div>
         </section>
       </div>
-
-      <footer className="relative z-10 h-[88px] shrink-0 px-4 pb-[max(15px,env(safe-area-inset-bottom))] pt-9 text-center text-[10px] leading-5 text-white/85 sm:h-[112px] sm:pt-12 sm:text-[12px]">
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 1600 150"
-          preserveAspectRatio="none"
-          className="absolute inset-x-0 -top-[54px] h-[150px] w-full"
-        >
-          <path
-            d="M0 58 C250 5 440 28 650 70 C900 125 1120 115 1320 70 C1450 40 1530 30 1600 18 L1600 150 L0 150 Z"
-            fill="#101d33"
-          />
-          <path
-            d="M0 58 C250 5 440 28 650 70 C900 125 1120 115 1320 70 C1450 40 1530 30 1600 18"
-            fill="none"
-            stroke="#d4a642"
-            strokeWidth="5"
-          />
-          <path
-            d="M0 68 C250 15 440 38 650 80 C900 135 1120 125 1320 80 C1450 50 1530 40 1600 28"
-            fill="none"
-            stroke="#d4a642"
-            strokeWidth="2"
-          />
-        </svg>
-        <span className="relative z-10">
-          © 2026 Fabricante de Milhas · Estratégias, oportunidades e viagens
-        </span>
-      </footer>
     </main>
   );
 }
