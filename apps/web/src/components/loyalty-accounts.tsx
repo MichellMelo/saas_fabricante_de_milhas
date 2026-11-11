@@ -4,8 +4,6 @@ import { PageHeader } from "@/components/page-header";
 
 import { useCallback, useEffect, useState, type SubmitEvent } from "react";
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
   Archive,
   Building2,
   Plane,
@@ -339,48 +337,6 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
           )}
         </div>
       )}
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <Card className="panel loyalty-summary-card">
-          <div className="flex items-center gap-3 text-slate-500">
-            <WalletCards size={18} />
-            <span className="text-sm">Contas cadastradas</span>
-          </div>
-          <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
-            {accounts.length}
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Programas vinculados ao seu perfil
-          </p>
-        </Card>
-        <Card className="panel loyalty-summary-card">
-          <div className="flex items-center gap-3 text-slate-500">
-            <ArrowDownLeft size={18} />
-            <span className="text-sm">Programas disponíveis</span>
-          </div>
-          <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
-            {availablePrograms.length}
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Ainda não vinculados à sua carteira
-          </p>
-        </Card>
-        <Card className="panel loyalty-summary-card">
-          <div className="flex items-center gap-3 text-slate-500">
-            <ArrowUpRight size={18} />
-            <span className="text-sm">Movimentações</span>
-          </div>
-          <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
-            {accounts.reduce(
-              (total, account) => total + (account._count?.transactions ?? 0),
-              0,
-            )}
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Lançamentos registrados nas contas
-          </p>
-        </Card>
-      </div>
 
       <Card className="panel loyalty-create-card">
         <h2 className="text-lg font-semibold text-slate-900">
