@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/drawer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DESTINATION_LANDSCAPES } from "@/lib/destination-landscapes";
+import { parseWhatsappOpportunity } from "@/lib/whatsapp-opportunity-parser";
 
 type Availability = {
   id?: string;
@@ -234,6 +235,34 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
   const [selected, setSelected] = useState<GroupedAvailability | null>(null),
     [currentPage, setCurrentPage] = useState(1);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [whatsappMessage, setWhatsappMessage] = useState("");
+  const [flightYear, setFlightYear] = useState("");
+  const [flightCabin, setFlightCabin] = useState("");
+  const [observationDate, setObservationDate] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  });
+  const [whatsappCounts, setWhatsappCounts] = useState<{ ida: number; volta: number } | null>(null);
+
+  function previewWhatsapp() {
+    setMessage("");
+    setError("");
+    setPreview([]);
+    setWhatsappCounts(null);
+    try {
+      const parsed = parseWhatsappOpportunity(
+        whatsappMessage,
+        Number(flightYear),
+        flightCabin,
+        observationDate,
+      );
+      setPreview([parsed]);
+      setWhatsappCounts({ ida: parsed.outboundCount, volta: parsed.returnCount });
+      setMessage("Mensagem interpretada e sanitizada. Confira a prévia antes de confirmar; nada foi gravado.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível interpretar a mensagem.");
+    }
+  }
 
   async function loadRecords() {
     setLoading(true);
@@ -358,6 +387,7 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
     setMessage("");
     setError("");
     setPreview([]);
+    setWhatsappCounts(null);
     if (!file) return;
     if (!file.name.toLowerCase().endsWith(".csv")) {
       setError("Salve a aba como CSV UTF-8 e selecione o arquivo .csv.");
@@ -393,6 +423,7 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
         throw new Error(payload.message || "Falha ao importar os registros.");
       setMessage(payload.message || "Importação concluída.");
       setPreview([]);
+      setWhatsappCounts(null);
       if (fileRef.current) fileRef.current.value = "";
       await loadRecords();
     } catch (cause) {
@@ -511,6 +542,77 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
           </>
         }
       />
+      {isAdmin && (
+        <Card className="space-y-4 p-4 sm:p-5">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Importar oportunidade do WhatsApp</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Cole a mensagem com programa, rota, valor e blocos IDA/VOLTA. O ano e a classe precisam ser confirmados.
+              Datas como &quot;mês todo exceto&quot; serão expandidas. Nenhuma combinação de ida e volta será presumida.
+            </p>
+          </div>
+          <textarea
+            aria-label="Mensagem de oportunidade recebida no WhatsApp"
+            value={whatsappMessage}
+            onChange={(event) => { setWhatsappMessage(event.target.value); setPreview([]); setWhatsappCounts(null); }}
+            rows={9}
+            maxLength={15000}
+            placeholder={"Programa de fidelidade: Latam\\nOrigem Fortaleza(FOR)\\nDestino Belém(BEL)\\nA PARTIR DE 8,9K O TRECHO\\n\\nIDA\\nFevereiro: 14, 15\\n\\nVOLTA\\nFevereiro: mês todo exceto 18, 23"}
+            className="w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm text-slate-900 outline-none focus:border-amber-600"
+          />
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="grid gap-1 text-sm font-medium text-slate-700">
+              Ano dos voos (obrigatório)
+              <input
+                type="number"
+                inputMode="numeric"
+                min="2000"
+                max="2100"
+                value={flightYear}
+                onChange={(event) => { setFlightYear(event.target.value); setPreview([]); setWhatsappCounts(null); }}
+                placeholder="Ex.: 2027"
+                className="h-10 rounded-lg border border-slate-300 bg-white px-3"
+              />
+            </label>
+            <label className="grid gap-1 text-sm font-medium text-slate-700">
+              Classe (obrigatória)
+              <select
+                value={flightCabin}
+                onChange={(event) => { setFlightCabin(event.target.value); setPreview([]); setWhatsappCounts(null); }}
+                className="h-10 rounded-lg border border-slate-300 bg-white px-3"
+              >
+                <option value="">Selecione a classe</option>
+                <option value="Econômica">Econômica</option>
+                <option value="Premium Economy">Premium Economy</option>
+                <option value="Executiva">Executiva</option>
+                <option value="Primeira">Primeira</option>
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-medium text-slate-700">
+              Data do registro
+              <input
+                type="date"
+                value={observationDate}
+                onChange={(event) => { setObservationDate(event.target.value); setPreview([]); setWhatsappCounts(null); }}
+                className="h-10 rounded-lg border border-slate-300 bg-white px-3"
+              />
+            </label>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!whatsappMessage.trim() || !flightYear || !flightCabin}
+              onClick={previewWhatsapp}
+            >
+              Analisar mensagem
+            </Button>
+            <span className="text-xs text-slate-500">
+              O servidor confirma registros duplicados antes de inserir.
+            </span>
+          </div>
+        </Card>
+      )}
       {message && (
         <Alert
           role="status"
@@ -537,7 +639,9 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
               <div>
                 <strong className="text-slate-900">Prévia da importação</strong>
                 <p className="text-sm text-slate-500">
-                  {preview.length} linhas lidas; duplicados serão ignorados.
+                  {whatsappCounts
+                    ? `${whatsappCounts.ida} datas de ida e ${whatsappCounts.volta} datas de volta em 1 oportunidade.`
+                    : `${preview.length} linhas lidas.`} Duplicatas exatas serão ignoradas pelo banco.
                 </p>
               </div>
             </div>
