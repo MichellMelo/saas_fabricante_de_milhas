@@ -1231,9 +1231,6 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
                     <p className="mt-1 font-semibold text-slate-900">
                       {dateFormat(selected.dateRegistered)}
                     </p>
-                    <p className="mt-1 text-[11px] text-slate-500">
-                      {selected.history.length} observações · {selected.observationDates.length} datas distintas
-                    </p>
                   </div>
                   <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
                     <p className="text-xs text-amber-800">Piso em milhas</p>
@@ -1261,19 +1258,6 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
                   <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
                     {selected.returnDates ? displayAvailabilityDates(selected.returnDates) : "Não informado"}
                   </p>
-                </section>
-                <section>
-                  <h3 className="font-semibold text-slate-900">Histórico de observações</h3>
-                  <div className="mt-2 space-y-3">
-                    {selected.history.map((item, index) => (
-                      <div key={item.id ?? item.dateRegistered + "-" + index} className="rounded-xl border border-slate-100 p-3">
-                        <p className="text-xs font-semibold text-slate-700">{dateFormat(item.dateRegistered)}</p>
-                        <p className="mt-1 text-xs text-slate-500">Meses: {item.monthsAvailable ? displayAvailabilityMonths(item.monthsAvailable) : "Não informado"}</p>
-                        <p className="mt-1 whitespace-pre-wrap text-xs text-slate-500">Ida: {item.outboundDates ? displayAvailabilityDates(item.outboundDates) : "Não informado"}</p>
-                        <p className="mt-1 whitespace-pre-wrap text-xs text-slate-500">Volta: {item.returnDates ? displayAvailabilityDates(item.returnDates) : "Não informado"}</p>
-                      </div>
-                    ))}
-                  </div>
                 </section>
                 <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-5 text-amber-900">
                   <CalendarDays size={18} className="mt-0.5 shrink-0" />
