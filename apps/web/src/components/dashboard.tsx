@@ -442,7 +442,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           onLogout={handleLogout}
         />
         <motion.div
-          className={route === "dashboard" ? "page-content page-content--overview" : "page-content"}
+          className="page-content"
           initial={reduceMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
