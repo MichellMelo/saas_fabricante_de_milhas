@@ -2,10 +2,8 @@
 
 import { PageHeader } from "@/components/page-header";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type SubmitEvent } from "react";
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
   Archive,
   Building2,
   Plane,
@@ -118,7 +116,8 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
   const [restoringAccountId, setRestoringAccountId] = useState("");
   const [saving, setSaving] = useState(false);
   const [archivingAccountId, setArchivingAccountId] = useState("");
-  const [accountPendingDeletion, setAccountPendingDeletion] = useState<Account | null>(null);
+  const [accountPendingDeletion, setAccountPendingDeletion] =
+    useState<Account | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [programId, setProgramId] = useState("");
@@ -146,11 +145,12 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
     setLoading(true);
     setError("");
     try {
-      const [programResponse, accountResponse, archivedResponse] = await Promise.all([
-        fetch("/api/loyalty-programs", { cache: "no-store" }),
-        fetch("/api/loyalty-accounts", { cache: "no-store" }),
-        fetch("/api/loyalty-accounts/archived", { cache: "no-store" }),
-      ]);
+      const [programResponse, accountResponse, archivedResponse] =
+        await Promise.all([
+          fetch("/api/loyalty-programs", { cache: "no-store" }),
+          fetch("/api/loyalty-accounts", { cache: "no-store" }),
+          fetch("/api/loyalty-accounts/archived", { cache: "no-store" }),
+        ]);
       const [programData, accountData, archivedData] = await Promise.all([
         readResponse(programResponse),
         readResponse(accountResponse),
@@ -172,7 +172,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
     void loadData();
   }, [loadData]);
 
-  async function createAccount(event: FormEvent<HTMLFormElement>) {
+  async function createAccount(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!programId) {
       setError("Selecione um programa de fidelidade.");
@@ -218,7 +218,9 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
           method: "DELETE",
         }),
       );
-      setSuccess("Conta arquivada. O saldo e o histórico financeiro foram preservados.");
+      setSuccess(
+        "Conta arquivada. O saldo e o histórico financeiro foram preservados.",
+      );
       await loadData();
     } catch (e) {
       setError(
@@ -240,7 +242,9 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
           { method: "POST" },
         ),
       );
-      setSuccess(`${account.loyaltyProgram.name} foi restaurado à sua carteira.`);
+      setSuccess(
+        `${account.loyaltyProgram.name} foi restaurado à sua carteira.`,
+      );
       await loadData();
     } catch (e) {
       setError(
@@ -334,105 +338,63 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <Card className="panel loyalty-summary-card">
-          <div className="flex items-center gap-3 text-slate-500">
-            <WalletCards size={18} />
-            <span className="text-sm">Contas cadastradas</span>
-          </div>
-          <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
-            {accounts.length}
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Programas vinculados ao seu perfil
-          </p>
-        </Card>
-        <Card className="panel loyalty-summary-card">
-          <div className="flex items-center gap-3 text-slate-500">
-            <ArrowDownLeft size={18} />
-            <span className="text-sm">Programas disponíveis</span>
-          </div>
-          <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
-            {availablePrograms.length}
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Ainda não vinculados à sua carteira
-          </p>
-        </Card>
-        <Card className="panel loyalty-summary-card">
-          <div className="flex items-center gap-3 text-slate-500">
-            <ArrowUpRight size={18} />
-            <span className="text-sm">Movimentações</span>
-          </div>
-          <div className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
-            {accounts.reduce(
-              (total, account) => total + (account._count?.transactions ?? 0),
-              0,
-            )}
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Lançamentos registrados nas contas
-          </p>
-        </Card>
-      </div>
-
       <Card className="panel loyalty-create-card">
-          <h2 className="text-lg font-semibold text-slate-900">
-            Adicionar conta de fidelidade
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Informe o programa e, se souber, o saldo atual. O saldo inicial fica
-            registrado como ajuste.
-          </p>
-          <form
-            onSubmit={createAccount}
-            className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4"
-          >
-            <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-              Programa
-              <select
-                required
-                value={programId}
-                onChange={(event) => setProgramId(event.target.value)}
-                className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-normal outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100"
-              >
-                <option value="">Selecione...</option>
-                {availablePrograms.map((program) => (
-                  <option key={program.id} value={program.id}>
-                    {program.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-              Identificação (opcional)
-              <input
-                value={memberReference}
-                onChange={(event) => setMemberReference(event.target.value)}
-                maxLength={120}
-                placeholder="Número do associado"
-                className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-normal outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100"
-              />
-            </label>
-            <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-              Saldo atual
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                required
-                value={initialBalance}
-                onChange={(event) => setInitialBalance(event.target.value)}
-                className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-normal outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100"
-              />
-            </label>
-            <div className="flex items-end gap-2">
-              <Button type="submit" disabled={saving}>
-                {saving ? "Salvando..." : "Salvar conta"}
-              </Button>
-            </div>
-          </form>
-        </Card>
+        <h2 className="text-lg font-semibold text-slate-900">
+          Adicionar conta de fidelidade
+        </h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Informe o programa e, se souber, o saldo atual. O saldo inicial fica
+          registrado como ajuste.
+        </p>
+        <form
+          onSubmit={createAccount}
+          className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+        >
+          <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+            Programa
+            <select
+              required
+              value={programId}
+              onChange={(event) => setProgramId(event.target.value)}
+              className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-normal outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100"
+            >
+              <option value="">Selecione...</option>
+              {availablePrograms.map((program) => (
+                <option key={program.id} value={program.id}>
+                  {program.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+            Identificação (opcional)
+            <input
+              value={memberReference}
+              onChange={(event) => setMemberReference(event.target.value)}
+              maxLength={120}
+              placeholder="Número do associado"
+              className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-normal outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100"
+            />
+          </label>
+          <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+            Saldo atual
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              required
+              value={initialBalance}
+              onChange={(event) => setInitialBalance(event.target.value)}
+              className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-normal outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100"
+            />
+          </label>
+          <div className="flex items-end gap-2">
+            <Button type="submit" disabled={saving}>
+              {saving ? "Salvando..." : "Salvar conta"}
+            </Button>
+          </div>
+        </form>
+      </Card>
 
       {accounts.length > 0 && (
         <Card className="panel loyalty-summary-card">
@@ -530,7 +492,7 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
         destructive
         busy={Boolean(
           accountPendingDeletion &&
-            archivingAccountId === accountPendingDeletion.id,
+          archivingAccountId === accountPendingDeletion.id,
         )}
         onCancel={() => setAccountPendingDeletion(null)}
         onConfirm={() => {
@@ -637,18 +599,26 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
       </div>
 
       {archivedAccounts.length > 0 && (
-        <section className="space-y-4" aria-labelledby="archived-accounts-title">
+        <section
+          className="space-y-4"
+          aria-labelledby="archived-accounts-title"
+        >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 id="archived-accounts-title" className="text-xl font-semibold text-slate-900">
+              <h2
+                id="archived-accounts-title"
+                className="text-xl font-semibold text-slate-900"
+              >
                 Contas arquivadas
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                Saldos e movimentações preservados. Você pode restaurar uma conta a qualquer momento.
+                Saldos e movimentações preservados. Você pode restaurar uma
+                conta a qualquer momento.
               </p>
             </div>
             <span className="shrink-0 text-sm text-slate-500">
-              {archivedAccounts.length} {archivedAccounts.length === 1 ? "conta" : "contas"}
+              {archivedAccounts.length}{" "}
+              {archivedAccounts.length === 1 ? "conta" : "contas"}
             </span>
           </div>
           <div className="grid gap-4 lg:grid-cols-2">
@@ -667,17 +637,22 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
                       {account.loyaltyProgram.name}
                     </h3>
                     <p className="mt-1 text-xs text-slate-500">
-                      {account._count?.transactions ?? 0} movimentações preservadas
+                      {account._count?.transactions ?? 0} movimentações
+                      preservadas
                     </p>
                   </div>
                 </div>
                 <div className="mt-4 flex flex-wrap items-end justify-between gap-3 border-t border-slate-200 pt-4">
                   <div>
-                    <div className="text-xs text-slate-500">Saldo preservado</div>
+                    <div className="text-xs text-slate-500">
+                      Saldo preservado
+                    </div>
                     <div className="mt-1 text-xl font-semibold text-slate-900">
                       {formatPoints(account.balance)}{" "}
                       <span className="text-xs font-normal text-slate-500">
-                        {account.currency === "POINTS" ? "pontos/milhas" : account.currency}
+                        {account.currency === "POINTS"
+                          ? "pontos/milhas"
+                          : account.currency}
                       </span>
                     </div>
                   </div>
@@ -689,7 +664,9 @@ export function LoyaltyAccounts({ onBack }: { onBack: () => void }) {
                     className="border-emerald-200 text-emerald-800 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-900"
                   >
                     <RotateCcw size={15} />
-                    {restoringAccountId === account.id ? "Restaurando..." : "Restaurar conta"}
+                    {restoringAccountId === account.id
+                      ? "Restaurando..."
+                      : "Restaurar conta"}
                   </Button>
                 </div>
               </Card>

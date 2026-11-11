@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type SubmitEvent } from "react";
 import {
-  ArrowLeft,
   ShieldCheck,
   Users,
   MailCheck,
@@ -114,7 +113,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
     void load();
   }, [load]);
 
-  async function createInvitation(event: FormEvent<HTMLFormElement>) {
+  async function createInvitation(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setError("");
@@ -143,7 +142,7 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
     }
   }
 
-  async function confirmAction(event: FormEvent<HTMLFormElement>) {
+  async function confirmAction(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!action) return;
     setBusy(true);
@@ -214,14 +213,22 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
     setResetLink("");
     setError("");
     try {
-      const response = await fetch("/api/admin/users/" + encodeURIComponent(id) + "/password-reset", { method: "POST" });
+      const response = await fetch(
+        "/api/admin/users/" + encodeURIComponent(id) + "/password-reset",
+        { method: "POST" },
+      );
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.message || "Não foi possível gerar o link de redefinição.");
+      if (!response.ok)
+        throw new Error(
+          data.message || "Não foi possível gerar o link de redefinição.",
+        );
       setResetLink(data.resetUrl || "");
       setResetTarget(label);
       toast.success(data.message || "Link de redefinição gerado.");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao gerar link de redefinição.");
+      toast.error(
+        e instanceof Error ? e.message : "Erro ao gerar link de redefinição.",
+      );
     } finally {
       setBusy(false);
     }
@@ -232,7 +239,9 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
       await navigator.clipboard.writeText(resetLink);
       toast.success("Link de redefinição copiado.");
     } catch {
-      toast.error("Não foi possível copiar. Selecione e copie o link manualmente.");
+      toast.error(
+        "Não foi possível copiar. Selecione e copie o link manualmente.",
+      );
     }
   }
 
@@ -281,7 +290,9 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
         <Card className="group relative overflow-hidden border-b-4 border-b-amber-500 p-5 transition-all duration-200 ease-out hover:-translate-y-1 hover:border-b-amber-600 hover:shadow-lg">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-slate-500">Administradores</p>
+              <p className="text-sm font-medium text-slate-500">
+                Administradores
+              </p>
               <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
                 {snapshot.administrators.length}
               </p>
@@ -297,7 +308,9 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
         <Card className="group relative overflow-hidden border-b-4 border-b-sky-500 p-5 transition-all duration-200 ease-out hover:-translate-y-1 hover:border-b-sky-600 hover:shadow-lg">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-slate-500">Convites pendentes</p>
+              <p className="text-sm font-medium text-slate-500">
+                Convites pendentes
+              </p>
               <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
                 {snapshot.invitations.length}
               </p>
@@ -313,7 +326,9 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
         <Card className="group relative overflow-hidden border-b-4 border-b-violet-500 p-5 transition-all duration-200 ease-out hover:-translate-y-1 hover:border-b-violet-600 hover:shadow-lg">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-slate-500">Registros de auditoria</p>
+              <p className="text-sm font-medium text-slate-500">
+                Registros de auditoria
+              </p>
               <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
                 {audit.length}
               </p>
@@ -364,10 +379,20 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
         </form>
         {resetLink && (
           <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3">
-            <p className="text-sm font-medium text-rose-950">Link para redefinir a senha · {resetTarget}</p>
+            <p className="text-sm font-medium text-rose-950">
+              Link para redefinir a senha · {resetTarget}
+            </p>
             <p className="mt-1 break-all text-xs text-rose-900">{resetLink}</p>
-            <p className="mt-1 text-xs text-rose-800">Válido por 30 minutos e utilizável uma única vez. Envie apenas ao destinatário correto.</p>
-            <Button variant="outline" size="sm" className="mt-2" onClick={() => void copyResetLink()}>
+            <p className="mt-1 text-xs text-rose-800">
+              Válido por 30 minutos e utilizável uma única vez. Envie apenas ao
+              destinatário correto.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2"
+              onClick={() => void copyResetLink()}
+            >
               <Copy size={14} className="mr-2" /> Copiar link de redefinição
             </Button>
           </div>
@@ -427,28 +452,38 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button variant="outline" size="sm" disabled={busy || !admin.active || !admin.hasAccount} onClick={() => void requestPasswordReset(admin.id, admin.name || admin.email)}>
-                    <RefreshCw size={14} className="mr-2" /> Redefinir senha
-                  </Button>
-                  {admin.source === "database" && (
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={
-                      busy ||
-                      snapshot.administrators.filter((a) => a.active).length <=
-                        1
-                    }
+                    disabled={busy || !admin.active || !admin.hasAccount}
                     onClick={() =>
-                      setAction({
-                        type: "revoke",
-                        id: admin.id,
-                        label: admin.name || admin.email,
-                      })
+                      void requestPasswordReset(
+                        admin.id,
+                        admin.name || admin.email,
+                      )
                     }
                   >
-                    <Ban size={14} className="mr-2" /> Revogar acesso
+                    <RefreshCw size={14} className="mr-2" /> Redefinir senha
                   </Button>
+                  {admin.source === "database" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={
+                        busy ||
+                        snapshot.administrators.filter((a) => a.active)
+                          .length <= 1
+                      }
+                      onClick={() =>
+                        setAction({
+                          type: "revoke",
+                          id: admin.id,
+                          label: admin.name || admin.email,
+                        })
+                      }
+                    >
+                      <Ban size={14} className="mr-2" /> Revogar acesso
+                    </Button>
                   )}
                 </div>
               </div>
@@ -494,23 +529,33 @@ export function AdminManagement({ onBack }: { onBack: () => void }) {
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                <Button variant="outline" size="sm" disabled={busy || !client.active || !client.hasAccount} onClick={() => void requestPasswordReset(client.id, client.name || client.email)}>
-                  <RefreshCw size={14} className="mr-2" /> Redefinir senha
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={busy || !client.active || !client.hasAccount}
-                  onClick={() =>
-                    setAction({
-                      type: "promote",
-                      id: client.id,
-                      label: client.name || client.email,
-                    })
-                  }
-                >
-                  <ShieldCheck size={14} className="mr-2" /> Promover
-                </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={busy || !client.active || !client.hasAccount}
+                    onClick={() =>
+                      void requestPasswordReset(
+                        client.id,
+                        client.name || client.email,
+                      )
+                    }
+                  >
+                    <RefreshCw size={14} className="mr-2" /> Redefinir senha
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={busy || !client.active || !client.hasAccount}
+                    onClick={() =>
+                      setAction({
+                        type: "promote",
+                        id: client.id,
+                        label: client.name || client.email,
+                      })
+                    }
+                  >
+                    <ShieldCheck size={14} className="mr-2" /> Promover
+                  </Button>
                 </div>
               </div>
             ))

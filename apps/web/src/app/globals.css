@@ -2410,3 +2410,11 @@ label select { margin-top: 4px; }
     z-index: 110;
   }
 }
+
+/* Use the full space beside the sidebar on every dashboard route.
+   Existing page padding and responsive breakpoints remain unchanged. */
+.page-content {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
