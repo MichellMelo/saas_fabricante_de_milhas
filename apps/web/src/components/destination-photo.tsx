@@ -150,7 +150,7 @@ export function DestinationPhoto({ iata }: { iata: string }) {
   }, [destination, iata]);
 
   if (!destination) return null;
-  const photo: DestinationLandscape = state.photo ?? destination;
+  const photo: DestinationLandscape = { ...destination, ...state.photo };
   if (state.status === "loading" && !destination.imageSrc) {
     return <div className="mt-5 h-44 animate-pulse rounded-2xl bg-slate-100 sm:h-56" aria-label="Carregando foto do destino" />;
   }
