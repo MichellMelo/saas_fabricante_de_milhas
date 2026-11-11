@@ -2410,3 +2410,11 @@ label select { margin-top: 4px; }
     z-index: 110;
   }
 }
+
+/* Let the overview hero span the full available space on wide displays.
+   Other dashboard routes retain their existing centered content width. */
+.page-content.page-content--overview {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
