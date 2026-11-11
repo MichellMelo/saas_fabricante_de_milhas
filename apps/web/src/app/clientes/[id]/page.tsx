@@ -31,7 +31,7 @@ export default async function ClientDetailPage({
 
   return (
     <main className="min-h-screen w-full max-w-full overflow-x-clip bg-[#f7f5ef] px-4 py-6 sm:px-8 sm:py-8">
-      <div className="mx-auto w-full min-w-0 max-w-[1540px]">
+      <div className="w-full min-w-0">
         <ClientManagement selectedClientId={id} />
       </div>
     </main>
