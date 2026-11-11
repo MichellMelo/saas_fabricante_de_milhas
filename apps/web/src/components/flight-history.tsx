@@ -557,7 +557,7 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
             onChange={(event) => { setWhatsappMessage(event.target.value); setPreview([]); setWhatsappCounts(null); }}
             rows={9}
             maxLength={15000}
-            placeholder={"Programa de fidelidade: Latam\\nOrigem Fortaleza(FOR)\\nDestino Belém(BEL)\\nA PARTIR DE 8,9K O TRECHO\\n\\nIDA\\nFevereiro: 14, 15\\n\\nVOLTA\\nFevereiro: mês todo exceto 18, 23"}
+            placeholder={"Programa de fidelidade: Latam\nOrigem Fortaleza(FOR)\nDestino Belém(BEL)\nA PARTIR DE 8,9K O TRECHO\n\nIDA\nFevereiro: 14, 15\n\nVOLTA\nFevereiro: mês todo exceto 18, 23"}
             className="w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm text-slate-900 outline-none focus:border-amber-600"
           />
           <div className="grid gap-3 sm:grid-cols-3">
@@ -650,6 +650,7 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
                 variant="outline"
                 onClick={() => {
                   setPreview([]);
+                  setWhatsappCounts(null);
                   if (fileRef.current) fileRef.current.value = "";
                 }}
               >
@@ -690,6 +691,20 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
               </p>
             </div>
           </div>
+          {whatsappCounts && preview[0] && (
+            <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-3 text-sm">
+              <p className="font-medium text-slate-900">
+                {preview[0].program} · {preview[0].origin} → {preview[0].destination} · {numberFormat.format(preview[0].milesFloor)} milhas por trecho
+              </p>
+              <p className="text-slate-600">Classe: {preview[0].cabinClass} · Ano e meses: {preview[0].monthsAvailable} · Registro: {dateFormat(preview[0].dateRegistered)}</p>
+              <details className="text-slate-600">
+                <summary className="cursor-pointer font-medium text-slate-800">Conferir todas as datas normalizadas</summary>
+                <p className="mt-2 break-words"><strong>IDA:</strong> {preview[0].outboundDates}</p>
+                <p className="mt-2 break-words"><strong>VOLTA:</strong> {preview[0].returnDates}</p>
+              </details>
+              <p className="text-xs text-amber-800">Os dias de ida e volta são opções independentes; não indicam pares ou assentos confirmados.</p>
+            </div>
+          )}
           <p className="text-xs text-slate-500">
             A soma não representa saldo de milhas nem custo total.
           </p>
