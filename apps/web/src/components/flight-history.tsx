@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/drawer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DESTINATION_LANDSCAPES } from "@/lib/destination-landscapes";
+import { formatAvailableMonths, groupAvailabilityDays } from "@/lib/availability-display";
 import { parseWhatsappOpportunity } from "@/lib/whatsapp-opportunity-parser";
 
 type Availability = {
@@ -220,14 +221,36 @@ const numberFormat = new Intl.NumberFormat("pt-BR");
 const dateFormat = (value: string) =>
   new Date(value.slice(0, 10) + "T12:00:00").toLocaleDateString("pt-BR");
 
-// Formata somente para apresentação. Mantém ISO 8601 no banco, CSV e na API.
-// Entradas históricas em texto livre permanecem intactas.
-function displayAvailabilityDates(value: string) {
-  return value
-    .replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, (_, y: string, m: string, d: string) => `${d}/${m}/${y}`);
+// Formatação compartilhada entre importações WhatsApp e CSV. Não altera o banco.
+function AvailableMonths({ value }: { value: string }) {
+  const months = formatAvailableMonths(value);
+  if (!months.length) return <span>Não informado</span>;
+  return (
+    <span className="flex flex-wrap gap-2">
+      {months.map((label, index) => (
+        <span key={index} className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-sm text-slate-700">
+          {label}
+        </span>
+      ))}
+    </span>
+  );
 }
-function displayAvailabilityMonths(value: string) {
-  return value.replace(/\b(\d{4})-(\d{2})\b/g, (_, y: string, m: string) => `${m}/${y}`);
+function AvailabilityDays({ value, months }: { value: string; months: string }) {
+  const groups = groupAvailabilityDays(value, months);
+  if (groups === null) {
+    return <p className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-600">{value || "Não informado"}</p>;
+  }
+  if (!groups.length) return <p className="text-sm text-slate-600">Não informado</p>;
+  return (
+    <div className="space-y-2">
+      {groups.map((group) => (
+        <div key={group.key} className="grid gap-1 text-sm leading-6 sm:grid-cols-[145px_minmax(0,1fr)] sm:gap-3">
+          <span className="font-semibold text-slate-800">{group.label}</span>
+          <span className="break-words text-slate-600">{group.days.join(", ")}</span>
+        </div>
+      ))}
+    </div>
+  );
 }
 function normalizeSearch(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
@@ -751,11 +774,21 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
               <p className="font-medium text-slate-900">
                 {preview[0].program} · {preview[0].origin} → {preview[0].destination} · {numberFormat.format(preview[0].milesFloor)} milhas por trecho
               </p>
-              <p className="text-slate-600">Classe: {preview[0].cabinClass} · Ano e meses: {displayAvailabilityMonths(preview[0].monthsAvailable)} · Registro: {dateFormat(preview[0].dateRegistered)}</p>
+              <p className="text-slate-600">Classe: {preview[0].cabinClass} · Registro: {dateFormat(preview[0].dateRegistered)}</p>
               <details className="text-slate-600">
                 <summary className="cursor-pointer font-medium text-slate-800">Conferir todas as datas normalizadas</summary>
-                <p className="mt-2 break-words"><strong>IDA:</strong> {displayAvailabilityDates(preview[0].outboundDates)}</p>
-                <p className="mt-2 break-words"><strong>VOLTA:</strong> {displayAvailabilityDates(preview[0].returnDates)}</p>
+                <div className="mt-3 space-y-2">
+                  <strong className="block">Meses disponíveis</strong>
+                  <AvailableMonths value={preview[0].monthsAvailable} />
+                </div>
+                <div className="mt-3 space-y-2">
+                  <strong className="block">Datas de ida</strong>
+                  <AvailabilityDays value={preview[0].outboundDates} months={preview[0].monthsAvailable} />
+                </div>
+                <div className="mt-3 space-y-2">
+                  <strong className="block">Datas de volta</strong>
+                  <AvailabilityDays value={preview[0].returnDates} months={preview[0].monthsAvailable} />
+                </div>
               </details>
               <p className="text-xs text-amber-800">Os dias de ida e volta são opções independentes; não indicam pares ou assentos confirmados.</p>
             </div>
@@ -1243,21 +1276,21 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
                   <h3 className="font-semibold text-slate-900">
                     Meses disponíveis
                   </h3>
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                    {selected.monthsAvailable ? displayAvailabilityMonths(selected.monthsAvailable) : "Não informado"}
-                  </p>
+                  <div className="mt-3">
+                    <AvailableMonths value={selected.monthsAvailable} />
+                  </div>
                 </section>
                 <section>
                   <h3 className="font-semibold text-slate-900">Datas de ida</h3>
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                    {selected.outboundDates ? displayAvailabilityDates(selected.outboundDates) : "Não informado"}
-                  </p>
+                  <div className="mt-3">
+                    <AvailabilityDays value={selected.outboundDates} months={selected.monthsAvailable} />
+                  </div>
                 </section>
                 <section>
                   <h3 className="font-semibold text-slate-900">Datas de volta</h3>
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                    {selected.returnDates ? displayAvailabilityDates(selected.returnDates) : "Não informado"}
-                  </p>
+                  <div className="mt-3">
+                    <AvailabilityDays value={selected.returnDates} months={selected.monthsAvailable} />
+                  </div>
                 </section>
                 <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-5 text-amber-900">
                   <CalendarDays size={18} className="mt-0.5 shrink-0" />
