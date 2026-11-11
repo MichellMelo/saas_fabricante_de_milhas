@@ -2411,9 +2411,9 @@ label select { margin-top: 4px; }
   }
 }
 
-/* Let the overview hero span the full available space on wide displays.
-   Other dashboard routes retain their existing centered content width. */
-.page-content.page-content--overview {
+/* Use the full space beside the sidebar on every dashboard route.
+   Existing page padding and responsive breakpoints remain unchanged. */
+.page-content {
   width: 100%;
   max-width: none;
   margin-inline: 0;
