@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/drawer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DESTINATION_LANDSCAPES } from "@/lib/destination-landscapes";
+import { parseWhatsappOpportunity } from "@/lib/whatsapp-opportunity-parser";
 
 type Availability = {
   id?: string;
@@ -218,13 +219,32 @@ function ProgramIdentity({ program }: { program: string }) {
 const numberFormat = new Intl.NumberFormat("pt-BR");
 const dateFormat = (value: string) =>
   new Date(value.slice(0, 10) + "T12:00:00").toLocaleDateString("pt-BR");
+
+// Formata somente para apresentação. Mantém ISO 8601 no banco, CSV e na API.
+// Entradas históricas em texto livre permanecem intactas.
+function displayAvailabilityDates(value: string) {
+  return value
+    .replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, (_, y: string, m: string, d: string) => `${d}/${m}/${y}`);
+}
+function displayAvailabilityMonths(value: string) {
+  return value.replace(/\b(\d{4})-(\d{2})\b/g, (_, y: string, m: string) => `${m}/${y}`);
+}
+function normalizeSearch(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+}
+type AirportSearchOption = {
+  iataCode: string;
+  name: string;
+  municipality: string | null;
+};
 const PAGE_SIZE = 10;
 
 export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
   const [records, setRecords] = useState<Availability[]>([]),
     [preview, setPreview] = useState<Availability[]>([]);
-  const [search, setSearch] = useState(""),
-    [program, setProgram] = useState("all"),
+  const [search, setSearch] = useState("");
+  const [airportSearchCodes, setAirportSearchCodes] = useState<string[]>([]);
+  const [program, setProgram] = useState("all"),
     [origin, setOrigin] = useState("all"),
     [destination, setDestination] = useState("all");
   const [loading, setLoading] = useState(true),
@@ -234,6 +254,34 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
   const [selected, setSelected] = useState<GroupedAvailability | null>(null),
     [currentPage, setCurrentPage] = useState(1);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [whatsappMessage, setWhatsappMessage] = useState("");
+  const [flightYear, setFlightYear] = useState("");
+  const [flightCabin, setFlightCabin] = useState("");
+  const [observationDate, setObservationDate] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  });
+  const [whatsappCounts, setWhatsappCounts] = useState<{ ida: number; volta: number } | null>(null);
+
+  function previewWhatsapp() {
+    setMessage("");
+    setError("");
+    setPreview([]);
+    setWhatsappCounts(null);
+    try {
+      const parsed = parseWhatsappOpportunity(
+        whatsappMessage,
+        Number(flightYear),
+        flightCabin,
+        observationDate,
+      );
+      setPreview([parsed]);
+      setWhatsappCounts({ ida: parsed.outboundCount, volta: parsed.returnCount });
+      setMessage("Mensagem interpretada e sanitizada. Confira a prévia antes de confirmar; nada foi gravado.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível interpretar a mensagem.");
+    }
+  }
 
   async function loadRecords() {
     setLoading(true);
@@ -276,15 +324,51 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
     () => [...new Set(records.map((r) => r.destination))].sort(),
     [records],
   );
+  // Consulta o catálogo IATA já existente, com debounce e cancelamento.
+  // Os códigos complementam a busca textual; nenhuma consulta altera registros.
+  useEffect(() => {
+    const term = search.trim();
+    setAirportSearchCodes([]);
+    if (term.length < 3) return;
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          "/api/airports?q=" + encodeURIComponent(term),
+          { signal: controller.signal, cache: "no-store" },
+        );
+        if (!response.ok) return;
+        const options = (await response.json()) as AirportSearchOption[];
+        if (!Array.isArray(options) || controller.signal.aborted) return;
+        const q = normalizeSearch(term);
+        const codes = options
+          .filter((option) =>
+            normalizeSearch(option.municipality ?? "").includes(q) ||
+            normalizeSearch(option.name ?? "").includes(q) ||
+            normalizeSearch(option.iataCode ?? "").includes(q),
+          )
+          .map((option) => option.iataCode.toUpperCase());
+        setAirportSearchCodes([...new Set(codes)]);
+      } catch {
+        // A busca textual por IATA e outros dados continua disponível.
+      }
+    }, 250);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [search]);
   const filtered = useMemo(
     () =>
       records.filter((r) => {
-        const q = search.trim().toLowerCase();
+        const q = normalizeSearch(search);
         return (
           (program === "all" || r.program === program) &&
           (origin === "all" || r.origin === origin) &&
           (destination === "all" || r.destination === destination) &&
           (!q ||
+            airportSearchCodes.includes(r.origin.toUpperCase()) ||
+            airportSearchCodes.includes(r.destination.toUpperCase()) ||
             [
               r.program,
               r.cabinClass,
@@ -293,10 +377,10 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
               r.monthsAvailable,
               r.outboundDates,
               r.returnDates,
-            ].some((v) => v.toLowerCase().includes(q)))
+            ].some((v) => normalizeSearch(v).includes(q)))
         );
       }),
-    [records, search, program, origin, destination],
+    [records, search, airportSearchCodes, program, origin, destination],
   );
   const totalMiles = filtered.reduce(
     (sum, record) => sum + record.milesFloor,
@@ -358,6 +442,7 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
     setMessage("");
     setError("");
     setPreview([]);
+    setWhatsappCounts(null);
     if (!file) return;
     if (!file.name.toLowerCase().endsWith(".csv")) {
       setError("Salve a aba como CSV UTF-8 e selecione o arquivo .csv.");
@@ -393,6 +478,7 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
         throw new Error(payload.message || "Falha ao importar os registros.");
       setMessage(payload.message || "Importação concluída.");
       setPreview([]);
+      setWhatsappCounts(null);
       if (fileRef.current) fileRef.current.value = "";
       await loadRecords();
     } catch (cause) {
@@ -511,6 +597,77 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
           </>
         }
       />
+      {isAdmin && (
+        <Card className="space-y-4 p-4 sm:p-5">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Importar oportunidade do WhatsApp</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Cole a mensagem com programa, rota, valor e blocos IDA/VOLTA. O ano e a classe precisam ser confirmados.
+              Datas como &quot;mês todo exceto&quot; serão expandidas. Nenhuma combinação de ida e volta será presumida.
+            </p>
+          </div>
+          <textarea
+            aria-label="Mensagem de oportunidade recebida no WhatsApp"
+            value={whatsappMessage}
+            onChange={(event) => { setWhatsappMessage(event.target.value); setPreview([]); setWhatsappCounts(null); }}
+            rows={9}
+            maxLength={15000}
+            placeholder={"Programa de fidelidade: Latam\nOrigem Fortaleza(FOR)\nDestino Belém(BEL)\nA PARTIR DE 8,9K O TRECHO\n\nIDA\nFevereiro: 14, 15\n\nVOLTA\nFevereiro: mês todo exceto 18, 23"}
+            className="w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm text-slate-900 outline-none focus:border-amber-600"
+          />
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="grid gap-1 text-sm font-medium text-slate-700">
+              Ano dos voos (obrigatório)
+              <input
+                type="number"
+                inputMode="numeric"
+                min="2000"
+                max="2100"
+                value={flightYear}
+                onChange={(event) => { setFlightYear(event.target.value); setPreview([]); setWhatsappCounts(null); }}
+                placeholder="Ex.: 2027"
+                className="h-10 rounded-lg border border-slate-300 bg-white px-3"
+              />
+            </label>
+            <label className="grid gap-1 text-sm font-medium text-slate-700">
+              Classe (obrigatória)
+              <select
+                value={flightCabin}
+                onChange={(event) => { setFlightCabin(event.target.value); setPreview([]); setWhatsappCounts(null); }}
+                className="h-10 rounded-lg border border-slate-300 bg-white px-3"
+              >
+                <option value="">Selecione a classe</option>
+                <option value="Econômica">Econômica</option>
+                <option value="Premium Economy">Premium Economy</option>
+                <option value="Executiva">Executiva</option>
+                <option value="Primeira">Primeira</option>
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-medium text-slate-700">
+              Data do registro
+              <input
+                type="date"
+                value={observationDate}
+                onChange={(event) => { setObservationDate(event.target.value); setPreview([]); setWhatsappCounts(null); }}
+                className="h-10 rounded-lg border border-slate-300 bg-white px-3"
+              />
+            </label>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!whatsappMessage.trim() || !flightYear || !flightCabin}
+              onClick={previewWhatsapp}
+            >
+              Analisar mensagem
+            </Button>
+            <span className="text-xs text-slate-500">
+              O servidor confirma registros duplicados antes de inserir.
+            </span>
+          </div>
+        </Card>
+      )}
       {message && (
         <Alert
           role="status"
@@ -537,7 +694,9 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
               <div>
                 <strong className="text-slate-900">Prévia da importação</strong>
                 <p className="text-sm text-slate-500">
-                  {preview.length} linhas lidas; duplicados serão ignorados.
+                  {whatsappCounts
+                    ? `${whatsappCounts.ida} datas de ida e ${whatsappCounts.volta} datas de volta em 1 oportunidade.`
+                    : `${preview.length} linhas lidas.`} Duplicatas exatas serão ignoradas pelo banco.
                 </p>
               </div>
             </div>
@@ -546,6 +705,7 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
                 variant="outline"
                 onClick={() => {
                   setPreview([]);
+                  setWhatsappCounts(null);
                   if (fileRef.current) fileRef.current.value = "";
                 }}
               >
@@ -586,6 +746,20 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
               </p>
             </div>
           </div>
+          {whatsappCounts && preview[0] && (
+            <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-3 text-sm">
+              <p className="font-medium text-slate-900">
+                {preview[0].program} · {preview[0].origin} → {preview[0].destination} · {numberFormat.format(preview[0].milesFloor)} milhas por trecho
+              </p>
+              <p className="text-slate-600">Classe: {preview[0].cabinClass} · Ano e meses: {displayAvailabilityMonths(preview[0].monthsAvailable)} · Registro: {dateFormat(preview[0].dateRegistered)}</p>
+              <details className="text-slate-600">
+                <summary className="cursor-pointer font-medium text-slate-800">Conferir todas as datas normalizadas</summary>
+                <p className="mt-2 break-words"><strong>IDA:</strong> {displayAvailabilityDates(preview[0].outboundDates)}</p>
+                <p className="mt-2 break-words"><strong>VOLTA:</strong> {displayAvailabilityDates(preview[0].returnDates)}</p>
+              </details>
+              <p className="text-xs text-amber-800">Os dias de ida e volta são opções independentes; não indicam pares ou assentos confirmados.</p>
+            </div>
+          )}
           <p className="text-xs text-slate-500">
             A soma não representa saldo de milhas nem custo total.
           </p>
@@ -1057,9 +1231,6 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
                     <p className="mt-1 font-semibold text-slate-900">
                       {dateFormat(selected.dateRegistered)}
                     </p>
-                    <p className="mt-1 text-[11px] text-slate-500">
-                      {selected.history.length} observações · {selected.observationDates.length} datas distintas
-                    </p>
                   </div>
                   <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
                     <p className="text-xs text-amber-800">Piso em milhas</p>
@@ -1073,33 +1244,20 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
                     Meses disponíveis
                   </h3>
                   <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                    {selected.monthsAvailable || "Não informado"}
+                    {selected.monthsAvailable ? displayAvailabilityMonths(selected.monthsAvailable) : "Não informado"}
                   </p>
                 </section>
                 <section>
                   <h3 className="font-semibold text-slate-900">Datas de ida</h3>
                   <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                    {selected.outboundDates || "Não informado"}
+                    {selected.outboundDates ? displayAvailabilityDates(selected.outboundDates) : "Não informado"}
                   </p>
                 </section>
                 <section>
                   <h3 className="font-semibold text-slate-900">Datas de volta</h3>
                   <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                    {selected.returnDates || "Não informado"}
+                    {selected.returnDates ? displayAvailabilityDates(selected.returnDates) : "Não informado"}
                   </p>
-                </section>
-                <section>
-                  <h3 className="font-semibold text-slate-900">Histórico de observações</h3>
-                  <div className="mt-2 space-y-3">
-                    {selected.history.map((item, index) => (
-                      <div key={item.id ?? item.dateRegistered + "-" + index} className="rounded-xl border border-slate-100 p-3">
-                        <p className="text-xs font-semibold text-slate-700">{dateFormat(item.dateRegistered)}</p>
-                        <p className="mt-1 text-xs text-slate-500">Meses: {item.monthsAvailable || "Não informado"}</p>
-                        <p className="mt-1 whitespace-pre-wrap text-xs text-slate-500">Ida: {item.outboundDates || "Não informado"}</p>
-                        <p className="mt-1 whitespace-pre-wrap text-xs text-slate-500">Volta: {item.returnDates || "Não informado"}</p>
-                      </div>
-                    ))}
-                  </div>
                 </section>
                 <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-5 text-amber-900">
                   <CalendarDays size={18} className="mt-0.5 shrink-0" />
