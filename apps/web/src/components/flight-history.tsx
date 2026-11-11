@@ -219,13 +219,32 @@ function ProgramIdentity({ program }: { program: string }) {
 const numberFormat = new Intl.NumberFormat("pt-BR");
 const dateFormat = (value: string) =>
   new Date(value.slice(0, 10) + "T12:00:00").toLocaleDateString("pt-BR");
+
+// Formata somente para apresentação. Mantém ISO 8601 no banco, CSV e na API.
+// Entradas históricas em texto livre permanecem intactas.
+function displayAvailabilityDates(value: string) {
+  return value
+    .replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, (_, y: string, m: string, d: string) => `${d}/${m}/${y}`);
+}
+function displayAvailabilityMonths(value: string) {
+  return value.replace(/\b(\d{4})-(\d{2})\b/g, (_, y: string, m: string) => `${m}/${y}`);
+}
+function normalizeSearch(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+}
+type AirportSearchOption = {
+  iataCode: string;
+  name: string;
+  municipality: string | null;
+};
 const PAGE_SIZE = 10;
 
 export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
   const [records, setRecords] = useState<Availability[]>([]),
     [preview, setPreview] = useState<Availability[]>([]);
-  const [search, setSearch] = useState(""),
-    [program, setProgram] = useState("all"),
+  const [search, setSearch] = useState("");
+  const [airportSearchCodes, setAirportSearchCodes] = useState<string[]>([]);
+  const [program, setProgram] = useState("all"),
     [origin, setOrigin] = useState("all"),
     [destination, setDestination] = useState("all");
   const [loading, setLoading] = useState(true),
@@ -305,15 +324,51 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
     () => [...new Set(records.map((r) => r.destination))].sort(),
     [records],
   );
+  // Consulta o catálogo IATA já existente, com debounce e cancelamento.
+  // Os códigos complementam a busca textual; nenhuma consulta altera registros.
+  useEffect(() => {
+    const term = search.trim();
+    setAirportSearchCodes([]);
+    if (term.length < 3) return;
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          "/api/airports?q=" + encodeURIComponent(term),
+          { signal: controller.signal, cache: "no-store" },
+        );
+        if (!response.ok) return;
+        const options = (await response.json()) as AirportSearchOption[];
+        if (!Array.isArray(options) || controller.signal.aborted) return;
+        const q = normalizeSearch(term);
+        const codes = options
+          .filter((option) =>
+            normalizeSearch(option.municipality ?? "").includes(q) ||
+            normalizeSearch(option.name ?? "").includes(q) ||
+            normalizeSearch(option.iataCode ?? "").includes(q),
+          )
+          .map((option) => option.iataCode.toUpperCase());
+        setAirportSearchCodes([...new Set(codes)]);
+      } catch {
+        // A busca textual por IATA e outros dados continua disponível.
+      }
+    }, 250);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [search]);
   const filtered = useMemo(
     () =>
       records.filter((r) => {
-        const q = search.trim().toLowerCase();
+        const q = normalizeSearch(search);
         return (
           (program === "all" || r.program === program) &&
           (origin === "all" || r.origin === origin) &&
           (destination === "all" || r.destination === destination) &&
           (!q ||
+            airportSearchCodes.includes(r.origin.toUpperCase()) ||
+            airportSearchCodes.includes(r.destination.toUpperCase()) ||
             [
               r.program,
               r.cabinClass,
@@ -322,10 +377,10 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
               r.monthsAvailable,
               r.outboundDates,
               r.returnDates,
-            ].some((v) => v.toLowerCase().includes(q)))
+            ].some((v) => normalizeSearch(v).includes(q)))
         );
       }),
-    [records, search, program, origin, destination],
+    [records, search, airportSearchCodes, program, origin, destination],
   );
   const totalMiles = filtered.reduce(
     (sum, record) => sum + record.milesFloor,
@@ -696,11 +751,11 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
               <p className="font-medium text-slate-900">
                 {preview[0].program} · {preview[0].origin} → {preview[0].destination} · {numberFormat.format(preview[0].milesFloor)} milhas por trecho
               </p>
-              <p className="text-slate-600">Classe: {preview[0].cabinClass} · Ano e meses: {preview[0].monthsAvailable} · Registro: {dateFormat(preview[0].dateRegistered)}</p>
+              <p className="text-slate-600">Classe: {preview[0].cabinClass} · Ano e meses: {displayAvailabilityMonths(preview[0].monthsAvailable)} · Registro: {dateFormat(preview[0].dateRegistered)}</p>
               <details className="text-slate-600">
                 <summary className="cursor-pointer font-medium text-slate-800">Conferir todas as datas normalizadas</summary>
-                <p className="mt-2 break-words"><strong>IDA:</strong> {preview[0].outboundDates}</p>
-                <p className="mt-2 break-words"><strong>VOLTA:</strong> {preview[0].returnDates}</p>
+                <p className="mt-2 break-words"><strong>IDA:</strong> {displayAvailabilityDates(preview[0].outboundDates)}</p>
+                <p className="mt-2 break-words"><strong>VOLTA:</strong> {displayAvailabilityDates(preview[0].returnDates)}</p>
               </details>
               <p className="text-xs text-amber-800">Os dias de ida e volta são opções independentes; não indicam pares ou assentos confirmados.</p>
             </div>
@@ -1192,19 +1247,19 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
                     Meses disponíveis
                   </h3>
                   <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                    {selected.monthsAvailable || "Não informado"}
+                    {selected.monthsAvailable ? displayAvailabilityMonths(selected.monthsAvailable) : "Não informado"}
                   </p>
                 </section>
                 <section>
                   <h3 className="font-semibold text-slate-900">Datas de ida</h3>
                   <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                    {selected.outboundDates || "Não informado"}
+                    {selected.outboundDates ? displayAvailabilityDates(selected.outboundDates) : "Não informado"}
                   </p>
                 </section>
                 <section>
                   <h3 className="font-semibold text-slate-900">Datas de volta</h3>
                   <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                    {selected.returnDates || "Não informado"}
+                    {selected.returnDates ? displayAvailabilityDates(selected.returnDates) : "Não informado"}
                   </p>
                 </section>
                 <section>
@@ -1213,9 +1268,9 @@ export function FlightHistory({ isAdmin = false }: { isAdmin?: boolean }) {
                     {selected.history.map((item, index) => (
                       <div key={item.id ?? item.dateRegistered + "-" + index} className="rounded-xl border border-slate-100 p-3">
                         <p className="text-xs font-semibold text-slate-700">{dateFormat(item.dateRegistered)}</p>
-                        <p className="mt-1 text-xs text-slate-500">Meses: {item.monthsAvailable || "Não informado"}</p>
-                        <p className="mt-1 whitespace-pre-wrap text-xs text-slate-500">Ida: {item.outboundDates || "Não informado"}</p>
-                        <p className="mt-1 whitespace-pre-wrap text-xs text-slate-500">Volta: {item.returnDates || "Não informado"}</p>
+                        <p className="mt-1 text-xs text-slate-500">Meses: {item.monthsAvailable ? displayAvailabilityMonths(item.monthsAvailable) : "Não informado"}</p>
+                        <p className="mt-1 whitespace-pre-wrap text-xs text-slate-500">Ida: {item.outboundDates ? displayAvailabilityDates(item.outboundDates) : "Não informado"}</p>
+                        <p className="mt-1 whitespace-pre-wrap text-xs text-slate-500">Volta: {item.returnDates ? displayAvailabilityDates(item.returnDates) : "Não informado"}</p>
                       </div>
                     ))}
                   </div>
