@@ -47,10 +47,14 @@ export async function proxyAuth(
   const payload = await upstream.json().catch(() => ({}));
 
   if (!upstream.ok) {
+    const retryAfter = upstream.headers.get("Retry-After");
     return NextResponse.json(payload, {
       status: upstream.status,
+      headers: retryAfter ? { "Retry-After": retryAfter } : undefined,
     });
   }
+
+  if (endpoint === "register") return NextResponse.json(payload, { status: upstream.status });
 
   const auth = payload as AuthResponse;
 

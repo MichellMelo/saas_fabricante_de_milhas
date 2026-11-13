@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, ForbiddenException, Get, Param, Post, Put, Req, UseGuards } from "@nestjs/common";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePage } from "../auth/page-permissions";
 import { ClientsService } from "./clients.service";
 import { CreateInvitationDto } from "./dto/create-invitation.dto";
 import { SetProductAccessDto } from "./dto/set-product-access.dto";
@@ -60,10 +61,10 @@ export class ClientsController {
     return this.clients.setMileSaleStatus(id, dto.status);
   }
 
+  @RequirePage("administrativo")
   @Get("payments")
   listPayments(@Req() request: AuthenticatedRequest) {
-    this.assertAdmin(request);
-    return this.clients.listPayments();
+    return this.clients.listPayments(request.user.isAdmin ? undefined : request.user.id);
   }
 
   @Post("payments")

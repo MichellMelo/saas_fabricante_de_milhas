@@ -1,5 +1,6 @@
 const assert = require("node:assert/strict");
 const { test } = require("node:test");
+const { randomUUID } = require("node:crypto");
 
 const base = process.env.SESSION_TEST_URL;
 const password = process.env.SESSION_TEST_PASSWORD;
@@ -76,4 +77,91 @@ test("login, recarga, renovação e permissões via Next e Nest", { skip: !base 
   }
   assert.equal((await member.request(history)).status, 403);
   assert.equal((await admin.request(history)).status, 200);
+});
+
+test("cadastro público, três switches e convite coexistem", { skip: !base || !password }, async () => {
+  assert.ok(["127.0.0.1", "localhost", "[::1]"].includes(new URL(base).hostname));
+  const admin = browser();
+  const member = browser();
+  const invited = browser();
+  const email = `public-${randomUUID()}@example.test`;
+  const inviteEmail = `invite-${randomUUID()}@example.test`;
+  const newPassword = "CadastroLocal2026!";
+  const details = { name: "Cadastro Público QA", email, password: newPassword, passwordConfirmation: newPassword };
+  const post = (client, path, body) => client.request(path, { method: "POST", body });
+  const register = (body) => post(member, "/api/auth/register", body);
+
+  assert.equal((await register({ ...details, name: " ", email: "invalido" })).status, 400);
+  assert.equal((await register({ ...details, password: "123" })).status, 400);
+  assert.equal((await register({ ...details, passwordConfirmation: "outraSenha12" })).status, 400);
+  assert.equal((await register({ ...details, isAdmin: true })).status, 400);
+  assert.equal((await register({ ...details, email: "ADMIN@EXAMPLE.TEST" })).status, 409);
+  const registered = await register(details);
+  assert.equal(registered.status, 201);
+  assert.equal(registered.headers.getSetCookie().length, 0);
+  assert.equal((await register({ ...details, email: email.toUpperCase() })).status, 409);
+  assert.equal((await post(member, "/api/auth/login", { email, password: newPassword })).status, 200);
+  assert.equal((await post(admin, "/api/auth/login", { email: "admin@example.test", password })).status, 200);
+  const dashboard = await member.request("/");
+  assert.match(await dashboard.text(), /dashboard-shell/);
+  assert.equal((await member.request("/api/loyalty-accounts")).status, 200);
+  assert.match(await (await member.request("/clientes/test")).text(), /Acesso negado/);
+  assert.equal((await member.request("/api/admin/page-access")).status, 403);
+
+  const adminAccess = "/api/admin/page-access";
+  const search = await admin.request(`${adminAccess}?q=${encodeURIComponent(email)}`);
+  assert.equal(search.status, 200);
+  const { users: [user] } = await search.json();
+  assert.equal(user.isAdmin, false);
+  const payment = { userId: user.id, product: "GROUP_VIP", amount: 20, dueAt: "2030-01-01" };
+  const createdPayment = await post(admin, "/api/admin/payments", payment);
+  assert.equal(createdPayment.status, 201);
+  const ownPayment = await createdPayment.json();
+  const other = await admin.request(`${adminAccess}?q=new%40example.test`);
+  const { users: [otherUser] } = await other.json();
+  assert.ok(otherUser?.id && otherUser.id !== user.id);
+  assert.equal((await post(admin, "/api/admin/payments", { ...payment, userId: otherUser.id })).status, 201);
+  const areas = {
+    "mile-finance": "/api/mile-finance/dashboard",
+    historico: "/api/flight-availability",
+    administrativo: "/api/admin/payments",
+  };
+  for (const [page, endpoint] of Object.entries(areas)) {
+    const permission = `${adminAccess}/${user.id}/${page}`;
+    const set = (client, allowed) => client.request(permission, { method: "PUT", body: { allowed } });
+    assert.equal((await member.request(endpoint)).status, 403);
+    assert.equal((await set(member, true)).status, 403);
+    assert.equal((await set(admin, true)).status, 200);
+    const allowedResponse = await member.request(endpoint);
+    assert.equal(allowedResponse.status, 200);
+    if (page === "administrativo") {
+      assert.deepEqual((await allowedResponse.json()).map(({ id, userId }) => ({ id, userId })), [{ id: ownPayment.id, userId: user.id }]);
+    }
+    const read = await admin.request(`${adminAccess}/${user.id}`);
+    assert.ok((await read.json()).allowedPages.includes(page));
+    assert.match(await (await member.request("/")).text(), /dashboard-shell/);
+    assert.equal((await member.request("/api/admin/clients")).status, 403);
+    assert.equal((await post(member, "/api/admin/payments", payment)).status, 403);
+    assert.equal((await set(admin, false)).status, 200);
+    assert.equal((await member.request(endpoint)).status, 403);
+    assert.equal((await admin.request(endpoint)).status, 200);
+  }
+
+  const invitation = await post(admin, "/api/admin/invitations", { email: inviteEmail, products: ["GROUP_VIP"] });
+  assert.equal(invitation.status, 201);
+  const { inviteUrl } = await invitation.json();
+  assert.equal((await register({ ...details, email: inviteEmail })).status, 409);
+  const token = new URL(inviteUrl).searchParams.get("token");
+  assert.equal((await post(invited, "/api/auth/accept-invitation", { token, name: "Convite QA", password: newPassword })).status, 200);
+  assert.match(await (await invited.request("/")).text(), /dashboard-shell/);
+  let limited;
+  for (let attempt = 0; attempt <= 20; attempt++) {
+    const response = await register({});
+    if (response.status === 429) {
+      limited = response;
+      break;
+    }
+    assert.equal(response.status, 400);
+  }
+  assert.ok(limited && Number(limited.headers.get("Retry-After")) > 0);
 });

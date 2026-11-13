@@ -2,6 +2,8 @@ import { Body, Controller, Get, Headers, Patch, Post, Req, UseGuards } from "@ne
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard, AuthenticatedRequest } from "./jwt-auth.guard";
 import { LoadPagePermissions } from "./page-permissions";
+import { RegisterDto } from "./dto/register.dto";
+import { RegistrationRateGuard } from "./registration-rate.guard";
 import { AcceptInvitationDto } from "./dto/accept-invitation.dto";
 import { LoginDto } from "./dto/login.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
@@ -18,8 +20,9 @@ export class AuthController {
  }
 
  @Post("register")
- register() {
-  return this.auth.register();
+ @UseGuards(RegistrationRateGuard)
+ register(@Body() dto: RegisterDto) {
+  return this.auth.register(dto);
  }
 
  @Post("accept-invitation")

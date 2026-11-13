@@ -44,7 +44,7 @@ checks = {
  "Initial versioned migration includes core tables and foreign keys": all(token in migration for token in ('CREATE TABLE "User"', 'CREATE TABLE "LoyaltyAccount"', 'CREATE TABLE "PointTransaction"', 'CREATE TABLE "FlightRecord"', 'FOREIGN KEY')),
  "Auth endpoints and JWT guard are wired": all(token in auth_controller for token in ('Post("register")', 'Post("login")', 'Get("me")', "JwtAuthGuard")) and "verifyAsync" in auth_guard,
  "Passwords are hashed and checked with bcrypt": "hash(dto.password, 12)" in auth_service and "compare(dto.password, user.passwordHash)" in auth_service,
- "Public registration is disabled and invitation acceptance is available": "O cadastro é feito somente por convite" in auth_service and 'Post("accept-invitation")' in auth_controller,
+ "Public registration and invitation acceptance are available": "publicRegistrationPages.map" in auth_service and 'Post("accept-invitation")' in auth_controller,
  "Product entitlements and hashed invitations are modeled": all(token in schema for token in ("enum ProductType", "model UserProductAccess", "model ClientInvitation", "tokenHash String @unique")),
  "Client management API checks the authenticated admin role": "request.user.isAdmin" in clients_controller and 'Get("clients")' in clients_controller and 'Post("invitations")' in clients_controller,
  "Invitation acceptance grants selected products": "tx.userProductAccess.createMany" in auth_service and 'createHash("sha256")' in auth_service,

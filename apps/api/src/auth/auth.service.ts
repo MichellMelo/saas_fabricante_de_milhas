@@ -8,6 +8,8 @@ import { AcceptInvitationDto } from "./dto/accept-invitation.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { LoginDto } from "./dto/login.dto";
+import { RegisterDto } from "./dto/register.dto";
+import { isAdministrator, publicRegistrationPages } from "./page-permissions";
 
 @Injectable()
 export class AuthService {
@@ -84,8 +86,39 @@ export class AuthService {
   return { success: true };
  }
 
- async register(): Promise<never> {
-  throw new ForbiddenException("O cadastro é feito somente por convite. Solicite acesso à equipe Fabricante de Milhas.");
+ async register(dto: RegisterDto) {
+  const email = dto.email.trim().toLowerCase();
+  if (dto.password !== dto.passwordConfirmation) throw new BadRequestException("As senhas não coincidem.");
+  if (Buffer.byteLength(dto.password, "utf8") > 72) {
+   throw new BadRequestException("A senha excede o limite de 72 bytes.");
+  }
+  if (isAdministrator({ email, isAdmin: false }) || email === process.env.ADMIN_BOOTSTRAP_EMAIL?.trim().toLowerCase()) {
+   throw new ConflictException("Este e-mail não está disponível para cadastro público.");
+  }
+  const invitationFilter = { email: { equals: email, mode: "insensitive" as const }, acceptedAt: null, expiresAt: { gt: new Date() } };
+  const [existing, clientInvitation, adminInvitation] = await Promise.all([
+   this.prisma.user.findFirst({ where: { email: invitationFilter.email }, select: { id: true } }),
+   this.prisma.clientInvitation.findFirst({ where: invitationFilter, select: { id: true } }),
+   this.prisma.adminInvitation.findFirst({ where: invitationFilter, select: { id: true } }),
+  ]);
+  if (existing) throw new ConflictException("Já existe uma conta com esse e-mail. Faça login ou solicite suporte.");
+  if (clientInvitation || adminInvitation) throw new ConflictException("Existe um convite ativo para esse e-mail. Use o link de convite para criar sua conta.");
+  const passwordHash = await hash(dto.password, 12);
+  try {
+   await this.prisma.user.create({
+    data: {
+     email, name: dto.name.trim(), passwordHash, active: true, isAdmin: false,
+     pagePermissions: { create: publicRegistrationPages.map((page) => ({ page, allowed: true })) },
+    },
+    select: { id: true },
+   });
+  } catch (error) {
+   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+    throw new ConflictException("Já existe uma conta com esse e-mail. Faça login ou solicite suporte.");
+   }
+   throw error;
+  }
+  return { success: true };
  }
 
  async acceptInvitation(dto: AcceptInvitationDto) {

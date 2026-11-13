@@ -29,19 +29,25 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [registered, setRegistered] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    if (isRegister && password !== passwordConfirmation) {
+      setError("As senhas não coincidem.");
+      return;
+    }
     setLoading(true);
     try {
       const response = await fetch(`/api/auth/${mode}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...(isRegister ? { name: name.trim() } : {}),
+          ...(isRegister ? { name: name.trim(), passwordConfirmation } : {}),
           email: email.trim(),
           password,
         }),
@@ -58,7 +64,13 @@ export function AuthForm({ mode }: AuthFormProps) {
         );
         return;
       }
-      window.location.replace("/");
+      if (isRegister) {
+        setPassword("");
+        setPasswordConfirmation("");
+        setRegistered(true);
+      } else {
+        window.location.replace("/");
+      }
     } catch {
       setError(
         "Não foi possível conectar. Verifique sua conexão e tente novamente.",
@@ -159,7 +171,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                   : "Acesse sua estratégia"}
               </p>
               <h1 className="text-[27px] font-semibold leading-[1.12] tracking-[-0.05em] text-[#101a2b] sm:text-[32px]">
-                {isRegister ? "Abra seu espaço." : "Continue de onde parou."}
+                {isRegister ? "Crie sua conta." : "Continue de onde parou."}
               </h1>
               <p className="mt-2 max-w-[470px] text-[13px] leading-6 text-[#6f7886] sm:text-[14px] sm:leading-6">
                 {isRegister
@@ -168,13 +180,18 @@ export function AuthForm({ mode }: AuthFormProps) {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
+            {registered ? (
+              <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+                Conta criada. Faça login para acessar seu painel.
+              </div>
+            ) : <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
               {isRegister && (
                 <label className="block text-[12px] font-semibold text-[#344054]">
-                  Como devemos chamar você?{" "}
-                  <span className="font-normal text-[#9aa2ae]">Opcional</span>
+                  Nome completo
                   <input
                     autoComplete="name"
+                    required
+                    minLength={2}
                     value={name}
                     onChange={(event) => setName(event.target.value)}
                     maxLength={100}
@@ -207,7 +224,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                   }
                   required
                   minLength={isRegister ? 12 : 1}
-                  maxLength={128}
+                  maxLength={isRegister ? 72 : 128}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   className={inputClass}
@@ -218,10 +235,26 @@ export function AuthForm({ mode }: AuthFormProps) {
                 />
                 {isRegister && (
                   <span className="mt-2 block text-[11px] font-normal leading-5 text-[#89919d]">
-                    Mínimo de 12 caracteres.
+                    Use pelo menos 12 caracteres, com letras e números.
                   </span>
                 )}
               </label>
+
+              {isRegister && (
+                <label className="block text-[12px] font-semibold text-[#344054]">
+                  Confirmar senha
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    maxLength={72}
+                    value={passwordConfirmation}
+                    onChange={(event) => setPasswordConfirmation(event.target.value)}
+                    className={inputClass}
+                    disabled={loading}
+                  />
+                </label>
+              )}
 
               {error && (
                 <p
@@ -282,7 +315,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                   </span>
                 )}
               </button>
-            </form>
+            </form>}
 
             <p className="mt-4 text-center text-[12px] text-[#7b8491] sm:mt-5 sm:text-[13px]">
               {isRegister ? "Já tem uma conta?" : "Ainda não tem uma conta?"}{" "}

@@ -182,10 +182,10 @@ export class ClientsService {
     });
   }
 
-  async listPayments() {
+  async listPayments(userId?: string) {
     const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
     return this.prisma.clientPayment.findMany({
-      where: { user: { isAdmin: false, ...(adminEmails.length ? { email: { notIn: adminEmails } } : {}) } },
+      where: { userId, user: { isAdmin: false, ...(adminEmails.length ? { email: { notIn: adminEmails } } : {}) } },
       orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
       select: {
         id: true, userId: true, product: true, amount: true, dueAt: true, status: true,

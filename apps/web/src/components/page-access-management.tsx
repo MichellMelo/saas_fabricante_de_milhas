@@ -141,7 +141,7 @@ function UserPermissions({ user, groups }: { user: AccessUser; groups: PageGroup
           <p className="text-sm text-slate-600">
             {access.isAdmin
               ? "Administradores têm acesso integral. Estas permissões são protegidas."
-              : "As páginas administrativas são reservadas a administradores. Produtos exigem também um acesso ativo em Clientes e produtos."}
+              : "O acesso Administrativo libera apenas a consulta dos próprios lançamentos. A gestão do sistema é reservada a administradores. Produtos também exigem acesso ativo."}
           </p>
           {groups.map((group) => (
             <fieldset key={group.label} disabled={pending || access.isAdmin} className="divide-y rounded-lg border px-4">

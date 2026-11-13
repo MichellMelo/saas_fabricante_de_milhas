@@ -49,7 +49,7 @@ import { BalanceEvolutionChart } from "@/components/balance-evolution-chart";
 import type { DashboardUser } from "@/lib/dashboard-session";
 
 type RouteKey = DashboardRoute;
-const navItems: (SidebarNavItem & { adminOnly?: boolean; product?: string })[] = [
+const navItems: (SidebarNavItem & { adminOnly?: boolean; product?: string; permission?: string })[] = [
   { key: "dashboard", label: "Visão geral", icon: LayoutDashboard },
   {
     key: "programas",
@@ -60,7 +60,7 @@ const navItems: (SidebarNavItem & { adminOnly?: boolean; product?: string })[] =
   { key: "clientes-admin", label: "Clientes e produtos", icon: Users, adminOnly: true },
   { key: "administradores-admin", label: "Administradores", icon: ShieldCheck, adminOnly: true },
   { key: "controle-de-acessos", label: "Controle de Acessos", icon: ShieldCheck, adminOnly: true },
-  { key: "financeiro", label: "Financeiro", icon: Wallet, adminOnly: true },
+  { key: "financeiro", label: "Financeiro", icon: Wallet, permission: "administrativo" },
   { key: "mile-finance", label: "Financeiro de Milhas", icon: TrendingUp },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator },
   { key: "passagens", label: "Passagens e resgates", icon: Plane },
@@ -296,8 +296,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
   const [dashboardError, setDashboardError] = useState("");
 
   const allowedNavItems = useMemo(
-    () => navItems.filter(({ key, adminOnly, product }) =>
-      user.isAdmin || (!adminOnly && user.allowedPages?.includes(key) &&
+    () => navItems.filter(({ key, adminOnly, product, permission }) =>
+      user.isAdmin || (!adminOnly && user.allowedPages?.includes(permission ?? key) &&
         (!product || user.productAccesses?.some((access) => access.product === product))),
     ),
     [user.isAdmin, user.allowedPages, user.productAccesses],
@@ -460,7 +460,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <Card className="p-6">
               <h1 className="text-xl font-semibold">Acesso indisponível</h1>
               <p className="mt-2 text-sm text-slate-600">
-                {requestedRoute ? "Sua conta não tem acesso a esta página." : "Nenhuma página foi liberada para sua conta."}
+                {requestedRoute ? "Você não possui permissão para acessar esta área. Solicite a liberação ao administrador." : "Nenhuma página foi liberada para sua conta."}
               </p>
             </Card>
           ) : route === "dashboard" ? (
@@ -742,7 +742,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           ) : route === "mile-finance" ? (
             <MileFinanceDashboard />
           ) : route === "financeiro" ? (
-            <FinanceDashboard />
+            <FinanceDashboard canManage={Boolean(user.isAdmin)} />
           ) : route === "auloes" ? (
             <ProductContent isAdmin={Boolean(user.isAdmin)} product="AULAO" />
           ) : route === "mentorias" ? (

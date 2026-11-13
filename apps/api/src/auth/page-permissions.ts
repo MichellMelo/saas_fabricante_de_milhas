@@ -21,9 +21,14 @@ export const pageGroups = [
       { key: "mentorias", label: "Mentorias", product: "MENTORSHIP" },
     ],
   },
+  {
+    label: "Administrativo",
+    pages: [{ key: "administrativo", label: "Administrativo · meus recebimentos" }],
+  },
 ] as const;
 
 export type PageKey = (typeof pageGroups)[number]["pages"][number]["key"];
+export const publicRegistrationPages = ["dashboard", "programas", "programas-admin", "calculadoras", "passagens"] as const satisfies readonly PageKey[];
 
 export function isPageKey(value: string): value is PageKey {
   return pageGroups.some(({ pages }) => pages.some(({ key }) => key === value));

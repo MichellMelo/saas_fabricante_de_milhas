@@ -51,7 +51,7 @@ function withinPeriod(value: string | null, period: string) {
   return date >= start && date <= now;
 }
 
-export function FinanceDashboard() {
+export function FinanceDashboard({ canManage }: { canManage: boolean }) {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -528,7 +528,7 @@ export function FinanceDashboard() {
                   <th className="px-3 py-3 font-semibold">Vencimento</th>
                   <th className="px-3 py-3 font-semibold">Valor</th>
                   <th className="px-3 py-3 font-semibold">Situação</th>
-                  <th className="px-3 py-3 font-semibold">Ações</th>
+                  {canManage && <th className="px-3 py-3 font-semibold">Ações</th>}
                 </tr>
               </thead>
               <tbody>
@@ -580,7 +580,7 @@ export function FinanceDashboard() {
                           {label}
                         </span>
                       </td>
-                      <td className="px-3 py-3">
+                      {canManage && <td className="px-3 py-3">
                         <div className="flex flex-wrap gap-2">
                           {payment.status !== "CANCELLED" && (
                             <button
@@ -639,7 +639,7 @@ export function FinanceDashboard() {
                             Excluir
                           </button>
                         </div>
-                      </td>
+                      </td>}
                     </tr>
                   );
                 })}
