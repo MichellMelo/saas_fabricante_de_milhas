@@ -17,28 +17,29 @@ export class JwtAuthGuard implements CanActivate {
   if (!authorization?.startsWith("Bearer ")) throw new UnauthorizedException("Token de acesso obrigatório.");
   const token = authorization.slice(7).trim();
   if (!token) throw new UnauthorizedException("Token de acesso obrigatório.");
-  try {
-   const payload = await this.jwt.verifyAsync<{ sub: string; email: string; authVersion?: number }>(token);
-   if (!payload.sub || !payload.email) throw new Error("Invalid token claims");
-   const user = await this.prisma.user.findUnique({
-    where: { id: payload.sub },
-    select: {
-     id: true, email: true, active: true, isAdmin: true, authVersion: true,
-     pagePermissions: { where: { allowed: true }, select: { page: true } },
-    },
-   });
-   if (!user || !user.active) throw new UnauthorizedException("Conta inativa ou sessão inválida.");
-   if (payload.authVersion !== user.authVersion) throw new UnauthorizedException("Sua sessão foi invalidada. Entre novamente.");
-   request.user = {
-    id: user.id, email: user.email, isAdmin: isAdministrator(user), authVersion: user.authVersion,
-    allowedPages: user.pagePermissions.map(({ page }) => page),
-   };
-  } catch (error) {
-   if (error instanceof UnauthorizedException) throw error;
+  const payload = await this.jwt.verifyAsync<{ sub: string; email: string; authVersion?: number }>(token).catch(() => {
    throw new UnauthorizedException("Token inválido ou expirado.");
+  });
+  if (!payload.sub || !payload.email) throw new UnauthorizedException("Token inválido ou expirado.");
+  const user = await this.prisma.user.findUnique({
+   where: { id: payload.sub },
+   select: { id: true, email: true, active: true, isAdmin: true, authVersion: true },
+  });
+  if (!user?.active) throw new UnauthorizedException("Conta inativa ou sessão inválida.");
+  if (payload.authVersion !== user.authVersion) throw new UnauthorizedException("Sua sessão foi invalidada. Entre novamente.");
+  request.user = {
+   id: user.id, email: user.email, isAdmin: isAdministrator(user), authVersion: user.authVersion,
+   allowedPages: [],
+  };
+  const pages = this.reflector.getAllAndOverride<PageKey[] | true>(PAGE_ACCESS, [context.getHandler(), context.getClass()]);
+  if (pages && !request.user.isAdmin) {
+   const permissions = await this.prisma.userPagePermission.findMany({
+    where: { userId: user.id, allowed: true },
+    select: { page: true },
+   });
+   request.user.allowedPages = permissions.map(({ page }) => page);
   }
-  const pages = this.reflector.getAllAndOverride<PageKey[]>(PAGE_ACCESS, [context.getHandler(), context.getClass()]);
-  if (pages) assertPageAccess(request.user, pages);
+  if (pages && pages !== true) assertPageAccess(request.user, pages);
   return true;
  }
 }

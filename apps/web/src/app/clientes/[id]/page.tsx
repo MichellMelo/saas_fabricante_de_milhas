@@ -1,8 +1,7 @@
-import { cookies } from "next/headers";
-import { redirect, notFound } from "next/navigation";
 import { ClientManagement } from "@/components/client-management";
-
-const API_BASE_URL = process.env.API_BASE_URL ?? "http://127.0.0.1:4000";
+import { SessionNotice } from "@/components/session-notice";
+import { SessionRecovery } from "@/components/session-recovery";
+import { readDashboardSession } from "@/lib/dashboard-session";
 
 export default async function ClientDetailPage({
   params,
@@ -10,24 +9,10 @@ export default async function ClientDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const cookieStore = await cookies();
-  const token = cookieStore.get("fm_session")?.value;
-
-  if (!token) redirect("/login");
-
-  let response: Response;
-  try {
-    response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
-    });
-  } catch {
-    throw new Error("Não foi possível validar a sessão. Verifique se a API está disponível.");
-  }
-
-  if (!response.ok) redirect("/login");
-  const payload = (await response.json()) as { user?: { isAdmin?: boolean } };
-  if (!payload.user?.isAdmin) notFound();
+  const session = await readDashboardSession();
+  if (session.status === "expired") return <SessionRecovery />;
+  if (session.status !== "authenticated") return <SessionNotice status={session.status} />;
+  if (!session.user.isAdmin) return <SessionNotice status="forbidden" />;
 
   return (
     <main className="min-h-screen w-full max-w-full overflow-x-clip bg-[#f7f5ef] px-4 py-6 sm:px-8 sm:py-8">

@@ -46,6 +46,7 @@ import { AdminManagement } from "@/components/admin-management";
 import { PageAccessManagement } from "@/components/page-access-management";
 import { GroupVipContent } from "@/components/group-vip-content";
 import { BalanceEvolutionChart } from "@/components/balance-evolution-chart";
+import type { DashboardUser } from "@/lib/dashboard-session";
 
 type RouteKey = DashboardRoute;
 const navItems: (SidebarNavItem & { adminOnly?: boolean; product?: string })[] = [
@@ -281,21 +282,6 @@ type DashboardLoyaltyAccount = {
   _count?: { transactions: number };
 };
 
-type DashboardUser = {
-  id: string;
-  email: string;
-  name: string | null;
-  createdAt: string;
-  isAdmin?: boolean;
-  allowedPages: string[];
-  productAccesses?: {
-    product: "GROUP_VIP" | "AULAO" | "MENTORSHIP";
-    active: boolean;
-    startsAt: string;
-    expiresAt: string | null;
-  }[];
-};
-
 export function Dashboard({ user }: { user: DashboardUser }) {
   const reduceMotion = useReducedMotion();
   const router = useRouter();
@@ -311,7 +297,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
 
   const allowedNavItems = useMemo(
     () => navItems.filter(({ key, adminOnly, product }) =>
-      user.isAdmin || (!adminOnly && user.allowedPages.includes(key) &&
+      user.isAdmin || (!adminOnly && user.allowedPages?.includes(key) &&
         (!product || user.productAccesses?.some((access) => access.product === product))),
     ),
     [user.isAdmin, user.allowedPages, user.productAccesses],

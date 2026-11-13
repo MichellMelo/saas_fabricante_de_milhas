@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Headers, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard, AuthenticatedRequest } from "./jwt-auth.guard";
+import { LoadPagePermissions } from "./page-permissions";
 import { AcceptInvitationDto } from "./dto/accept-invitation.dto";
 import { LoginDto } from "./dto/login.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
@@ -59,6 +60,7 @@ export class AuthController {
  }
 
  @UseGuards(JwtAuthGuard)
+ @LoadPagePermissions()
  @Get("me")
  async me(@Req() request: AuthenticatedRequest) {
   return { user: { ...await this.auth.getPublicUser(request.user.id), allowedPages: request.user.allowedPages } };

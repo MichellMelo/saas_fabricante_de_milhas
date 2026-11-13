@@ -31,6 +31,10 @@ export function isPageKey(value: string): value is PageKey {
 
 export const PAGE_ACCESS = Symbol("page-access");
 
+export function LoadPagePermissions() {
+  return SetMetadata(PAGE_ACCESS, true);
+}
+
 export function RequirePage(firstPage: PageKey, ...otherPages: PageKey[]) {
   return SetMetadata(PAGE_ACCESS, [firstPage, ...otherPages]);
 }

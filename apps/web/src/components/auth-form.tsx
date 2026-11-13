@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type SubmitEvent } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 type AuthFormProps = { mode: "login" | "register" };
@@ -26,7 +25,6 @@ function BrandLockup() {
 }
 
 export function AuthForm({ mode }: AuthFormProps) {
-  const router = useRouter();
   const isRegister = mode === "register";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -60,8 +58,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         );
         return;
       }
-      router.replace("/");
-      router.refresh();
+      window.location.replace("/");
     } catch {
       setError(
         "Não foi possível conectar. Verifique sua conexão e tente novamente.",

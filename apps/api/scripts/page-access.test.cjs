@@ -3,7 +3,7 @@ const { test } = require("node:test");
 const { BadRequestException, ForbiddenException, UnauthorizedException } = require("@nestjs/common");
 const { Reflector } = require("@nestjs/core");
 const { JwtAuthGuard } = require("../dist/auth/jwt-auth.guard");
-const { RequirePage } = require("../dist/auth/page-permissions");
+const { LoadPagePermissions, RequirePage } = require("../dist/auth/page-permissions");
 const { PageAccessController } = require("../dist/admin-management/page-access.controller");
 const { ProductContentController } = require("../dist/product-content/product-content.controller");
 
@@ -12,7 +12,10 @@ test("JWT válido exige permissão atual e retorna 403 após revogação", async
   RequirePage("historico")(ModuleController);
   const user = { id: "member", email: "member@example.test", active: true, isAdmin: false, authVersion: 1, pagePermissions: [] };
   const jwt = { verifyAsync: async () => ({ sub: user.id, email: user.email, authVersion: 1 }) };
-  const prisma = { user: { findUnique: async () => user } };
+  const prisma = {
+    user: { findUnique: async () => user },
+    userPagePermission: { findMany: async () => user.pagePermissions },
+  };
   const guard = new JwtAuthGuard(jwt, prisma, new Reflector());
   const request = { headers: { authorization: "Bearer test" } };
   const context = {
@@ -29,6 +32,47 @@ test("JWT válido exige permissão atual e retorna 403 após revogação", async
   assert.equal(await guard.canActivate(context), true);
   user.active = false;
   await assert.rejects(guard.canActivate(context), UnauthorizedException);
+});
+
+test("falha de banco ao validar uma sessão não vira token inválido", async () => {
+  const failure = new Error("Banco indisponível");
+  const guard = new JwtAuthGuard(
+    { verifyAsync: async () => ({ sub: "member", email: "member@example.test", authVersion: 1 }) },
+    { user: { findUnique: async () => { throw failure; } } },
+    new Reflector(),
+  );
+  const context = {
+    switchToHttp: () => ({ getRequest: () => ({ headers: { authorization: "Bearer test" } }) }),
+    getHandler: () => function handler() {},
+    getClass: () => class AuthController {},
+  };
+  await assert.rejects(guard.canActivate(context), (error) => error === failure);
+});
+
+test("perfil e administrador independem da tabela de permissões; acesso comum falha fechado", async () => {
+  class ProfileController {}
+  class SessionController {}
+  LoadPagePermissions()(SessionController);
+  const user = { id: "member", email: "member@example.test", active: true, isAdmin: false, authVersion: 1 };
+  const failure = new Error("Tabela de permissões indisponível");
+  const guard = new JwtAuthGuard(
+    { verifyAsync: async () => ({ sub: user.id, email: user.email, authVersion: 1 }) },
+    {
+      user: { findUnique: async () => user },
+      userPagePermission: { findMany: async () => { throw failure; } },
+    },
+    new Reflector(),
+  );
+  const request = { headers: { authorization: "Bearer test" } };
+  const context = (controller) => ({
+    switchToHttp: () => ({ getRequest: () => request }),
+    getHandler: () => function handler() {},
+    getClass: () => controller,
+  });
+  assert.equal(await guard.canActivate(context(ProfileController)), true);
+  await assert.rejects(guard.canActivate(context(SessionController)), (error) => error === failure);
+  user.isAdmin = true;
+  assert.equal(await guard.canActivate(context(SessionController)), true);
 });
 
 test("produto exige acesso à página e assinatura ativa", async () => {
