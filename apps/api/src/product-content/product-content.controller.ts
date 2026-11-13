@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, ForbiddenException, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
 import { ProductType } from "@prisma/client";
+import { assertPageAccess } from "../auth/page-permissions";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CreateGroupVipPostDto } from "../group-vip/dto/create-group-vip-post.dto";
 import { UpdateGroupVipPostDto } from "../group-vip/dto/update-group-vip-post.dto";
@@ -28,6 +29,7 @@ export class ProductContentController {
   @Get(":product")
   async list(@Req() request: AuthenticatedRequest, @Param("product") productValue: string) {
     const product = this.parseProduct(productValue);
+    assertPageAccess(request.user, [product === ProductType.AULAO ? "auloes" : "mentorias"]);
     if (!this.isAdmin(request)) await this.content.assertProductAccess(request.user.id, product);
     return this.content.listContent(product, this.isAdmin(request));
   }

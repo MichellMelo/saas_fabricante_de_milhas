@@ -35,6 +35,8 @@ export type DashboardRoute =
   | "programas-admin"
   | "clientes-admin"
   | "administradores-admin"
+  | "controle-de-acessos"
+  | "group-vip"
   | "auloes"
   | "mentorias"
   | "financeiro"
@@ -58,6 +60,10 @@ const iconByRoute: Partial<Record<DashboardRoute, LucideIcon>> = {
   historico: Clock3,
 };
 
+const adminRoutes: readonly DashboardRoute[] = [
+  "clientes-admin", "financeiro", "administradores-admin", "controle-de-acessos",
+];
+
 export function DashboardSidebar({
   mobileOpen,
   collapsed,
@@ -68,42 +74,17 @@ export function DashboardSidebar({
 }: {
   mobileOpen: boolean;
   collapsed: boolean;
-  route: DashboardRoute;
+  route?: DashboardRoute;
   navItems: SidebarNavItem[];
   navigate: (route: DashboardRoute) => void;
   notify: (message: string) => void;
 }) {
-  const showAdminSection = navItems.some(
-    (item) => item.key === "administradores-admin",
-  );
-  const adminItems = showAdminSection
-    ? navItems.filter(
-        (item) =>
-          item.key === "clientes-admin" ||
-          item.key === "financeiro" ||
-          item.key === "administradores-admin",
-      )
-    : [];
-  const workspaceItems = showAdminSection
-    ? navItems.filter(
-        (item) =>
-          item.key !== "clientes-admin" &&
-          item.key !== "financeiro" &&
-          item.key !== "administradores-admin",
-      )
-    : navItems.filter((item) => item.key !== "administradores-admin");
-  const [adminOpen, setAdminOpen] = useState(
-    route === "clientes-admin" ||
-      route === "financeiro" ||
-      route === "administradores-admin",
-  );
+  const adminItems = navItems.filter((item) => adminRoutes.includes(item.key));
+  const workspaceItems = navItems.filter((item) => !adminRoutes.includes(item.key));
+  const [adminOpen, setAdminOpen] = useState(route !== undefined && adminRoutes.includes(route));
 
   useEffect(() => {
-    if (
-      route === "clientes-admin" ||
-      route === "financeiro" ||
-      route === "administradores-admin"
-    ) {
+    if (route && adminRoutes.includes(route)) {
       setAdminOpen(true);
     }
   }, [route]);
@@ -117,6 +98,7 @@ export function DashboardSidebar({
         <button
           className="group flex min-h-[60px] items-center justify-center rounded-xl px-3 transition-colors hover:bg-white/[.035] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6a45c]/70"
           onClick={() => navigate("dashboard")}
+          disabled={!navItems.some((item) => item.key === "dashboard")}
           aria-label="Fabricante de Milhas, início"
         >
           <img

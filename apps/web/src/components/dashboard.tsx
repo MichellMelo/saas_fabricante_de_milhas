@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardHeader } from "@/components/dashboard-header";
 import {
   DashboardSidebar,
@@ -42,10 +43,12 @@ import { CalculatorTools } from "@/components/calculator-tools";
 import { FlightHistory } from "@/components/flight-history";
 import { PersonalTravel } from "@/components/personal-travel";
 import { AdminManagement } from "@/components/admin-management";
+import { PageAccessManagement } from "@/components/page-access-management";
+import { GroupVipContent } from "@/components/group-vip-content";
 import { BalanceEvolutionChart } from "@/components/balance-evolution-chart";
 
 type RouteKey = DashboardRoute;
-const navItems: SidebarNavItem[] = [
+const navItems: (SidebarNavItem & { adminOnly?: boolean; product?: string })[] = [
   { key: "dashboard", label: "Visão geral", icon: LayoutDashboard },
   {
     key: "programas",
@@ -53,13 +56,17 @@ const navItems: SidebarNavItem[] = [
     icon: CreditCard,
   },
   { key: "programas-admin", label: "Cadastro de programas", icon: Settings2 },
-  { key: "clientes-admin", label: "Clientes e produtos", icon: Users },
-  { key: "administradores-admin", label: "Administradores", icon: ShieldCheck },
-  { key: "financeiro", label: "Financeiro", icon: Wallet },
+  { key: "clientes-admin", label: "Clientes e produtos", icon: Users, adminOnly: true },
+  { key: "administradores-admin", label: "Administradores", icon: ShieldCheck, adminOnly: true },
+  { key: "controle-de-acessos", label: "Controle de Acessos", icon: ShieldCheck, adminOnly: true },
+  { key: "financeiro", label: "Financeiro", icon: Wallet, adminOnly: true },
   { key: "mile-finance", label: "Financeiro de Milhas", icon: TrendingUp },
   { key: "calculadoras", label: "Calculadoras", icon: Calculator },
   { key: "passagens", label: "Passagens e resgates", icon: Plane },
   { key: "historico", label: "Histórico de oportunidades", icon: Clock3 },
+  { key: "group-vip", label: "Grupo VIP", icon: Users, product: "GROUP_VIP" },
+  { key: "auloes", label: "Aulões", icon: Video, product: "AULAO" },
+  { key: "mentorias", label: "Mentorias", icon: GraduationCap, product: "MENTORSHIP" },
 ];
 const routeCopy: Record<
   Exclude<RouteKey, "dashboard">,
@@ -84,6 +91,18 @@ const routeCopy: Record<
     eyebrow: "SEGURANÇA E ACESSOS",
     description: "Gerencie administradores, convites e auditoria de acesso.",
     icon: ShieldCheck,
+  },
+  "controle-de-acessos": {
+    title: "Controle de Acessos",
+    eyebrow: "SEGURANÇA E ACESSOS",
+    description: "Gerencie as permissões por usuário.",
+    icon: ShieldCheck,
+  },
+  "group-vip": {
+    title: "Grupo VIP",
+    eyebrow: "CONTEÚDO EXCLUSIVO",
+    description: "Acompanhe as publicações do Grupo VIP.",
+    icon: Users,
   },
   "clientes-admin": {
     title: "Clientes e produtos",
@@ -268,6 +287,7 @@ type DashboardUser = {
   name: string | null;
   createdAt: string;
   isAdmin?: boolean;
+  allowedPages: string[];
   productAccesses?: {
     product: "GROUP_VIP" | "AULAO" | "MENTORSHIP";
     active: boolean;
@@ -278,7 +298,8 @@ type DashboardUser = {
 
 export function Dashboard({ user }: { user: DashboardUser }) {
   const reduceMotion = useReducedMotion();
-  const [route, setRoute] = useState<RouteKey>("dashboard");
+  const router = useRouter();
+  const [requestedRoute, setRequestedRoute] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopSidebarCollapsed, setDesktopSidebarHidden] = useState(false);
   const [toast, setToast] = useState("");
@@ -289,17 +310,17 @@ export function Dashboard({ user }: { user: DashboardUser }) {
   const [dashboardError, setDashboardError] = useState("");
 
   const allowedNavItems = useMemo(
-    () =>
-      user.isAdmin
-        ? navItems
-        : navItems.filter(
-            (item) =>
-              item.key !== "clientes-admin" &&
-              item.key !== "financeiro" &&
-              item.key !== "administradores-admin",
-          ),
-    [user.isAdmin],
+    () => navItems.filter(({ key, adminOnly, product }) =>
+      user.isAdmin || (!adminOnly && user.allowedPages.includes(key) &&
+        (!product || user.productAccesses?.some((access) => access.product === product))),
+    ),
+    [user.isAdmin, user.allowedPages, user.productAccesses],
   );
+  const route = requestedRoute === null ? undefined
+    : allowedNavItems.find(({ key }) => key === (requestedRoute || "dashboard"))?.key
+      ?? (requestedRoute === "" ? allowedNavItems[0]?.key : undefined);
+  const canViewBalances = allowedNavItems.some(({ key }) => key === "programas");
+  const canViewCalculators = allowedNavItems.some(({ key }) => key === "calculadoras");
 
   useEffect(() => {
     let renewing = false;
@@ -307,7 +328,10 @@ export function Dashboard({ user }: { user: DashboardUser }) {
       if (renewing || document.visibilityState === "hidden") return;
       renewing = true;
       try {
-        await fetch("/api/auth/refresh", { method: "POST", cache: "no-store" });
+        const response = await fetch("/api/auth/refresh", { method: "POST", cache: "no-store" });
+        if (response.ok || response.status === 401) router.refresh();
+      } catch {
+        return;
       } finally {
         renewing = false;
       }
@@ -321,9 +345,14 @@ export function Dashboard({ user }: { user: DashboardUser }) {
       window.clearInterval(interval);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, []);
+  }, [router]);
 
   useEffect(() => {
+    if (route !== "dashboard" || !canViewBalances) {
+      setLoyaltyAccounts([]);
+      setDashboardError("");
+      return;
+    }
     let cancelled = false;
     async function loadDashboardData() {
       setDashboardLoading(true);
@@ -358,29 +387,23 @@ export function Dashboard({ user }: { user: DashboardUser }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [route, canViewBalances]);
 
   useEffect(() => {
     const syncRouteFromHash = () => {
-      const hash = window.location.hash.slice(1);
-      const allowed = allowedNavItems.some((item) => item.key === hash);
-      if (allowed) {
-        setRoute(hash as RouteKey);
-      } else if (hash) {
-        setRoute("dashboard");
-        window.history.replaceState(null, "", window.location.pathname);
-      }
+      setRequestedRoute(window.location.hash.slice(1));
     };
     syncRouteFromHash();
     window.addEventListener("hashchange", syncRouteFromHash);
     return () => window.removeEventListener("hashchange", syncRouteFromHash);
-  }, [user.isAdmin, allowedNavItems]);
+  }, []);
   function notify(message: string) {
     setToast(message);
     window.setTimeout(() => setToast(""), 3200);
   }
   function navigate(next: RouteKey) {
-    setRoute(next);
+    if (!allowedNavItems.some(({ key }) => key === next)) return;
+    setRequestedRoute(next === "dashboard" ? "" : next);
     setMobileOpen(false);
     window.history.replaceState(
       null,
@@ -430,7 +453,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
       />
       <main className="main-area">
         <DashboardHeader
-          title={route === "dashboard" ? "Visão geral" : routeCopy[route].title}
+          title={route === "dashboard" ? "Visão geral" : route ? routeCopy[route].title : "Acesso"}
           mobileOpen={mobileOpen}
           onToggleMobile={() => setMobileOpen(!mobileOpen)}
           desktopSidebarCollapsed={desktopSidebarCollapsed}
@@ -447,7 +470,14 @@ export function Dashboard({ user }: { user: DashboardUser }) {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
         >
-          {route === "dashboard" ? (
+          {requestedRoute === null ? null : !route ? (
+            <Card className="p-6">
+              <h1 className="text-xl font-semibold">Acesso indisponível</h1>
+              <p className="mt-2 text-sm text-slate-600">
+                {requestedRoute ? "Sua conta não tem acesso a esta página." : "Nenhuma página foi liberada para sua conta."}
+              </p>
+            </Card>
+          ) : route === "dashboard" ? (
             <>
               <motion.section
                 className="welcome-row"
@@ -468,7 +498,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   </p>
                 </div>
               </motion.section>
-              {dashboardError && (
+              {canViewBalances && dashboardError && (
                 <Alert
                   role="alert"
                   className="mb-5 border-red-200 bg-red-50 text-red-800"
@@ -476,7 +506,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   <AlertDescription>{dashboardError}</AlertDescription>
                 </Alert>
               )}
-              <motion.section
+              {canViewBalances && <motion.section
                 className="kpi-grid"
                 aria-label="Indicadores reais da carteira"
                 initial="hidden"
@@ -549,8 +579,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   tone="icon-purple"
                   foot={<span>Movimentações persistidas nas suas contas</span>}
                 />
-              </motion.section>
-              <motion.section
+              </motion.section>}
+              {canViewBalances && <motion.section
                 className="content-grid"
                 initial={reduceMotion ? false : { opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -561,7 +591,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                 }}
               >
                 <BalanceEvolutionChart />
-              </motion.section>
+              </motion.section>}
               <motion.section
                 className="bottom-grid"
                 initial={reduceMotion ? false : { opacity: 0, y: 16 }}
@@ -572,7 +602,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
-                <Card className="panel">
+                {canViewBalances && <Card className="panel">
                   <div className="panel-heading">
                     <div>
                       <h2>Distribuição por programa</h2>
@@ -682,8 +712,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                         })}
                     </div>
                   )}
-                </Card>
-                <Card className="quick-insight">
+                </Card>}
+                {canViewCalculators && <Card className="quick-insight">
                   <div className="insight-header">
                     <Sparkles size={16} />
                     <span>INSIGHT DO PAINEL</span>
@@ -701,7 +731,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
                     <Calculator size={14} /> Abrir calculadoras{" "}
                     <ArrowRight size={14} />
                   </Button>
-                </Card>
+                </Card>}
               </motion.section>
               <DashboardFooter reduceMotion={reduceMotion} notify={notify} />
             </>
@@ -713,6 +743,10 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <ClientManagement onBack={() => navigate("dashboard")} />
           ) : route === "administradores-admin" ? (
             <AdminManagement onBack={() => navigate("dashboard")} />
+          ) : route === "controle-de-acessos" ? (
+            <PageAccessManagement />
+          ) : route === "group-vip" ? (
+            <GroupVipContent isAdmin={Boolean(user.isAdmin)} />
           ) : route === "passagens" ? (
             <PersonalTravel />
           ) : route === "historico" ? (
@@ -748,7 +782,8 @@ export function Dashboard({ user }: { user: DashboardUser }) {
               { key: "calculadoras", label: "Calculadoras", icon: Calculator },
               { key: "menu", label: "Mais", icon: Plus },
             ] as const
-          ).map(({ key, label, icon: Icon }) => (
+          ).filter(({ key }) => key === "menu" || allowedNavItems.some((item) => item.key === key))
+            .map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               type="button"

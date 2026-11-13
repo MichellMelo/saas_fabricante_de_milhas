@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from "@nestjs/common";
+import { RequirePage } from "../auth/page-permissions";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CreateInventoryAdjustmentDto } from "./dto/create-inventory-adjustment.dto";
 import { CreateMilePurchaseDto } from "./dto/create-mile-purchase.dto";
@@ -6,6 +7,7 @@ import { CreatePersonalMileSaleDto } from "./dto/create-mile-sale.dto";
 import { MileFinanceService } from "./mile-finance.service";
 
 @UseGuards(JwtAuthGuard)
+@RequirePage("mile-finance")
 @Controller("mile-finance")
 export class MileFinanceController {
   constructor(private readonly finance: MileFinanceService) {}

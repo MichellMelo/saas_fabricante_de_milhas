@@ -10,6 +10,7 @@ type AuthenticatedUser = {
   name: string | null;
   createdAt: string;
   isAdmin?: boolean;
+  allowedPages: string[];
   productAccesses?: { product: "GROUP_VIP" | "AULAO" | "MENTORSHIP"; active: boolean; startsAt: string; expiresAt: string | null }[];
 };
 

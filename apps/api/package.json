@@ -13,7 +13,8 @@
     "prisma:deploy": "node scripts/prisma-with-env.cjs migrate deploy",
     "prisma:studio": "node scripts/prisma-with-env.cjs studio",
     "prisma:seed": "node prisma/seed.cjs",
-    "test:config": "node --test scripts/web-base-url.test.cjs"
+    "test:config": "node --test scripts/web-base-url.test.cjs",
+    "test:page-access": "node --test scripts/page-access.test.cjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.11",

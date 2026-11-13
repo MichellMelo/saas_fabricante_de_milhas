@@ -1,4 +1,5 @@
 import { Body, Controller, ForbiddenException, Get, Post, Req, UseGuards } from "@nestjs/common";
+import { RequirePage } from "../auth/page-permissions";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { FlightHistoryIntegrationGuard } from "./flight-history-integration.guard";
 import { FlightHistoryService } from "./flight-history.service";
@@ -7,6 +8,7 @@ import { FlightHistoryService } from "./flight-history.service";
 export class FlightHistoryController {
  constructor(private readonly service: FlightHistoryService) {}
 
+ @RequirePage("historico")
  @Get()
  @UseGuards(JwtAuthGuard)
  list(@Req() request: AuthenticatedRequest) {

@@ -65,6 +65,7 @@ model User {
  personalRedemptionAudit PersonalRedemptionAudit[] @relation("RedemptionAuditActor")
  flightAvailabilities FlightAvailability[]
  productAccesses UserProductAccess[]
+ pagePermissions UserPagePermission[]
  payments ClientPayment[]
  mileSales MileSale[]
  milePurchases MilePurchase[]
@@ -76,6 +77,14 @@ model User {
  authoredGroupVipPosts GroupVipPost[]
  authoredProductContent ProductContent[]
  sessions UserSession[]
+}
+
+model UserPagePermission {
+ userId String
+ page String
+ allowed Boolean @default(false)
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ @@id([userId, page])
 }
 
 model UserSession {

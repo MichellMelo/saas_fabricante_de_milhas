@@ -61,6 +61,6 @@ export class AuthController {
  @UseGuards(JwtAuthGuard)
  @Get("me")
  async me(@Req() request: AuthenticatedRequest) {
-  return { user: await this.auth.getPublicUser(request.user.id) };
+  return { user: { ...await this.auth.getPublicUser(request.user.id), allowedPages: request.user.allowedPages } };
  }
 }

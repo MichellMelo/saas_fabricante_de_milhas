@@ -1,8 +1,10 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from "@nestjs/common";
+import { RequirePage } from "../auth/page-permissions";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { PersonalTravelService } from "./personal-travel.service";
 import { AirportCatalogService } from "./airport-catalog.service";
 
+@RequirePage("passagens")
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class PersonalTravelController {

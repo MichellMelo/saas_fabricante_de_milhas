@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, ForbiddenException, Get, Param, Post, Query, Req, UseGuards } from "@nestjs/common";
 import { LoyaltyProgramType } from "@prisma/client";
+import { RequirePage } from "../auth/page-permissions";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CreateAccountDto } from "./dto/create-account.dto";
 import { CreateProgramDto } from "./dto/create-program.dto";
@@ -22,11 +23,13 @@ export class LoyaltyController {
     }
   }
 
+  @RequirePage("programas", "mile-finance")
   @Get("loyalty-programs")
   listPrograms(@Req() request: AuthenticatedRequest) {
     return this.loyalty.listPrograms(request.user.id);
   }
 
+  @RequirePage("programas-admin")
   @Get("loyalty-programs/manage")
   async listProgramsForManagement(@Req() request: AuthenticatedRequest) {
     const canManageCatalog = this.canManageCatalog(request);
@@ -34,17 +37,20 @@ export class LoyaltyController {
     return { programs, canManageCatalog };
   }
 
+  @RequirePage("programas-admin")
   @Post("loyalty-programs/personal")
   createPersonalProgram(@Req() request: AuthenticatedRequest, @Body() dto: CreateProgramDto) {
     return this.loyalty.createPersonalProgram(request.user.id, dto.name, dto.type as LoyaltyProgramType);
   }
 
+  @RequirePage("programas-admin")
   @Post("loyalty-programs/catalog")
   createCatalogProgram(@Req() request: AuthenticatedRequest, @Body() dto: CreateProgramDto) {
     this.assertCatalogAdmin(request);
     return this.loyalty.createCatalogProgram(dto.name, dto.type as LoyaltyProgramType);
   }
 
+  @RequirePage("programas-admin")
   @Post("loyalty-programs/catalog/:id/update")
   updateCatalogProgram(
     @Req() request: AuthenticatedRequest,
@@ -55,6 +61,7 @@ export class LoyaltyController {
     return this.loyalty.updateCatalogProgram(id, dto.name, dto.type as LoyaltyProgramType);
   }
 
+  @RequirePage("programas-admin")
   @Post("loyalty-programs/catalog/:id/active")
   setCatalogProgramActive(
     @Req() request: AuthenticatedRequest,
@@ -65,16 +72,19 @@ export class LoyaltyController {
     return this.loyalty.setCatalogProgramActive(id, dto.active);
   }
 
+  @RequirePage("programas")
   @Get("loyalty-accounts")
   listAccounts(@Req() request: AuthenticatedRequest) {
     return this.loyalty.listAccounts(request.user.id);
   }
 
+  @RequirePage("programas")
   @Get("loyalty-accounts/archived")
   listArchivedAccounts(@Req() request: AuthenticatedRequest) {
     return this.loyalty.listArchivedAccounts(request.user.id);
   }
 
+  @RequirePage("programas")
   @Get("loyalty-accounts/balance-evolution")
   getBalanceEvolution(
     @Req() request: AuthenticatedRequest,
@@ -86,21 +96,25 @@ export class LoyaltyController {
     return this.loyalty.getBalanceEvolution(request.user.id, validPeriod);
   }
 
+  @RequirePage("programas")
   @Post("loyalty-accounts")
   createAccount(@Req() request: AuthenticatedRequest, @Body() dto: CreateAccountDto) {
     return this.loyalty.createAccount(request.user.id, dto);
   }
 
+  @RequirePage("programas")
   @Delete("loyalty-accounts/:id")
   archiveAccount(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
     return this.loyalty.archiveAccount(request.user.id, id);
   }
 
+  @RequirePage("programas")
   @Post("loyalty-accounts/:id/restore")
   restoreAccount(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
     return this.loyalty.restoreAccount(request.user.id, id);
   }
 
+  @RequirePage("programas")
   @Post("loyalty-accounts/:id/transactions")
   createTransaction(
     @Req() request: AuthenticatedRequest,

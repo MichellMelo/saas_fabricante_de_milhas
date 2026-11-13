@@ -1,4 +1,5 @@
 import { Body, Controller, ForbiddenException, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
+import { RequirePage } from "../auth/page-permissions";
 import { AuthenticatedRequest, JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CreateGroupVipPostDto } from "./dto/create-group-vip-post.dto";
 import { SetGroupVipPublicationDto } from "./dto/set-group-vip-publication.dto";
@@ -6,6 +7,7 @@ import { UpdateGroupVipPostDto } from "./dto/update-group-vip-post.dto";
 import { GroupVipService } from "./group-vip.service";
 
 @UseGuards(JwtAuthGuard)
+@RequirePage("group-vip")
 @Controller("group-vip")
 export class GroupVipController {
   constructor(private readonly groupVip: GroupVipService) {}
