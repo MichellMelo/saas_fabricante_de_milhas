@@ -36,9 +36,6 @@ export type DashboardRoute =
   | "clientes-admin"
   | "administradores-admin"
   | "controle-de-acessos"
-  | "group-vip"
-  | "auloes"
-  | "mentorias"
   | "financeiro"
   | "mile-finance";
 export type SidebarNavItem = {

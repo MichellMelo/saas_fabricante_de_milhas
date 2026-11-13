@@ -23,8 +23,6 @@ import {
   ShieldCheck,
   Settings2,
   Users,
-  Video,
-  GraduationCap,
   Wallet,
   TrendingUp,
 } from "lucide-react";
@@ -36,7 +34,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoyaltyAccounts } from "@/components/loyalty-accounts";
 import { ProgramManagement } from "@/components/program-management";
 import { ClientManagement } from "@/components/client-management";
-import { ProductContent } from "@/components/product-content";
 import { FinanceDashboard } from "@/components/finance-dashboard";
 import { MileFinanceDashboard } from "@/components/mile-finance-dashboard";
 import { CalculatorTools } from "@/components/calculator-tools";
@@ -44,12 +41,11 @@ import { FlightHistory } from "@/components/flight-history";
 import { PersonalTravel } from "@/components/personal-travel";
 import { AdminManagement } from "@/components/admin-management";
 import { PageAccessManagement } from "@/components/page-access-management";
-import { GroupVipContent } from "@/components/group-vip-content";
 import { BalanceEvolutionChart } from "@/components/balance-evolution-chart";
 import type { DashboardUser } from "@/lib/dashboard-session";
 
 type RouteKey = DashboardRoute;
-const navItems: (SidebarNavItem & { adminOnly?: boolean; product?: string; permission?: string })[] = [
+const navItems: (SidebarNavItem & { adminOnly?: boolean; permission?: string })[] = [
   { key: "dashboard", label: "Visão geral", icon: LayoutDashboard },
   {
     key: "programas",
@@ -65,102 +61,18 @@ const navItems: (SidebarNavItem & { adminOnly?: boolean; product?: string; permi
   { key: "calculadoras", label: "Calculadoras", icon: Calculator },
   { key: "passagens", label: "Passagens e resgates", icon: Plane },
   { key: "historico", label: "Histórico de oportunidades", icon: Clock3 },
-  { key: "group-vip", label: "Grupo VIP", icon: Users, product: "GROUP_VIP" },
-  { key: "auloes", label: "Aulões", icon: Video, product: "AULAO" },
-  { key: "mentorias", label: "Mentorias", icon: GraduationCap, product: "MENTORSHIP" },
 ];
-const routeCopy: Record<
-  Exclude<RouteKey, "dashboard">,
-  { title: string; eyebrow: string; description: string; icon: LucideIcon }
-> = {
-  programas: {
-    title: "Programas e saldos",
-    eyebrow: "PATRIMÔNIO DE PONTOS",
-    description:
-      "Centralize seus programas de fidelidade e acompanhe seus saldos. O cadastro e a persistência serão implementados em uma próxima fase.",
-    icon: CreditCard,
-  },
-  "programas-admin": {
-    title: "Cadastro de programas",
-    eyebrow: "CATÁLOGO E PERSONALIZAÇÃO",
-    description:
-      "Gerencie programas do catálogo geral (com permissão administrativa) e crie programas personalizados para sua carteira.",
-    icon: Settings2,
-  },
-  "administradores-admin": {
-    title: "Gestão de administradores",
-    eyebrow: "SEGURANÇA E ACESSOS",
-    description: "Gerencie administradores, convites e auditoria de acesso.",
-    icon: ShieldCheck,
-  },
-  "controle-de-acessos": {
-    title: "Controle de Acessos",
-    eyebrow: "SEGURANÇA E ACESSOS",
-    description: "Gerencie as permissões por usuário.",
-    icon: ShieldCheck,
-  },
-  "group-vip": {
-    title: "Grupo VIP",
-    eyebrow: "CONTEÚDO EXCLUSIVO",
-    description: "Acompanhe as publicações do Grupo VIP.",
-    icon: Users,
-  },
-  "clientes-admin": {
-    title: "Clientes e produtos",
-    eyebrow: "GESTÃO DE ACESSOS",
-    description:
-      "Convide clientes e gerencie o acesso ao Grupo VIP, aulões e mentorias.",
-    icon: Users,
-  },
-  "mile-finance": {
-    title: "Financeiro de Milhas",
-    eyebrow: "COMPRAS, VENDAS E ESTOQUE",
-    description:
-      "Controle seu estoque de milhas, custo médio ponderado e resultado das operações.",
-    icon: TrendingUp,
-  },
-  financeiro: {
-    title: "Financeiro",
-    eyebrow: "CONTROLE DE RECEBIMENTOS",
-    description:
-      "Acompanhe recebimentos, cobranças pendentes e valores vencidos.",
-    icon: Wallet,
-  },
-  auloes: {
-    title: "Aulões",
-    eyebrow: "AULAS E MATERIAIS",
-    description:
-      "Acesse gravações, materiais e orientações dos aulões disponíveis para sua conta.",
-    icon: Video,
-  },
-  mentorias: {
-    title: "Mentorias",
-    eyebrow: "ACOMPANHAMENTO EXCLUSIVO",
-    description:
-      "Consulte materiais, orientações e links disponibilizados para sua mentoria.",
-    icon: GraduationCap,
-  },
-  calculadoras: {
-    title: "Calculadoras",
-    eyebrow: "DECISÕES COM NÚMEROS",
-    description:
-      "Calcule custo por milheiro, transferência bonificada e valor de resgate com fórmulas transparentes e dados informados por você.",
-    icon: Calculator,
-  },
-  passagens: {
-    title: "Passagens e resgates",
-    eyebrow: "VIAGENS E RESGATES",
-    description:
-      "Organize suas viagens, resgates, passageiros e custos em um só lugar.",
-    icon: Plane,
-  },
-  historico: {
-    title: "Histórico de oportunidades",
-    eyebrow: "DISPONIBILIDADES PESQUISADAS",
-    description:
-      "Consulte e organize oportunidades identificadas por programa, rota, classe, quantidade de milhas e datas, como base para futuras emissões.",
-    icon: Clock3,
-  },
+const routeTitles: Record<Exclude<RouteKey, "dashboard">, string> = {
+  programas: "Programas e saldos",
+  "programas-admin": "Cadastro de programas",
+  "administradores-admin": "Gestão de administradores",
+  "controle-de-acessos": "Controle de Acessos",
+  "clientes-admin": "Clientes e produtos",
+  "mile-finance": "Financeiro de Milhas",
+  financeiro: "Financeiro",
+  calculadoras: "Calculadoras",
+  passagens: "Passagens e resgates",
+  historico: "Histórico de oportunidades",
 };
 const PROGRAM_ICON_MATCHERS: Array<{ terms: string[]; file: string }> = [
   { terms: ["azul"], file: "azul.png" },
@@ -296,11 +208,10 @@ export function Dashboard({ user }: { user: DashboardUser }) {
   const [dashboardError, setDashboardError] = useState("");
 
   const allowedNavItems = useMemo(
-    () => navItems.filter(({ key, adminOnly, product, permission }) =>
-      user.isAdmin || (!adminOnly && user.allowedPages?.includes(permission ?? key) &&
-        (!product || user.productAccesses?.some((access) => access.product === product))),
+    () => navItems.filter(({ key, adminOnly, permission }) =>
+      user.isAdmin || (!adminOnly && user.allowedPages?.includes(permission ?? key)),
     ),
-    [user.isAdmin, user.allowedPages, user.productAccesses],
+    [user.isAdmin, user.allowedPages],
   );
   const route = requestedRoute === null ? undefined
     : allowedNavItems.find(({ key }) => key === (requestedRoute || "dashboard"))?.key
@@ -439,7 +350,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
       />
       <main className="main-area">
         <DashboardHeader
-          title={route === "dashboard" ? "Visão geral" : route ? routeCopy[route].title : "Acesso"}
+          title={route === "dashboard" ? "Visão geral" : route ? routeTitles[route] : "Acesso"}
           mobileOpen={mobileOpen}
           onToggleMobile={() => setMobileOpen(!mobileOpen)}
           desktopSidebarCollapsed={desktopSidebarCollapsed}
@@ -731,8 +642,6 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <AdminManagement onBack={() => navigate("dashboard")} />
           ) : route === "controle-de-acessos" ? (
             <PageAccessManagement />
-          ) : route === "group-vip" ? (
-            <GroupVipContent isAdmin={Boolean(user.isAdmin)} />
           ) : route === "passagens" ? (
             <PersonalTravel />
           ) : route === "historico" ? (
@@ -743,19 +652,7 @@ export function Dashboard({ user }: { user: DashboardUser }) {
             <MileFinanceDashboard />
           ) : route === "financeiro" ? (
             <FinanceDashboard canManage={Boolean(user.isAdmin)} />
-          ) : route === "auloes" ? (
-            <ProductContent isAdmin={Boolean(user.isAdmin)} product="AULAO" />
-          ) : route === "mentorias" ? (
-            <ProductContent
-              isAdmin={Boolean(user.isAdmin)}
-              product="MENTORSHIP"
-            />
-          ) : (
-            <ModulePlaceholder
-              route={route}
-              onBack={() => navigate("dashboard")}
-            />
-          )}
+          ) : null}
         </motion.div>
       </main>
       {!mobileOpen && (
@@ -804,36 +701,5 @@ export function Dashboard({ user }: { user: DashboardUser }) {
         )}
       </AnimatePresence>
     </div>
-  );
-}
-function ModulePlaceholder({
-  route,
-  onBack,
-}: {
-  route: Exclude<RouteKey, "dashboard">;
-  onBack: () => void;
-}) {
-  const item = routeCopy[route];
-  const Icon = item.icon;
-  return (
-    <section className="module-placeholder">
-      <div className="placeholder-mark">
-        <Icon size={25} />
-      </div>
-      <div className="eyebrow justify-center">
-        <span className="eyebrow-line" />
-        {item.eyebrow}
-      </div>
-      <h1 className="page-title">{item.title}</h1>
-      <p>{item.description}</p>
-      <Badge variant="gold" className="mb-5">
-        Planejado para próxima fase
-      </Badge>
-      <div>
-        <Button onClick={onBack}>
-          <ArrowRight size={14} className="rotate-180" /> Voltar à visão geral
-        </Button>
-      </div>
-    </section>
   );
 }
