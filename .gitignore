@@ -23,3 +23,4 @@ apps/web/next-env.d.ts
 *.txt/backups/
 /historico_emissoes_payload_dry_run.json
 /backups/
+/scripts.txt
