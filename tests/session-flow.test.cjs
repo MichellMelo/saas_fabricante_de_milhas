@@ -86,13 +86,15 @@ test("cadastro público, três switches e convite coexistem", { skip: !base || !
   const invited = browser();
   const email = `public-${randomUUID()}@example.test`;
   const inviteEmail = `invite-${randomUUID()}@example.test`;
-  const newPassword = "CadastroLocal2026!";
+  const newPassword = "Abcd1!";
   const details = { name: "Cadastro Público QA", email, password: newPassword, passwordConfirmation: newPassword };
   const post = (client, path, body) => client.request(path, { method: "POST", body });
   const register = (body) => post(member, "/api/auth/register", body);
 
   assert.equal((await register({ ...details, name: " ", email: "invalido" })).status, 400);
-  assert.equal((await register({ ...details, password: "123" })).status, 400);
+  for (const invalidPassword of ["Ab1!", "abcde1!", "Abcde!", "Abcde1"]) {
+    assert.equal((await register({ ...details, password: invalidPassword, passwordConfirmation: invalidPassword })).status, 400);
+  }
   assert.equal((await register({ ...details, passwordConfirmation: "outraSenha12" })).status, 400);
   assert.equal((await register({ ...details, isAdmin: true })).status, 400);
   assert.equal((await register({ ...details, email: "ADMIN@EXAMPLE.TEST" })).status, 409);
@@ -152,7 +154,7 @@ test("cadastro público, três switches e convite coexistem", { skip: !base || !
   const { inviteUrl } = await invitation.json();
   assert.equal((await register({ ...details, email: inviteEmail })).status, 409);
   const token = new URL(inviteUrl).searchParams.get("token");
-  assert.equal((await post(invited, "/api/auth/accept-invitation", { token, name: "Convite QA", password: newPassword })).status, 200);
+  assert.equal((await post(invited, "/api/auth/accept-invitation", { token, name: "Convite QA", password: "ConviteLocal2026!" })).status, 200);
   assert.match(await (await invited.request("/")).text(), /dashboard-shell/);
   let limited;
   for (let attempt = 0; attempt <= 20; attempt++) {

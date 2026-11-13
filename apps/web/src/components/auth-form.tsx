@@ -2,6 +2,8 @@
 
 import { useState, type SubmitEvent } from "react";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
+import { getRegistrationPasswordStatus, RegistrationPasswordChecklist } from "./registration-password-checklist";
 
 type AuthFormProps = { mode: "login" | "register" };
 
@@ -30,17 +32,18 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [registered, setRegistered] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const {
+    checks: passwordChecks, exceedsLimit: exceedsPasswordLimit, matches: passwordsMatch, canRegister,
+  } = getRegistrationPasswordStatus(password, passwordConfirmation);
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
-    if (isRegister && password !== passwordConfirmation) {
-      setError("As senhas não coincidem.");
-      return;
-    }
+    if (isRegister && !canRegister) return;
     setLoading(true);
     try {
       const response = await fetch(`/api/auth/${mode}`, {
@@ -215,30 +218,45 @@ export function AuthForm({ mode }: AuthFormProps) {
                   disabled={loading}
                 />
               </label>
-              <label className="block text-[12px] font-semibold text-[#344054]">
-                Senha
-                <input
-                  type="password"
-                  autoComplete={
-                    isRegister ? "new-password" : "current-password"
-                  }
-                  required
-                  minLength={isRegister ? 12 : 1}
-                  maxLength={isRegister ? 72 : 128}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  className={inputClass}
-                  placeholder={
-                    isRegister ? "Crie uma senha segura" : "Digite sua senha"
-                  }
-                  disabled={loading}
-                />
+              <div>
+                <label htmlFor="auth-password" className="block text-[12px] font-semibold text-[#344054]">
+                  Senha
+                </label>
+                <div className="relative">
+                  <input
+                    id="auth-password"
+                    type={isRegister && showPassword ? "text" : "password"}
+                    autoComplete={isRegister ? "new-password" : "current-password"}
+                    aria-describedby={isRegister ? `registration-password-requirements${exceedsPasswordLimit ? " registration-password-limit" : ""}` : undefined}
+                    required
+                    maxLength={isRegister ? 72 : 128}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className={`${inputClass}${isRegister ? " pr-12" : ""}`}
+                    placeholder={isRegister ? "Crie uma senha segura" : "Digite sua senha"}
+                    disabled={loading}
+                  />
+                  {isRegister && (
+                    <button
+                      type="button"
+                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                      aria-controls="auth-password"
+                      onClick={() => setShowPassword((visible) => !visible)}
+                      className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-slate-600 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b58a37]"
+                    >
+                      {showPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+                    </button>
+                  )}
+                </div>
                 {isRegister && (
-                  <span className="mt-2 block text-[11px] font-normal leading-5 text-[#89919d]">
-                    Use pelo menos 12 caracteres, com letras e números.
-                  </span>
+                  <RegistrationPasswordChecklist checks={passwordChecks} />
                 )}
-              </label>
+                {isRegister && exceedsPasswordLimit && (
+                  <p id="registration-password-limit" role="alert" className="mt-1 text-xs text-red-700">
+                    A senha deve ter no máximo 72 bytes.
+                  </p>
+                )}
+              </div>
 
               {isRegister && (
                 <label className="block text-[12px] font-semibold text-[#344054]">
@@ -246,6 +264,8 @@ export function AuthForm({ mode }: AuthFormProps) {
                   <input
                     type="password"
                     autoComplete="new-password"
+                    aria-invalid={passwordConfirmation.length > 0 && !passwordsMatch}
+                    aria-describedby={passwordConfirmation && !passwordsMatch ? "registration-password-mismatch" : undefined}
                     required
                     maxLength={72}
                     value={passwordConfirmation}
@@ -253,6 +273,11 @@ export function AuthForm({ mode }: AuthFormProps) {
                     className={inputClass}
                     disabled={loading}
                   />
+                  {passwordConfirmation && !passwordsMatch && (
+                    <span id="registration-password-mismatch" className="mt-1 block text-xs text-red-700">
+                      As senhas não coincidem.
+                    </span>
+                  )}
                 </label>
               )}
 
@@ -267,7 +292,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (isRegister && !canRegister)}
                 aria-busy={loading}
                 className="group flex w-full items-center justify-between rounded-xl bg-[#101a2b] px-5 py-[15px] text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(16,26,43,0.14)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#1b2a41] hover:shadow-[0_12px_26px_rgba(16,26,43,0.2)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#d6b66f]/30 disabled:translate-y-0 disabled:cursor-wait disabled:opacity-60"
               >

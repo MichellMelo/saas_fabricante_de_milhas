@@ -14,9 +14,11 @@ export class RegisterDto {
  email!: string;
 
  @IsString()
- @MinLength(12, { message: "A senha deve ter pelo menos 12 caracteres." })
+ @MinLength(6, { message: "A senha deve ter pelo menos 6 caracteres." })
  @MaxLength(72)
- @Matches(/^(?=.*\p{L})(?=.*\p{N})/su, { message: "A senha deve conter letras e números." })
+ @Matches(/\p{Lu}/u, { message: "A senha deve conter uma letra maiúscula." })
+ @Matches(/\p{Nd}/u, { message: "A senha deve conter um número." })
+ @Matches(/[\p{P}\p{S}]/u, { message: "A senha deve conter um caractere especial." })
  password!: string;
 
  @IsString()
